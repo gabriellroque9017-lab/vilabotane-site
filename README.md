@@ -37,6 +37,10 @@ a Casa do Lago (busque por `github.io` nas páginas).
 - Os tempos do voo do pássaro (duração, espera, curva, escala, balanço) foram
   ajustados quadro a quadro: parecem arbitrários porque são.
 - Sem framework e sem build: GSAP e Splitting entram por CDN.
+- Na seção "Na taça", a rolagem leva a janela do topo do vídeo até o pé da
+  taça. Os últimos 6% do quadro nunca aparecem: é onde fica a marca d'água do
+  gerador do vídeo. Em janela estreita e alta o vídeo cresce para encher o
+  palco (classe `cobre`) em vez de sobrar preto e mostrar a marca.
 - As fotos das garrafas na seção "Nossos vinhos" são `img/garrafa-tie.webp` e
   `img/garrafa-tiepreto.webp`, o par de fotos de cima, entre folhas de videira.
   A moldura é 4:5 e recorta pelo centro: se trocar, use uma foto em pé com a

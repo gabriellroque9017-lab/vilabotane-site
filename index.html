@@ -665,7 +665,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 }
 
 /* ---------- 06b · NA TAÇA ---------- */
-.taca{ position:relative; height:172vh; background:#000; }
+.taca{ position:relative; height:220vh; background:#000; }
 .taca__palco{ position:sticky; top:0; height:100svh; overflow:hidden; display:grid; align-items:end; background:#000; }
 /* o quadro vai de margem a margem — o pixel da esquerda rente ao P de Portal,
    o da direita rente ao U de Menu. Nessa largura ele fica mais alto que a tela,
@@ -676,8 +676,14 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .taca__video video{
   position:absolute; top:0; left:calc(var(--margem) * 2);
   display:block; width:calc(100% - var(--margem) * 2); height:auto; max-width:none;
-  transform:translateY(var(--sobe,-20%));
+  transform:translateY(var(--sobe,-20%));   /* o JS assenta em pixels; a % é só o repouso */
   will-change:transform;
+}
+/* janela estreita e alta: o vídeo cresce até encher o palco, centrado na
+   largura. A faixa do rodapé, com a marca do gerador, sai por baixo. */
+.taca__video video.cobre{
+  left:50%; width:auto; height:calc(100% / 0.94);
+  transform:translate(-50%, var(--sobe,0px));
 }
 @media (max-width:760px){
   .taca__video video{ left:0; width:100%; }
@@ -2310,17 +2316,63 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     }
   }
 
-  /* ---------- 04 · na taça: o quadro sobe conforme a página desce ---------- */
+  /* ---------- 04 · na taça: a janela percorre o vídeo inteiro ----------
+     O vídeo é mais alto que a tela. A rolagem da seção leva a janela do topo
+     do quadro até o pé da taça: no começo a garrafa, no fim a base e a mesa.
+     O passeio é calculado em pixels, a cada quadro, porque o quanto sobra
+     depende do tamanho da janela de quem está olhando.
+     A última faixa do vídeo fica de fora de propósito: é onde mora a marca
+     d'água do gerador. */
   (function () {
     var sec = document.getElementById('taca');
     var vid = sec && sec.querySelector('.taca__video video');
-    if (!sec || !vid || reduzido || !window.gsap) return;
-    gsap.fromTo(vid, { '--sobe': '-20%' }, {
-      '--sobe': '-23%', ease: 'none',
-      scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: true }
-    });
+    var palco = sec && sec.querySelector('.taca__palco');
+    if (!sec || !vid || !palco) return;
+
+    var MARCA = 0.06;                        /* a faixa do rodapé que não se mostra */
+    var andamento = { p: 0 };
+    var passeio = { cobre: false, anda: 0 };
+
+    /* Mede uma vez por tamanho de janela, não a cada quadro: ler altura obriga
+       o navegador a recalcular o desenho, e isso no meio da rolagem engasga. */
+    function mede() {
+      vid.classList.remove('cobre');         /* mede o vídeo no tamanho natural */
+      passeio.anda = vid.offsetHeight * (1 - MARCA) - palco.offsetHeight;
+      passeio.cobre = passeio.anda <= 0;
+      if (passeio.cobre) {
+        /* janela estreita e alta: o vídeo caberia inteiro e sobraria preto em
+           cima e embaixo, com a marca do rodapé à mostra. Ele cresce até
+           encher o palco e a marca sai por baixo. */
+        vid.classList.add('cobre');
+        vid.style.setProperty('--sobe', '0px');
+      }
+    }
+    function assenta(fracao) {
+      if (passeio.cobre) return;
+      vid.style.setProperty('--sobe', (-passeio.anda * fracao) + 'px');
+    }
+
     vid.playbackRate = 0.65;                 /* mais devagar: o vinho pede tempo */
     vid.addEventListener('loadeddata', function () { vid.playbackRate = 0.65; });
+    vid.addEventListener('loadedmetadata', function () { mede(); assenta(andamento.p); });
+
+    var espera;
+    window.addEventListener('resize', function () {
+      clearTimeout(espera);
+      espera = setTimeout(function () { mede(); assenta(andamento.p); }, 120);
+    });
+
+    mede();
+    /* sem movimento, ou sem gsap: assenta no fim, que é onde a taça aparece
+       inteira, com a base */
+    if (reduzido || !window.gsap) { andamento.p = 1; assenta(1); return; }
+
+    gsap.to(andamento, {
+      p: 1, ease: 'none',
+      scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: true },
+      onUpdate: function () { assenta(andamento.p); }
+    });
+    assenta(0);
   })();
 
   /* ---------- trilho de vinhos: arrastar, roda e teclado ---------- */  var trilho = document.getElementById('trilho');
