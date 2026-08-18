@@ -124,7 +124,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 /* ---------- 02 · GRÃO E IMAGEM ---------- */
 .grao{ position:relative; overflow:hidden; background:var(--tinta-alta); }
 .grao > img,
-.grao > image-slot{ width:100%; height:100%; object-fit:cover; transition:transform 1.2s ease-out; }
+.grao > img, .grao > image-slot{ width:100%; height:100%; object-fit:cover; transition:transform 1.2s ease-out; }
 .grao::after{
   content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
   background-image:var(--grao); background-size:220px 220px;
@@ -1231,7 +1231,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
        ========================================================== -->
   <section class="hero">
     <div class="hero__foto grao">
-      <image-slot id="vb-hero" shape="rect" fit="cover" src="./img/vinha-aerea.webp" placeholder="A foto de abertura"></image-slot>
+      <img id="vb-hero" src="./img/vinha-aerea.webp" alt="A foto de abertura" decoding="async">
       <img class="hero__aquarela" src="./img/vinha-aquarela.webp" alt="" aria-hidden="true" decoding="async">
     </div>
     <div class="hero__veu" aria-hidden="true"></div>
@@ -1263,7 +1263,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     </svg>
 
     <div class="sobre__capa grao">
-      <image-slot id="vb-sobre" shape="rect" fit="cover" src="./img/cesto-colheita.webp" placeholder="A colheita, fundo da seção"></image-slot>
+      <img id="vb-sobre" src="./img/cesto-colheita.webp" alt="A colheita, fundo da seção" loading="lazy" decoding="async">
     </div>
     <div class="sobre__veu" aria-hidden="true"></div>
 
@@ -1580,7 +1580,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     <div class="trilho" id="trilho" tabindex="0" role="group" aria-label="Rótulos">
       <article class="garrafa">
         <div class="garrafa__foto grao rev rev--foto">
-          <image-slot id="vb-garrafa-1" shape="rect" fit="cover" placeholder="Garrafa Tiê"></image-slot>
+          <img id="vb-garrafa-1" alt="Garrafa Tiê" decoding="async">
         </div>
         <a class="garrafa__ficha" href="#ficha-tie" id="abre-tie" aria-controls="ficha-tie" aria-expanded="false" aria-label="Tiê — ver ficha">
           <h3>Tiê</h3>
@@ -1591,7 +1591,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       </article>
       <article class="garrafa">
         <div class="garrafa__foto grao rev rev--foto">
-          <image-slot id="vb-garrafa-2" shape="rect" fit="cover" placeholder="Garrafa Tiê Preto"></image-slot>
+          <img id="vb-garrafa-2" alt="Garrafa Tiê Preto" decoding="async">
         </div>
         <a class="garrafa__ficha" href="#ficha-tiepreto" id="abre-tiepreto" aria-controls="ficha-tiepreto" aria-expanded="false" aria-label="Tiê Preto — ver ficha">
           <h3>Tiê Preto</h3>
@@ -1766,7 +1766,6 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     Website desenvolvido por <a class="rodape__autor" href="https://www.linkedin.com/in/gabriel-hossana-lopes-roque-18111b246/" target="_blank" rel="noopener noreferrer">Gabriel Hossana</a></p>
 </footer>
 
-<script src="./js/image-slot.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script>
