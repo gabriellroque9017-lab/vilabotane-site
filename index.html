@@ -1,0 +1,3092 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vila Botané — Microvinícola · Vassouras, Rio de Janeiro</title>
+<meta name="description" content="Vila Botané, microvinícola em Vassouras, Rio de Janeiro. Vinhos de produção pequena, terroir de serra, visitas com agendamento.">
+
+<script>document.documentElement.classList.add('js');</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap">
+
+<!-- FOTO REAL: a vinha vista de cima, capa da home -->
+<link rel="preload" as="image" href="./img/vinha-aquarela.webp" fetchpriority="high">
+<link rel="preload" as="image" href="./img/vinha-aerea.webp">
+<link rel="preload" as="image" href="./img/passaro-linha.png">
+<link rel="preload" as="image" href="./img/voo-video/ciclo2/f37.png">
+<link rel="prefetch" as="image" href="./img/passaro-aquarela.png">
+
+<style>
+/* ==========================================================
+   VILA BOTANÉ — herbário noturno
+   00 tokens · 01 base · 02 grão e imagem · 03 chrome · 04 home
+   05 terroir · 06 vinhos · 08 contato · 09 rodapé
+   ========================================================== */
+
+/* ---------- 00 · TOKENS ---------- */
+:root{
+  --tinta:       #12100E;
+  --tinta-alta:  #1B1815;
+  --mata:        #636B2F;      /* verde-oliva do vale */
+  --marfim:      #EDE7DA;
+  --marfim-mudo: #8F887C;
+  --liquen:      #8A9478;
+  --casca:       #3A322A;
+  --vinho:       #4A1F27;
+  --tie:         #C8483C;      /* vermelho do pássaro do rótulo — uso pontual */
+  --oliva-claro: #D8EC94;      /* cal esverdeada — a marca no rodapé */
+  --areia:       #F6E4B8;      /* areia clara — o que é clicável no oliva */
+
+  --serifa: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --grot:   "Jost", "Helvetica Neue", Arial, sans-serif;
+
+  --margem: 8vw;
+  --gutter: 24px;
+  --secao:  160px;
+
+  --ease: cubic-bezier(.65,0,.35,1);
+
+  --grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@media (max-width:760px){ :root{ --margem:24px; --secao:88px; } }
+
+/* ---------- 01 · BASE ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ background:var(--tinta); -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--tinta);
+  color:var(--marfim);
+  font-family:var(--serifa);
+  font-size:18px; line-height:1.8; font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  text-wrap:pretty;
+  overflow-x:hidden;
+}
+img,svg{ display:block; max-width:100%; height:auto; }
+h1,h2,h3,p,figure,dl,dd{ margin:0; }
+a{ color:var(--marfim); text-decoration:none; }
+a:hover{ color:var(--liquen); }
+:focus-visible{ outline:1px solid var(--liquen); outline-offset:4px; }
+::selection{ background:rgba(138,148,120,.28); }
+button{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; }
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* três níveis de texto, nada além */
+.mudo{ color:var(--marfim-mudo); }
+.liquen{ color:var(--liquen); }
+
+.rotulo{
+  font-family:var(--grot); font-weight:400;
+  font-size:11px; letter-spacing:.35em; text-indent:.35em;
+  text-transform:uppercase; color:var(--marfim-mudo);
+}
+.rotulo--marfim{ color:var(--marfim); }
+.num{ font-variant-numeric:tabular-nums; }
+
+.prosa{ max-width:66ch; }
+.prosa p + p{ margin-top:1.5em; }
+
+/* filete padrão */
+.filete{ height:1px; background:var(--casca); border:0; }
+
+/* link com sublinhado que cresce da esquerda */
+.elo{
+  position:relative; display:inline-block;
+  font-family:var(--grot); font-size:12px; letter-spacing:.32em; text-indent:.32em;
+  text-transform:uppercase; padding-bottom:8px;
+}
+.elo::after{
+  content:""; position:absolute; left:0; bottom:0; width:100%; height:1px;
+  background:currentColor; transform:scaleX(0); transform-origin:left;
+  transition:transform .6s var(--ease);
+}
+.elo:hover::after,.elo:focus-visible::after{ transform:scaleX(1); }
+
+/* pill de borda que preenche no hover */
+.pill{
+  display:inline-block; padding:15px 30px;
+  border:1px solid var(--casca); border-radius:2px;
+  font-family:var(--grot); font-size:11px; letter-spacing:.35em; text-indent:.35em;
+  text-transform:uppercase;
+  transition:background .6s var(--ease), border-color .6s var(--ease), color .6s var(--ease);
+}
+.pill:hover{ background:var(--tinta-alta); border-color:var(--liquen); color:var(--liquen); }
+
+/* ---------- 02 · GRÃO E IMAGEM ---------- */
+.grao{ position:relative; overflow:hidden; background:var(--tinta-alta); }
+.grao > img,
+.grao > image-slot{ width:100%; height:100%; object-fit:cover; transition:transform 1.2s ease-out; }
+.grao::after{
+  content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+  background-image:var(--grao); background-size:220px 220px;
+  opacity:.08; mix-blend-mode:overlay;   /* estático: nunca escala com a foto */
+}
+a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
+
+/* ---------- 03 · CHROME (marca, menu, cursor, preloader) ---------- */
+.chrome{
+  position:fixed; top:0; left:0; right:0; z-index:70;
+  display:flex; justify-content:space-between; align-items:flex-start; gap:20px;
+  padding:18px var(--margem);
+  mix-blend-mode:difference;            /* legível sobre foto e sobre tinta */
+  pointer-events:none;
+}
+.chrome > *{ pointer-events:auto; }
+.chrome__menu{
+  font-family:var(--grot); font-size:clamp(13px,1.1vw,16px); font-weight:500;
+  letter-spacing:.3em; text-indent:.3em;
+  text-transform:uppercase; color:#FFFFFF;
+  padding:9px 2px; border-bottom:1px solid transparent;
+  transition:border-color .45s var(--ease);
+}
+.chrome__menu:hover,
+.chrome__menu:focus-visible{ border-bottom-color:currentColor; }
+
+.veu{
+  position:fixed; inset:0; z-index:80;
+  background:var(--tinta);
+  display:grid; place-items:center;
+  clip-path:inset(0 0 100% 0);
+  transition:clip-path .9s var(--ease);
+  visibility:hidden;
+}
+.veu.is-aberto{ clip-path:inset(0 0 0 0); visibility:visible; }
+.veu__lista{ display:flex; flex-direction:column; gap:clamp(4px,1.2vh,14px); text-align:center; }
+.veu__lista a{
+  font-family:var(--serifa); font-weight:300;
+  font-size:clamp(2.6rem,7.6vw,5.4rem); line-height:1.16; letter-spacing:.01em;
+}
+.veu__pe .elo{
+  font-family:var(--grot); font-size:12px; font-weight:400;
+  letter-spacing:.18em; text-indent:.18em; text-transform:uppercase;
+}
+.veu__fechar{
+  position:absolute; top:26px; right:var(--margem);
+  font-family:var(--grot); font-size:11px; letter-spacing:.35em; text-indent:.35em;
+  text-transform:uppercase; color:var(--marfim-mudo);
+}
+.veu__pe{
+  position:absolute; left:var(--margem); right:var(--margem); bottom:30px;
+  display:flex; gap:28px; flex-wrap:wrap; justify-content:center;
+}
+
+.cursor{
+  position:fixed; top:0; left:0; z-index:95; pointer-events:none;
+  width:7px; height:7px; margin:-3.5px 0 0 -3.5px;
+  border:1px solid var(--marfim); border-radius:50%;
+  display:grid; place-items:center;
+  transition:width .45s var(--ease), height .45s var(--ease), margin .45s var(--ease), background .45s var(--ease);
+  opacity:0;
+}
+.cursor.is-vivo{ opacity:1; }
+.cursor.is-grande{ width:74px; height:74px; margin:-37px 0 0 -37px; background:rgba(18,16,14,.35); }
+.cursor__texto{
+  font-family:var(--grot); font-size:9px; letter-spacing:.3em; text-indent:.3em;
+  text-transform:uppercase; color:var(--marfim);
+  opacity:0; transition:opacity .3s var(--ease);
+}
+.cursor.is-grande .cursor__texto{ opacity:1; }
+
+.pre{
+  position:fixed; inset:0; z-index:99; background:var(--tinta);
+  display:grid; place-items:center;
+  transition:opacity .7s var(--ease), visibility .7s;
+}
+.pre.is-fim{ opacity:0; visibility:hidden; }
+.pre__cena{ position:relative; width:min(240px,52vw); }
+.pre__ave{ width:100%; clip-path:inset(0 0 100% 0); }
+.js .pre__ave{ animation:aveDesenha 1.2s var(--ease) .28s forwards; }
+@keyframes aveDesenha{ to{ clip-path:inset(0 0 0 0); } }
+.pre__ramo{ position:absolute; left:-8%; right:-8%; bottom:6%; }
+.pre__ramo path{ stroke-dasharray:1; stroke-dashoffset:1; }
+.js .pre__ramo path{ animation:ramoDesenha 1.2s var(--ease) forwards; }
+@keyframes ramoDesenha{ to{ stroke-dashoffset:0; } }
+
+/* ---------- 04 · HOME · HERO ---------- */
+.hero{ position:relative; height:100svh; min-height:520px; }
+/* a marca pertence à primeira dobra: rola junto e nunca cruza texto */
+.hero__marca{
+  position:absolute; top:26px; left:50%; transform:translateX(-50%); z-index:5;
+  filter:drop-shadow(0 1px 5px rgba(18,16,13,.55));
+}
+.hero__marca img{ width:100%; }
+.hero__marca .pilha{ position:relative; display:block; width:clamp(75px,9.35vw,139px); }   /* mesma medida do portal */
+.hero__marca .cor{ position:absolute; left:0; top:0; opacity:0; }
+.js .hero__marca .linha{ opacity:0; }        /* nada no poleiro até o pássaro pousar */
+/* depois de pousado, o mouse traz a cor de volta — !important porque a animação
+   de chegada deixa opacidade inline nas duas camadas */
+.hero__marca.is-pousado .linha,
+.hero__marca.is-pousado .cor{ transition:opacity .45s var(--ease) !important; }
+/* estado final do pouso: o traço branco fica — sem depender de opacidade
+   inline nem de transição concluir (aba em segundo plano, rolagem que corta o voo) */
+.hero__marca.is-pousado .linha{ opacity:1; }
+.hero__marca.is-pousado .cor{ opacity:0; }
+/* usada por um quadro no fim do pouso: assenta o valor final sem transição */
+.hero__marca.sem-fade .linha,
+.hero__marca.sem-fade .cor{ transition:none !important; }
+.hero__marca.is-pousado:hover .cor,
+.hero__marca.is-pousado:focus-visible .cor{ opacity:1 !important; }
+.hero__marca.is-pousado:hover .linha,
+.hero__marca.is-pousado:focus-visible .linha{ opacity:0 !important; }
+@media (max-width:760px){ .hero__marca .pilha{ width:clamp(61px,18.7vw,102px); } }
+
+/* o pássaro que chega voando: mesma folha de quadros do portal */
+.pouso{
+  position:fixed; left:0; top:0; z-index:6;
+  background:none;
+  opacity:0; pointer-events:none;
+  transform-origin:50% 50%;
+  will-change:transform,opacity,background-position;
+  filter:drop-shadow(0 3px 12px rgba(18,16,13,.45));
+}
+.hero__foto{ position:absolute; inset:0; }
+.hero__foto img{ width:100%; height:100%; object-fit:cover; }
+/* enquanto o pássaro voa, a capa é a aquarela; no instante em que ele pousa em
+   traço branco, a folha seca e vira a fotografia */
+.hero__aquarela{ position:absolute; inset:0; opacity:0; }
+.js .hero__aquarela{ opacity:1; }
+.js .hero__aquarela.is-fim{ opacity:0; transition:opacity .9s var(--ease); }
+.hero__aquarela.sem-fade{ transition:none !important; }
+/* o rastro líquido do cursor mora num canvas por cima da foto; o grão do
+   .grao (z-index 2) continua por cima dele, e nunca é distorcido */
+.hero__fluido{ position:absolute; inset:0; z-index:1; display:block; width:100%; height:100%; pointer-events:none; }
+.hero__veu{
+  position:absolute; inset:0; z-index:3; pointer-events:none;
+  background:linear-gradient(180deg, rgba(18,16,14,.62) 0%, rgba(18,16,14,.12) 34%, rgba(18,16,14,.72) 82%, var(--tinta) 100%);
+}
+.hero__base{
+  position:absolute; left:var(--margem); right:var(--margem);
+  bottom:max(clamp(74px,12vh,120px), calc(30px + clamp(28px,6vh,56px) + 32px)); z-index:4;
+  display:flex; flex-direction:column; align-items:center; gap:26px; text-align:center;
+}
+.hero h1{
+  font-weight:300; line-height:1.06;
+  font-size:clamp(44px,9.4vw,140px);
+  letter-spacing:.08em;
+}
+.js .hero h1{ animation:fechaEspaco 1.2s var(--ease) .35s forwards; }
+@keyframes fechaEspaco{ to{ letter-spacing:.02em; } }
+.hero__fio{
+  position:absolute; left:50%; bottom:30px; z-index:4;
+  width:1px; height:clamp(28px,6vh,56px); background:var(--marfim-mudo);
+  transform-origin:top center;
+}
+.js .hero__fio{ animation:pulsa 2.8s var(--ease) infinite; }
+@keyframes pulsa{ 0%,100%{ transform:scaleY(.55); opacity:.45 } 50%{ transform:scaleY(1); opacity:1 } }
+
+/* ==========================================================
+   04c · SCRUB — vídeo controlado por scroll
+   PARA MUDAR A VELOCIDADE: altere a altura da pista (.scrub).
+   Mais baixo = o vídeo corre mais rápido com menos descida.
+   ========================================================== */
+.scrub{ position:relative; height:150vh; background:var(--tinta); }
+.scrub__palco{
+  position:sticky; top:0; height:100svh; overflow:hidden;
+  background:var(--tinta);
+}
+
+/* camada 2 · gavinha de videira cortada pela borda direita */
+.scrub__vinha{
+  position:absolute; right:-13%; top:50%; transform:translateY(-50%);
+  width:min(860px,92vw); opacity:.06; pointer-events:none; z-index:1;
+}
+
+/* camada 3 · o vídeo (pintado num canvas para apagar a marca do canto).
+   16:9 como a tela: cobre a dobra inteira, sem faixas mortas. */
+.scrub__tela,
+.scrub__poster{
+  position:absolute; inset:0; z-index:2;
+  width:100%; height:100%;
+  object-fit:cover; object-position:50% 50%;
+  mix-blend-mode:screen;                      /* mix-blend-mode:lighten */
+  filter:contrast(1.15) brightness(.95);      /* fecha os pretos, evita halo */
+}
+.scrub__poster{ opacity:0; }
+/* o fio que separa a coluna de texto do resto da cena */
+.scrub__fio{
+  position:absolute; z-index:4; top:12svh; bottom:12svh;
+  left:37%; width:1px;
+  background:linear-gradient(180deg, transparent, var(--marfim-mudo) 18%, var(--marfim-mudo) 82%, transparent);
+  opacity:.28; pointer-events:none;
+}
+.scrub__fonte{ position:absolute; width:2px; height:2px; opacity:0; pointer-events:none; }
+
+/* camada 4 · grão estático: nunca acompanha o vídeo */
+.scrub__grao{
+  position:absolute; inset:0; z-index:3; pointer-events:none;
+  background-image:var(--grao); background-size:220px 220px;
+  opacity:.07; mix-blend-mode:overlay;
+}
+
+/* legibilidade: tinta saindo da esquerda até 45% */
+.scrub__veu{
+  position:absolute; inset:0; z-index:4; pointer-events:none;
+  background:linear-gradient(90deg, var(--tinta) 0%, rgba(18,16,14,.88) 16%, rgba(18,16,14,.5) 32%, rgba(18,16,14,0) 45%);
+}
+
+/* em tela estreita não cabe coluna dupla: a imagem volta ao centro e o texto
+   deita por cima dela, com a tinta subindo do pé */
+@media (max-width:900px){
+  .scrub__fio{ display:none; }
+  .scrub__tela,
+  .scrub__poster{
+    object-position:50% 42%;
+  }
+  .scrub__veu{
+    background:linear-gradient(180deg, rgba(18,16,14,.55) 0%, rgba(18,16,14,0) 26%, rgba(18,16,14,.72) 62%, var(--tinta) 92%);
+  }
+}
+
+/* camada 5 · os três atos */
+.scrub__atos{
+  position:absolute; left:var(--margem); top:50%; transform:translateY(-50%);
+  z-index:5; width:min(34ch,42vw);
+}
+.ato{ position:absolute; left:0; top:50%; transform:translateY(-50%); width:100%; }
+.ato > *{
+  clip-path:inset(100% 0 0 0);
+  transition:clip-path .6s var(--ease);
+}
+.ato.is-dentro > *{ clip-path:inset(0 0 0 0); }
+.ato.is-fora > *{ clip-path:inset(0 0 100% 0); }
+.ato > :nth-child(2){ transition-delay:.04s; }   /* stagger de 40ms */
+.ato > :nth-child(3){ transition-delay:.08s; }
+.ato h2{
+  font-weight:300; font-size:clamp(30px,4.4vw,60px); line-height:1.04;
+  margin-top:18px;
+}
+.ato__apoio{ margin-top:20px; color:var(--marfim-mudo); max-width:34ch; }
+.ato__tie{ color:var(--tie); }
+/* a fala do outro lado do quadro: os dois vinhos e a mesma origem.
+   Do lado direito o véu da seção já acabou, então a coluna leva o seu próprio. */
+.scrub__atos--dir{ left:auto; right:var(--margem); width:min(34ch,34vw); text-align:right; }
+.ato__eco{ color:var(--marfim); line-height:2; text-shadow:0 1px 3px rgba(12,10,8,.7); white-space:nowrap; }
+.ato__eco{ font-size:clamp(14px,1.5vw,18px); }
+.scrub__atos--dir .ato::before{
+  content:''; position:absolute; z-index:-1;
+  left:-16%; right:-46%; top:-46px; bottom:-46px;
+  background:radial-gradient(72% 62% at 60% 50%, rgba(18,16,14,.5) 0%, rgba(18,16,14,.32) 52%, rgba(18,16,14,0) 100%);
+  pointer-events:none;
+}
+.ato__eco{ color:var(--marfim); line-height:2; text-shadow:0 1px 4px rgba(12,10,8,.85), 0 0 18px rgba(12,10,8,.6); }
+
+/* indicador de progresso — também indica o carregamento */
+.medidor{
+  position:absolute; left:var(--margem); bottom:34px; z-index:6;
+  display:flex; align-items:center; gap:16px;
+}
+.medidor__pista{ width:120px; height:1px; background:var(--casca); overflow:hidden; }
+.medidor__barra{ display:block; width:100%; height:1px; background:var(--liquen);
+  transform:scaleX(0); transform-origin:left center; }
+
+@media (max-width:768px){
+  .scrub{ height:130vh; }
+  .scrub__atos{ left:24px; right:24px; width:auto; }
+  .scrub__atos--dir{ text-align:left; }
+  .ato__eco{ white-space:normal; }
+  .scrub__atos--dir .ato::before{ left:-24px; right:-24px; }
+  .ato h2{ font-size:clamp(26px,7vw,38px); }
+  .scrub__veu{ background:linear-gradient(90deg, var(--tinta) 0%, rgba(18,16,14,.82) 34%, rgba(18,16,14,.62) 100%); }
+  .medidor{ left:24px; }
+}
+
+/* fallback: sem JS, sem GSAP ou reduced-motion — nada preso, texto em fluxo */
+.scrub.is-estatico{ height:auto; }
+.scrub.is-estatico .scrub__palco{ position:static; height:auto; padding:var(--secao) 0; }
+.scrub.is-estatico .scrub__tela{ display:none; }
+.scrub.is-estatico .scrub__poster{ opacity:1; position:absolute; }
+.scrub.is-estatico .scrub__atos{
+  position:relative; top:auto; transform:none; left:auto;
+  margin:0 var(--margem); width:auto; max-width:34ch;
+}
+.scrub.is-estatico .ato{ position:relative; top:auto; transform:none; }
+.scrub.is-estatico .scrub__atos--dir{ right:auto; width:auto; max-width:34ch; text-align:left; }
+.scrub.is-estatico .scrub__atos--dir .ato::before{ display:none; }
+.scrub.is-estatico .ato + .ato{ margin-top:clamp(40px,6vw,72px); }
+.scrub.is-estatico .ato > *{ clip-path:none; }
+.scrub.is-estatico .medidor{ display:none; }
+
+/* ---------- 04b · SOBRE ---------- */
+.sobre{
+  position:relative; padding:var(--secao) var(--margem); overflow:hidden;
+  min-height:100svh; display:grid; align-content:center;
+}
+/* a colheita como fundo da seção; o texto vive por cima dela */
+.sobre__capa{ position:absolute; inset:0; z-index:0; }
+.sobre__veu{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(18,16,14,.5) 0%, rgba(18,16,14,.06) 20%, rgba(18,16,14,.06) 80%, rgba(18,16,14,.5) 100%);
+}
+/* a foto fica na cor: a leitura vem da sombra do texto, não de véu escuro */
+.sobre__folha{
+  position:absolute; right:-14%; top:50%; transform:translateY(-50%);
+  width:min(760px,86vw); opacity:.06; pointer-events:none;
+}
+.sobre__miolo{
+  position:relative; z-index:2; max-width:640px; margin:0 auto;
+  text-shadow:0 1px 3px rgba(12,10,8,.62), 0 2px 22px rgba(12,10,8,.75);
+}
+.sobre__rotulo{
+  margin:0 0 clamp(34px,4.6vw,60px); font-size:14px; text-align:center;
+  color:var(--marfim);
+}
+.sobre__texto{ display:block; }
+.sobre__capitular{
+  font-family:var(--serifa); font-weight:300;
+  font-size:clamp(58px,5.6vw,78px); line-height:.66; color:var(--liquen);
+}
+.sobre__manifesto{
+  margin:0;
+  font-size:clamp(18px,1.6vw,21px); line-height:1.78; font-weight:300;
+  text-align:justify; hyphens:auto;
+  text-wrap:pretty;
+}
+/* entrada do bloco: cada linha desliza da esquerda, uma atrás da outra */
+.sobre__linha{ display:block; }
+.sobre__linha--justa{ text-align-last:justify; }
+.js .sobre__slide{
+  opacity:0; transform:translate3d(-46px,0,0); will-change:transform,opacity;
+  transition:transform .95s cubic-bezier(.22,.61,.36,1), opacity .8s cubic-bezier(.22,.61,.36,1);
+}
+.js .sobre__slide.is-dentro{ opacity:1; transform:translate3d(0,0,0); }
+@media (prefers-reduced-motion:reduce){
+  .js .sobre__slide{ opacity:1 !important; transform:none !important; }
+}
+
+/* divisor de gavinha */
+.gavinha{ width:100%; height:auto; color:var(--casca); }
+
+/* ---------- 04c · MATA ATLÂNTICA ----------
+   Seção de fundo aberto: enquanto não houver vídeo, o fundo é a tinta
+   da página com véu e grão. Ao apontar o <source>, o vídeo entra atrás. */
+.mata{
+  position:relative; isolation:isolate; overflow:hidden;
+  padding:clamp(96px,13vw,190px) var(--margem);
+  /* verde de mata fechada: o vão entre o Tiê e a Mata deixa de ser tinta seca */
+  background:linear-gradient(180deg, #3D421D 0%, #636B2F 42%, #3D421D 100%);
+  display:grid; align-content:center;
+  min-height:100svh;
+}
+.mata::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:clamp(70px,10vw,160px);
+  z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, var(--tinta) 0%, rgba(16,26,18,0) 100%);
+}
+.mata__fundo{ position:absolute; inset:0; z-index:0; pointer-events:none; }
+/* o vídeo preenche a seção inteira — em tela cheia ele amplia e ocupa tudo */
+.mata__video{
+  position:absolute; inset:0;
+  width:100%; height:100%; max-width:none;
+  object-fit:cover; object-position:center;
+}
+.mata__veu{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, rgba(11,20,13,.84) 0%, rgba(13,23,15,.70) 60%, rgba(13,23,15,.60) 100%),
+    linear-gradient(0deg, rgba(9,17,11,.72) 0%, rgba(9,17,11,0) 46%);
+}
+.mata__grao{
+  position:absolute; inset:0;
+  background-image:var(--grao); background-size:220px 220px;
+  opacity:.16; mix-blend-mode:overlay;
+}
+.mata__miolo{ position:relative; z-index:2; max-width:none; }
+.mata__rotulo{ margin:0 0 clamp(30px,3.8vw,52px); text-align:center; text-indent:0; }
+.mata__titulo{
+  font-weight:300; font-size:clamp(32px,4.4vw,60px); line-height:1.04;
+  letter-spacing:.01em; margin:0 auto clamp(30px,3.8vw,52px); max-width:18ch;
+  text-align:center;
+}
+.mata__colunas{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(30px,4.4vw,72px); align-items:center;
+}
+.mata__prosa p{
+  margin:0; font-weight:300;
+  font-size:clamp(16px,1.35vw,19px); line-height:1.8; text-align:justify;
+  hyphens:auto;
+}
+.mata__prosa p + p{ margin-top:1.45em; }
+.mata__prosa p.mata__coda{
+  margin:2em 0 0; padding-left:clamp(18px,2.2vw,30px);
+  border-left:1px solid var(--casca);
+  font-style:italic; font-weight:300; color:var(--liquen);
+  font-size:clamp(24px,2.6vw,38px); line-height:1.34;
+  text-align:left; hyphens:none;
+}
+@media (max-width:900px){
+  .mata__colunas{ grid-template-columns:1fr; }
+}
+@media (max-width:760px){
+  .mata__veu{ background:linear-gradient(0deg, rgba(9,17,11,.9) 0%, rgba(9,17,11,.64) 100%); }
+  .mata__prosa p{ text-align:left; }
+}
+
+/* ---------- 05 · TERROIR ---------- */
+.terroir{ position:relative; isolation:isolate; padding:var(--secao) 0 0; }
+.terroir > *:not(.terroir__fundo){ position:relative; z-index:1; }
+.terroir__fundo{ position:absolute; inset:0; z-index:0; overflow:clip; pointer-events:none; }
+.terroir__fundo__cena{ position:sticky; top:0; height:100svh; }
+.terroir__fundo img{ width:100%; height:100%; object-fit:cover; display:block; }
+.terroir__fundo__veu{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, rgba(18,16,14,.34) 0%, rgba(18,16,14,.66) 52%, rgba(18,16,14,.84) 100%),
+    linear-gradient(180deg, rgba(18,16,14,.9) 0%, rgba(18,16,14,.24) 24%, rgba(18,16,14,.24) 72%, rgba(18,16,14,.92) 100%);
+}
+.terroir__abertura{
+  position:absolute; left:0; right:0; top:52%; transform:translateY(-50%);
+  display:flex; flex-direction:column; align-items:center;
+  gap:clamp(14px,1.6vw,24px);
+}
+.terroir__inscricao,
+.terroir__assinatura{
+  margin:0; text-align:center;
+  font-family:"Cinzel", var(--serifa); font-weight:400;
+  color:#F3EFE6; text-shadow:0 2px 26px rgba(18,16,14,.6);
+}
+.terroir__inscricao{
+  font-size:clamp(18px,2.4vw,38px); line-height:1.15;
+  letter-spacing:.06em; text-indent:.06em;
+}
+.terroir__assinatura{
+  position:absolute; left:0; right:0;
+  bottom:clamp(22px,5vh,54px);
+  font-size:clamp(9px,.9vw,14px); letter-spacing:.1em; text-indent:.1em;
+  text-transform:uppercase; color:rgba(243,239,230,.86);
+}
+@media (max-width:860px){
+  .terroir__abertura{ top:34%; }
+}
+.terroir__rotulo{
+  margin:0; text-align:center; font-family:var(--grot); font-weight:400;
+  font-size:11px; letter-spacing:.35em; text-indent:.35em;
+  text-transform:uppercase; color:var(--marfim-mudo);
+}
+.terroir__abertura,
+.terroir__assinatura{ transition:opacity .9s var(--ease); }
+.terroir.is-lendo .terroir__abertura,
+.terroir.is-lendo .terroir__assinatura{ opacity:0; }
+.terroir__abre{ height:100svh; }
+
+.terroir__cabeca{ padding:clamp(66px,9vw,120px) var(--margem) clamp(40px,6vw,72px); }
+.terroir__cabeca h2,
+.secao__titulo{
+  font-weight:300; font-size:clamp(32px,5.2vw,68px); line-height:1.04; margin-top:18px;
+}
+.terroir__palco{
+  display:grid; grid-template-columns:1fr 1fr; gap:var(--gutter);
+  padding:0 var(--margem);
+}
+.terroir__fixo{
+  position:sticky; top:0; height:100svh;
+  display:grid; align-content:center;
+}
+.terroir__quadro{ position:relative; aspect-ratio:760/500; max-height:74vh; }
+.terroir__quadro > *{ position:absolute; inset:0; opacity:0; transition:opacity .9s var(--ease); }
+.terroir__quadro > .is-atual{ opacity:1; }
+.terroir__capitulos{ display:flex; flex-direction:column; }
+.cap{
+  min-height:100svh; display:flex; flex-direction:column; justify-content:center;
+  padding:88px 0 88px clamp(20px,4vw,64px);
+}
+.cap__num{ margin-bottom:20px; }
+.cap h3{ font-weight:300; font-size:clamp(26px,3.2vw,42px); line-height:1.12; margin-bottom:22px; }
+
+/* ILUSTRAÇÃO DO CLIMA · o vale em traço: serras, nuvens, mata, rio e povoado.
+   Nada se move sozinho — o desenho inteiro se faz com a rolagem do capítulo. */
+.clima-cena{ position:absolute; inset:0; }
+/* a gravura se revela da esquerda para a direita, como se estivesse sendo traçada */
+.clima-traco{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+  clip-path:inset(0 100% 0 0);
+}
+/* o diagrama do terroir é largo demais para caber legível: a tela caminha por ele */
+.panorama-cena{ overflow:hidden; }
+#expressao-traco{ clip-path:inset(0 0 0 100%); }
+.traco-panorama{
+  position:absolute; left:0; top:50%; transform:translate3d(0,-50%,0);
+  height:100%; width:auto; max-width:none; will-change:transform;
+}
+.clima-traco{
+  will-change:clip-path;
+}
+@media (max-width:860px){
+  .terroir__palco{ grid-template-columns:1fr; }
+  .terroir__fixo{ position:sticky; top:0; height:56svh; padding-top:14px; }
+  .terroir__quadro{ aspect-ratio:760/500; max-height:50svh; }
+  .cap{ min-height:auto; padding:56px 0; }
+}
+
+/* corte geológico em linha */
+.corte-cena{ position:absolute; inset:0; }
+.corte{ width:100%; height:100%; }
+.corte path,.corte line{ stroke:var(--marfim); stroke-width:1; fill:none; vector-effect:non-scaling-stroke; }
+.corte .camada{ stroke-dasharray:1; stroke-dashoffset:1; }
+
+/* rótulos fora do espaço escalado do SVG: tamanho real, sempre 11px */
+.legenda{ position:absolute; transform:translateY(-50%); white-space:nowrap; pointer-events:none; }
+.legenda--dir{ left:auto; right:3%; text-align:right; text-indent:0; letter-spacing:.28em; }
+.legenda--tique{ left:54%; right:auto; text-align:left; text-indent:0; letter-spacing:.28em; }
+.legenda--marfim{ color:var(--marfim); }
+
+/* ficha técnica */
+.ficha{ margin-top:clamp(56px,8vw,110px); padding:0 var(--margem) 0; }
+.ficha__grade{ border-top:1px solid var(--casca); }
+.ficha__linha{
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr);
+  align-items:stretch; gap:clamp(14px,3vw,44px);
+  padding:0;
+  border-bottom:1px solid var(--casca);
+}
+.ficha__valor{ font-size:clamp(21px,2.4vw,32px); font-weight:300; line-height:1.15; text-align:center; }
+/* o respiro vive nas células, não na linha: assim o filete corre de ponta a ponta */
+.ficha__linha > *{ display:flex; align-items:flex-end; padding-block:clamp(20px,2.6vw,34px); }
+.ficha__linha > * + *{ border-left:1px solid var(--casca); padding-left:clamp(14px,3vw,44px); }
+.ficha__valor small{ font-size:.5em; letter-spacing:.1em; margin-left:.32em; color:var(--marfim-mudo); }
+.ficha__nota{ text-align:right; justify-content:flex-end; }
+.ficha__linha > .ficha__valor{ justify-content:center; }
+@media (max-width:760px){
+  .ficha__linha{ grid-template-columns:1fr; gap:8px; }
+  .ficha__linha > *{ display:block; padding-block:0; }
+  .ficha__linha{ padding:clamp(20px,2.6vw,34px) 0; }
+  .ficha__linha > * + *{ border-left:0; padding-left:0; }
+  .ficha__valor{ text-align:left; }
+  .ficha__nota{ text-align:left; }
+}
+
+/* ---------- 06b · NA TAÇA ---------- */
+.taca{ position:relative; height:172vh; background:#000; }
+.taca__palco{ position:sticky; top:0; height:100svh; overflow:hidden; display:grid; align-items:end; background:#000; }
+/* o quadro vai de margem a margem — o pixel da esquerda rente ao P de Portal,
+   o da direita rente ao U de Menu. Nessa largura ele fica mais alto que a tela,
+   então a janela se fecha em volta da taça e o chão fica de fora. */
+.taca__video{ position:absolute; inset:0; z-index:0; overflow:hidden; background:#000; }
+/* o quadro encosta na borda direita da p\u00e1gina e mant\u00e9m a largura: o pixel da
+   direita tangencia o limite, o da esquerda cai depois do P de Portal. */
+.taca__video video{
+  position:absolute; top:0; left:calc(var(--margem) * 2);
+  display:block; width:calc(100% - var(--margem) * 2); height:auto; max-width:none;
+  transform:translateY(var(--sobe,-20%));
+  will-change:transform;
+}
+@media (max-width:760px){
+  .taca__video video{ left:0; width:100%; }
+}
+.taca__grao{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background-image:var(--grao); background-size:220px 220px;
+  opacity:.08; mix-blend-mode:overlay;
+}
+.taca__veu{
+  position:absolute; inset:0; z-index:2; pointer-events:none;
+  background:linear-gradient(180deg, #000 0%, rgba(0,0,0,.12) 22%, rgba(0,0,0,.16) 56%, rgba(0,0,0,.74) 88%, #000 100%);
+}
+.taca__video video{ filter:brightness(1.28) contrast(1.04); }
+.taca__texto{
+  position:relative; z-index:3;
+  padding:0 var(--margem) clamp(56px,10vh,120px);
+}
+.taca__titulo{
+  font-family:var(--serifa); font-weight:300;
+  font-size:clamp(30px,4.4vw,60px); line-height:1.04;
+  max-width:26ch; color:var(--marfim);
+}
+.taca__linha{
+  margin-top:clamp(18px,2.4vw,28px); max-width:44ch;
+  color:var(--marfim-mudo);
+}
+.taca__linha strong{ font-weight:400; color:var(--marfim); }
+
+
+/* a seção dos rótulos vive no verde da mata, sem desenho por trás */
+/* o escuro do terroir avança pela folga de topo e só vira creme na altura do título 03 */
+.vinhos{
+  position:relative; padding:var(--secao) 0; color:var(--tinta); overflow:hidden;
+  background:linear-gradient(var(--tinta) 0, var(--tinta) calc(var(--secao) - 120px),
+                             #F2EDE0 var(--secao), #F2EDE0 100%);
+}
+.vinhos__cabeca,
+.vinhos .trilho,
+.vinhos .trilho__nota{ position:relative; z-index:1; }
+/* a ficha do vinho abre por cima da página, como uma aba sobre o vinhedo */
+.ficha-vinho{
+  position:fixed; inset:0; z-index:96;
+  display:grid; place-items:center; padding:clamp(14px,3vw,44px);
+  background:rgba(10,9,7,.86); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+}
+.ficha-vinho[hidden]{ display:none; }
+.ficha-vinho__caixa{
+  position:relative; width:min(1280px,100%); max-height:90svh; overflow:auto;
+  background:#484426; border:1px solid rgba(246,228,184,.2);
+  padding:0;
+  display:grid; grid-template-columns:minmax(0,.36fr) minmax(0,.64fr);
+  gap:0; align-items:stretch;
+}
+/* a arte da referência: o mapa antigo, as uvas e os bichos vindo pela direita */
+.ficha-vinho__caixa::before{
+  content:''; position:absolute; z-index:0; top:0; right:0; bottom:0; width:46%;
+  background:url("./img/ficha-arte-dir.webp") right center / cover no-repeat;
+  pointer-events:none;
+}
+.ficha-vinho__caixa::after{
+  content:''; position:absolute; z-index:0; inset:0; pointer-events:none;
+  background:linear-gradient(96deg, #484426 40%, rgba(72,68,38,.9) 58%, rgba(72,68,38,.28) 78%, rgba(72,68,38,.1) 100%);
+}
+.ficha-vinho__x{
+  position:absolute; top:10px; right:12px; z-index:3;
+  width:44px; height:44px; display:grid; place-items:center;
+  font-family:var(--grot); font-size:20px; font-weight:300; line-height:1;
+  color:rgba(246,228,184,.72); background:none; border:0; cursor:pointer;
+  transition:color .35s var(--ease), transform .35s var(--ease);
+}
+.ficha-vinho__x:hover{ color:var(--areia); transform:rotate(90deg); }
+.ficha-vinho__foto{ position:relative; z-index:1; width:100%; min-width:0; min-height:clamp(280px,52svh,620px); background:none; }
+.ficha-vinho__prosa{
+  position:relative; z-index:1;
+  display:grid; gap:clamp(14px,1.7vw,22px); justify-items:start; align-content:center;
+  padding:clamp(30px,3.6vw,54px) clamp(24px,3vw,44px) clamp(30px,3.6vw,54px) clamp(20px,2.6vw,44px);
+}
+.ficha-vinho__prosa h3{
+  font-weight:300; font-size:clamp(27px,3.1vw,44px); line-height:1.06;
+  color:var(--areia); text-wrap:balance;
+}
+.ficha-vinho__linha{ max-width:40ch; font-size:clamp(15px,1.25vw,18px); line-height:1.95; color:rgba(246,240,224,.95); }
+.ficha-vinho__dados{
+  display:grid; grid-template-columns:repeat(3,minmax(0,auto)); gap:12px clamp(22px,3.4vw,54px);
+  padding:clamp(16px,2vw,26px) 0; width:100%;
+  border-top:1px solid rgba(246,228,184,.34); border-bottom:1px solid rgba(246,228,184,.34);
+}
+.ficha-vinho__dados dt{ margin-bottom:10px; color:rgba(246,228,184,.82); }
+.ficha-vinho__dados dd{ font-size:clamp(15px,1.25vw,19px); color:rgba(246,240,224,.95); }
+.ficha-vinho__compra{ display:flex; align-items:center; gap:clamp(20px,3.4vw,52px); flex-wrap:wrap; }
+.ficha-vinho__preco{
+  font-size:clamp(27px,2.9vw,40px); font-weight:300; line-height:1;
+  display:flex; align-items:baseline; gap:14px; color:var(--areia);
+}
+.ficha-vinho__preco .rotulo{ color:rgba(246,228,184,.78); }
+.ficha-vinho__botao{
+  font-family:var(--grot); font-size:11px; letter-spacing:.3em; text-indent:.3em;
+  text-transform:uppercase; color:var(--areia); text-decoration:none;
+  border:1px solid rgba(246,228,184,.55); padding:15px 30px 14px;
+  transition:background .4s var(--ease), border-color .4s var(--ease);
+}
+.ficha-vinho__botao:hover{ background:rgba(246,228,184,.14); border-color:var(--areia); color:var(--areia); }
+/* a ficha do Tiê é a arte inteira: só o ✕ e o RESERVAR desenhados respondem */
+.ficha-vinho--chapa{ padding:clamp(10px,2vw,30px); }
+.ficha-vinho__chapa{
+  position:relative;
+  width:min(1440px, 100%, calc(92svh * 2848 / 1500));
+  aspect-ratio:2848 / 1500;
+  container-type:inline-size;
+}
+/* a ficha do Tiê: a arte da uva à esquerda, o texto no lado claro */
+.ficha-vinho--uva .ficha-vinho__chapa{
+  width:min(1440px, 100%, calc(92svh * 1280 / 720));
+  aspect-ratio:1280 / 720;
+  container-type:inline-size;
+}
+.ficha-vinho--uva .ficha-vinho__chapa img{ border-color:rgba(18,16,14,.12); }
+/* a mesma cena em aquarela: entra quando o mouse encosta na fotografia */
+.ficha-vinho--uva .uva-aquarela{
+  position:absolute; inset:0; z-index:1;
+  opacity:0; transition:opacity .8s var(--ease); pointer-events:none;
+}
+.ficha-vinho--uva .uva-zona{
+  position:absolute; z-index:2; left:0; top:0; bottom:0; width:49.5%;
+}
+.ficha-vinho--uva .uva-zona:hover + .uva-aquarela{ opacity:1; }
+@media (prefers-reduced-motion:reduce){
+  .ficha-vinho--uva .uva-aquarela{ transition:none; }
+}
+.ficha-vinho__prosa-uva{
+  position:absolute; z-index:2; left:57.5%; right:5%; top:4%; bottom:4%;
+  display:grid; grid-template-columns:minmax(0,100%); grid-auto-rows:min-content;
+  align-content:center; gap:1.9cqw; justify-items:start; margin:0;
+}
+.ficha-vinho__prosa-uva .rotulo{
+  font-size:.86cqw; letter-spacing:.3em; text-indent:.3em; color:rgba(18,16,14,.6);
+}
+.ficha-vinho__prosa-uva h3{
+  font-family:var(--serifa); font-weight:300; font-size:2.62cqw; line-height:1.04; white-space:nowrap;
+  color:var(--tinta); margin:0;
+}
+.ficha-vinho__prosa-uva p{
+  margin:0; font-family:var(--serifa); font-weight:300;
+  font-size:1.7cqw; line-height:1.6; color:rgba(18,16,14,.78);
+}
+.ficha-vinho__perfil{
+  margin:0; font-family:var(--grot); font-size:1.15cqw;
+  letter-spacing:.2em; text-indent:.2em; text-transform:uppercase; color:var(--mata);
+}
+.ficha-vinho__forte{ color:var(--tinta); }
+.ficha-vinho--denso .ficha-vinho__prosa-uva{ gap:1.05cqw; }
+.ficha-vinho--denso .ficha-vinho__prosa-uva h3{ font-size:2.34cqw; }
+.ficha-vinho--denso .ficha-vinho__prosa-uva p{ font-size:1.32cqw; line-height:1.52; }
+.ficha-vinho--denso .ficha-vinho__perfil{ font-size:1.05cqw; }
+.ficha-vinho--denso .ficha-vinho__nota{ font-size:1.14cqw; line-height:1.5; }
+.ficha-vinho--denso .ficha-vinho__tecnica{ gap:.7cqw 3cqw; }
+.ficha-vinho--denso .ficha-vinho__tecnica dt{ font-size:.96cqw; margin-bottom:.35cqw; }
+.ficha-vinho--denso .ficha-vinho__tecnica dd{ font-size:1.58cqw; }
+.ficha-vinho--denso .ficha-vinho__compra-uva .preco{ font-size:2.9cqw; }
+.ficha-vinho--denso .ficha-vinho__botao-uva{ font-size:.95cqw; padding:1.15cqw 2.4cqw; margin-top:.4cqw; }
+.ficha-vinho__nota{
+  margin:0; width:100%; font-family:var(--serifa); font-weight:300;
+  font-size:1.44cqw; line-height:1.58; color:rgba(18,16,14,.66);
+  text-wrap:pretty; hyphens:none;
+}
+.ficha-vinho__fio-uva{ width:100%; height:1px; background:rgba(18,16,14,.18); }
+.ficha-vinho__tecnica{
+  display:grid; grid-template-columns:repeat(3,minmax(0,auto)); gap:1cqw 3cqw;
+  margin:0; width:100%;
+}
+.ficha-vinho__tecnica dt{
+  font-family:var(--grot); font-size:1.12cqw; letter-spacing:.2em; text-indent:.2em;
+  text-transform:uppercase; color:rgba(18,16,14,.62); margin-bottom:.55cqw;
+}
+.ficha-vinho__tecnica dd{
+  margin:0; font-family:var(--serifa); font-weight:300; font-size:1.98cqw;
+  line-height:1.14; color:var(--tinta); font-feature-settings:"onum" 1;
+}
+@media (max-width:760px){
+  .ficha-vinho__tecnica{ grid-template-columns:1fr 1fr; gap:14px 22px; }
+  .ficha-vinho__tecnica dt{ font-size:10px; margin-bottom:5px; }
+  .ficha-vinho__tecnica dd{ font-size:17px; }
+}
+.ficha-vinho__compra-uva{ justify-self:center; display:flex; align-items:baseline; gap:1.6cqw; flex-wrap:wrap; }
+.ficha-vinho__compra-uva .preco{
+  font-family:var(--serifa); font-weight:300; font-size:3.6cqw; line-height:1; color:var(--tinta);
+  font-feature-settings:"onum" 1;
+}
+.ficha-vinho__compra-uva .rotulo{ color:rgba(18,16,14,.6); font-size:1.05cqw; }
+.ficha-vinho__botao-uva{
+  justify-self:center; margin-top:.8cqw;
+  font-family:var(--grot); font-size:1.1cqw; letter-spacing:.3em; text-indent:.3em;
+  text-transform:uppercase; color:var(--tinta); text-decoration:none;
+  padding:1.35cqw 2.8cqw; border:1px solid rgba(18,16,14,.4);
+  transition:background .4s var(--ease), border-color .4s var(--ease), color .4s var(--ease);
+}
+.ficha-vinho__botao-uva:hover,
+.ficha-vinho__botao-uva:focus-visible{ background:var(--mata); border-color:var(--mata); color:var(--marfim); }
+/* nesta arte o ✕ vive sobre a fotografia, à esquerda */
+.ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x{
+  left:14px; right:auto; top:14px; transform:none; width:44px; aspect-ratio:1;
+  color:rgba(246,240,224,.82); background:none;
+}
+.ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x:hover,
+.ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x:focus-visible{
+  color:var(--marfim); background:none; transform:rotate(90deg);
+}
+@media (max-width:760px){
+  .ficha-vinho__prosa-uva{ position:static; width:auto; transform:none; padding:22px 18px 26px; gap:14px; }
+  .ficha-vinho--uva .ficha-vinho__chapa{ aspect-ratio:auto; }
+  .ficha-vinho__prosa-uva h3{ font-size:22px; white-space:normal; }
+  .ficha-vinho__prosa-uva p{ font-size:17px; }
+  .ficha-vinho__perfil{ font-size:12px; }
+  .ficha-vinho__nota{ font-size:15px; }
+  .ficha-vinho__botao-uva,
+  .ficha-vinho__compra-uva{ justify-self:center; }
+  .ficha-vinho__prosa-uva .rotulo,
+  .ficha-vinho__botao-uva{ font-size:11px; }
+  .ficha-vinho__compra-uva .preco{ font-size:28px; }
+  .ficha-vinho__botao-uva{ padding:13px 24px; }
+}
+
+/* o preço é texto sobre a arte, para poder mudar */
+.ficha-vinho__preco-arte{
+  position:absolute; z-index:2; margin:0; pointer-events:none;
+  font-family:var(--serifa); font-weight:300; line-height:1;
+  font-feature-settings:"onum" 1; transform:translateY(-50%);
+}
+.ficha-vinho__preco-arte--tie{ left:34.55%; top:72.0%; font-size:3.83cqw; color:rgb(220,198,169); }
+.ficha-vinho--preto .ficha-vinho__chapa{
+  width:min(1440px, 100%, calc(92svh * 2422 / 1760));
+  aspect-ratio:2422 / 1760;
+  container-type:inline-size;
+}
+/* toda a ficha do Tiê Preto é texto sobre a fotografia */
+.ficha-vinho__scrim{
+  position:absolute; z-index:1; left:24%; top:0; bottom:0; width:36%; pointer-events:none;
+  background:linear-gradient(90deg, rgba(18,16,14,0) 0%, rgba(18,16,14,.62) 20%, rgba(18,16,14,.66) 76%, rgba(18,16,14,0) 100%);
+}
+.ficha-vinho__prosa-preto{
+  position:absolute; z-index:2; left:29.5%; top:50%; transform:translateY(-50%); width:26.5%;
+  display:grid; gap:1.5cqw; justify-items:start; margin:0;
+}
+.ficha-vinho__prosa-preto .rotulo{ font-size:.86cqw; letter-spacing:.3em; text-indent:.3em; color:rgba(246,228,184,.86); }
+.ficha-vinho__prosa-preto h3{
+  font-family:var(--serifa); font-weight:300; font-size:3.1cqw; line-height:1.06;
+  color:var(--areia); margin:0;
+}
+.ficha-vinho__prosa-preto p{
+  margin:0; font-family:var(--serifa); font-weight:300;
+  font-size:1.18cqw; line-height:1.62; color:rgba(240,232,216,.94);
+}
+.ficha-vinho__fio-preto{ width:100%; height:1px; background:rgba(246,228,184,.34); }
+.ficha-vinho__compra-preto{ display:flex; align-items:baseline; gap:1.6cqw; flex-wrap:wrap; }
+.ficha-vinho__compra-preto .preco{
+  font-family:var(--serifa); font-weight:300; font-size:3cqw; line-height:1; color:var(--areia);
+  font-feature-settings:"onum" 1;
+}
+.ficha-vinho__botao-preto{
+  display:inline-block; margin-top:.4cqw;
+  font-family:var(--grot); font-size:.86cqw; letter-spacing:.3em; text-indent:.3em;
+  text-transform:uppercase; color:var(--areia); text-decoration:none;
+  border:1px solid rgba(246,228,184,.55); padding:1.15cqw 2.4cqw 1.05cqw;
+  transition:background .4s var(--ease), border-color .4s var(--ease);
+}
+.ficha-vinho__botao-preto:hover,
+.ficha-vinho__botao-preto:focus-visible{ background:rgba(246,228,184,.14); border-color:var(--areia); color:var(--areia); }
+.ficha-vinho__chapa img{
+  display:block; width:100%; height:100%; object-fit:contain;
+  border:1px solid rgba(246,228,184,.18);
+}
+/* alvos sobre o desenho: mesmas frações medidas na arte */
+.ficha-vinho__chapa .ficha-vinho__x{
+  top:5.43%; right:auto; left:96.54%; transform:translate(-50%,-50%);
+  width:clamp(40px,4.4%,60px); height:auto; aspect-ratio:1; color:transparent;
+  border-radius:999px; transition:background .35s var(--ease), transform .35s var(--ease);
+}
+.ficha-vinho__chapa .ficha-vinho__x:hover,
+.ficha-vinho__chapa .ficha-vinho__x:focus-visible{
+  color:transparent; background:rgba(246,228,184,.14);
+  transform:translate(-50%,-50%) scale(1.08);
+}
+.ficha-vinho__reserva{
+  position:absolute; z-index:3;
+  left:61.76%; top:68.67%; width:12.71%; height:8.53%;
+  border:1px solid transparent; background:transparent;
+  transition:background .4s var(--ease), border-color .4s var(--ease);
+}
+.ficha-vinho__reserva:hover,
+.ficha-vinho__reserva:focus-visible{ background:rgba(246,228,184,.14); border-color:rgba(246,228,184,.75); }
+/* esta arte não traz ✕ desenhado: o botão continua visível */
+.ficha-vinho--preto .ficha-vinho__chapa .ficha-vinho__x{
+  left:14px; right:auto; top:14px; transform:none; width:44px; aspect-ratio:1;
+  color:rgba(246,228,184,.72); background:none;
+}
+.ficha-vinho--preto .ficha-vinho__chapa .ficha-vinho__x:hover,
+.ficha-vinho--preto .ficha-vinho__chapa .ficha-vinho__x:focus-visible{
+  color:var(--areia); background:none; transform:rotate(90deg);
+}
+@media (max-width:860px){
+  .ficha-vinho__caixa{ grid-template-columns:1fr; }
+  .ficha-vinho__caixa::before{ width:100%; opacity:.5; }
+  .ficha-vinho__caixa::after{ background:linear-gradient(180deg, rgba(72,68,38,.7) 0%, rgba(72,68,38,.94) 46%); }
+  .ficha-vinho__foto{ min-height:clamp(240px,42svh,420px); }
+  .ficha-vinho__dados{ grid-template-columns:1fr 1fr; }
+}
+.vinhos__nota{
+  margin:clamp(30px,4vw,54px) var(--margem) 0;
+  max-width:62ch;
+  font-size:clamp(15px,1.35vw,19px); line-height:1.8; color:rgba(18,16,14,.66);
+  text-wrap:pretty;
+}
+.vinhos__cabeca{ padding:0 var(--margem) clamp(36px,5vw,64px); display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; }
+/* dois rótulos, dois cantos: um encostado na margem esquerda, o outro na direita */
+/* dois cartões grandes, lado a lado: foto cheia e a ficha logo abaixo */
+.trilho{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start;
+  gap:clamp(18px,2.6vw,44px);
+  max-width:1180px; margin-inline:auto;
+  padding:0 var(--margem) 10px;
+}
+.garrafa{ width:100%; }
+.garrafa__foto{ aspect-ratio:4/5; margin-bottom:0; }
+.garrafa__ficha{
+  display:grid; gap:10px; justify-items:center; text-align:center;
+  padding:clamp(14px,1.6vw,22px) clamp(18px,2vw,30px) clamp(20px,2.4vw,30px);
+  background:#FFFFFF; border:1px solid rgba(18,16,14,.1); border-top:0; color:var(--tinta);
+  cursor:pointer; transition:background .55s var(--ease), border-color .55s var(--ease), color .55s var(--ease);
+}
+.garrafa__ficha:hover,
+.garrafa__ficha:focus-visible{ background:var(--mata); border-color:rgba(237,231,218,.2); color:var(--marfim); }
+.garrafa__reservar{
+  margin-top:14px; font-family:var(--grot); font-size:11px;
+  letter-spacing:.35em; text-indent:.35em; text-transform:uppercase;
+  color:inherit; transition:color .55s var(--ease);
+}
+.garrafa__ficha:hover .garrafa__reservar,
+.garrafa__ficha:focus-visible .garrafa__reservar{ color:var(--areia); }
+.garrafa h3{ font-weight:400; font-size:clamp(24px,2.4vw,32px); line-height:1.16; color:inherit; }
+.garrafa__desc{
+  color:rgba(18,16,14,.66); font-size:16px; line-height:1.62; max-width:34ch;
+  transition:color .55s var(--ease);
+}
+.garrafa__ficha:hover .garrafa__desc,
+.garrafa__ficha:focus-visible .garrafa__desc{ color:rgba(237,231,218,.8); }
+.garrafa__risco{
+  display:block; width:62px; height:1px; margin-top:6px; background:rgba(18,16,14,.35);
+  transition:width .55s var(--ease), background .55s var(--ease);
+}
+.garrafa__ficha:hover .garrafa__risco,
+.garrafa__ficha:focus-visible .garrafa__risco{ width:104px; background:var(--areia); }
+@media (max-width:760px){ .trilho{ grid-template-columns:1fr; gap:clamp(26px,6vw,44px); } }
+.trilho__nota{ padding:26px var(--margem) 0; }
+
+/* ---------- 08 · CONTATO ---------- */
+.contato{ padding:var(--secao) var(--margem); background:var(--tinta-alta); }
+.contato__grade{ display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(36px,6vw,96px); align-items:start; }
+@media (max-width:860px){ .contato__grade{ grid-template-columns:1fr; } }
+.mapa-cena{ position:relative; margin-top:40px; }
+.mapa{ width:100%; height:auto; }
+.mapa path,.mapa line,.mapa circle,.mapa polyline{ fill:none; stroke:var(--marfim); stroke-width:1; vector-effect:non-scaling-stroke; }
+.mapa .agua{ stroke:var(--liquen); }
+.mapa .sitio{ fill:var(--marfim); }
+
+.campo{ position:relative; padding-top:26px; }
+.campo label{
+  position:absolute; top:0; left:0;
+  font-family:var(--grot); font-size:11px; letter-spacing:.35em; text-indent:.35em;
+  text-transform:uppercase; color:var(--marfim-mudo);
+  transition:color .4s var(--ease);
+}
+.campo input,.campo textarea{
+  width:100%; background:none; border:0; border-bottom:1px solid var(--casca);
+  color:var(--marfim); font-family:var(--serifa); font-size:18px; line-height:1.7;
+  padding:8px 0 12px; border-radius:0;
+  transition:border-color .5s var(--ease);
+}
+.campo textarea{ resize:vertical; min-height:96px; }
+.campo input:focus,.campo textarea:focus{ outline:0; border-bottom-color:var(--liquen); }
+.campo:focus-within label{ color:var(--liquen); }
+.formulario{ display:flex; flex-direction:column; gap:30px; }
+
+/* ==========================================================
+   A SOLEIRA · a passagem para a casa irmã
+   Última sala antes de sair. A parede de 1px entre a marca e o texto
+   é literalmente o muro entre as duas casas; atravessá-lo colore a marca.
+   ========================================================== */
+.soleira{ border-top:1px solid rgba(237,231,218,.35); background:var(--mata); }
+.soleira__vao{
+  display:grid; grid-template-columns:auto 1px 1fr;
+  align-items:center; gap:clamp(26px,5vw,78px);
+  padding:clamp(54px,8vw,108px) var(--margem);
+  color:var(--marfim);
+}
+.soleira__marca{ position:relative; display:block; width:clamp(112px,13vw,196px); flex:0 0 auto; }
+.soleira__marca img{ position:absolute; left:0; top:0; width:100%; }
+.soleira__marca img:first-child{ position:relative; }
+.soleira__marca .traco{ opacity:.85; transition:opacity .55s var(--ease); }
+.soleira__marca .cor{ opacity:0; transition:opacity .55s var(--ease); }
+.soleira__vao:hover .traco,
+.soleira__vao:focus-visible .traco{ opacity:0; }
+.soleira__vao:hover .cor,
+.soleira__vao:focus-visible .cor{ opacity:1; }
+.soleira__vao:hover .elo::after,
+.soleira__vao:focus-visible .elo::after{ transform:scaleX(1); }
+.soleira__vao:hover .elo,
+.soleira__vao:focus-visible .elo{ color:var(--areia); }
+.soleira__parede{ display:block; width:1px; height:clamp(78px,11vw,148px); background:rgba(237,231,218,.35); }
+.soleira__texto{ display:flex; flex-direction:column; align-items:flex-start; gap:14px; }
+.soleira__nome{ font-family:var(--serifa); font-weight:300; font-size:clamp(28px,4.4vw,56px); line-height:1.04; }
+/* no oliva o texto secundário sobe de tom para continuar legível */
+.soleira__linha,
+.soleira .rotulo{ color:var(--marfim); }
+.soleira__linha{ max-width:46ch; }
+@media (max-width:760px){
+  .soleira__vao{ grid-template-columns:1fr; gap:24px; }
+  .soleira__parede{ width:clamp(56px,30vw,120px); height:1px; }
+}
+
+/* ---------- 09 · RODAPÉ ---------- */
+.rodape{ padding:clamp(56px,7vw,96px) var(--margem) 40px; background:#F2EDE0; color:var(--tinta); }
+.rodape__serra{ width:100%; color:rgba(18,16,14,.34); margin-bottom:clamp(40px,6vw,72px); }
+/* a serra se desenha ao descer e, pronta, responde ao cursor como corda */
+.rodape__cena{ position:relative; touch-action:none; }
+.js .serra__traco{ stroke-dasharray:1; stroke-dashoffset:1; }
+.rodape__cena.is-viva{ cursor:crosshair; }
+.rodape__cena.is-viva .serra__traco{ stroke-dasharray:none; stroke-dashoffset:0; }
+.rodape__grade{ display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); column-gap:clamp(34px,4vw,64px); align-items:start; }
+.rodape__meio{ justify-self:center; }
+.rodape__redes{ justify-self:center; }
+.rodape__rede{ display:flex; align-items:center; gap:12px; }
+@media (max-width:860px){ .rodape__grade{ grid-template-columns:1fr; } }
+/* o filete cresce mesmo quando o mouse está só no glifo do Instagram */
+/* o rótulo das redes usa a mesma caixa de linha do texto ao lado (18px × 1.8) */
+.rodape__rede .elo{ line-height:32.4px; }
+/* no creme a marca vai ao oliva e os elos à tinta para lerem clicáveis */
+.rodape .rotulo.rodape__marca{ color:#4A5122; text-align:center; }
+.rodape .elo{ color:#5C7E7D; line-height:32.4px; }
+.rodape .elo::after{ background:#5C7E7D; }
+.rodape__rede{ color:#636B2F; }
+.rodape a:hover .elo::after,
+.rodape a:focus-visible .elo::after{ transform:scaleX(1); }
+/* no creme o texto desce de tom, como na seção 03 */
+.rodape .mudo{ color:var(--tinta); }
+.rodape .rotulo{ color:rgba(18,16,14,.88); }
+/* no branco dos rótulos ele desce */
+.vinhos .mudo{ color:rgba(18,16,14,.7); }
+.vinhos .rotulo{ color:rgba(18,16,14,.58); }
+.rodape__lema,
+.rodape__endereco{ white-space:nowrap; }
+/* o lema cabe na sua faixa sem alargar a coluna; a caixa de linha fica fixa
+   para que suas três linhas continuem alinhadas com endereço e redes */
+.rodape__lema{ font-size:clamp(13px,1.45vw,18px); line-height:32.4px; }
+@media (max-width:860px){
+  .rodape__lema,
+  .rodape__endereco{ white-space:normal; }
+}
+/* crédito de desenvolvimento: assinatura discreta, um fio abaixo do pé */
+.rodape__credito{
+  margin-top:18px; text-align:center;
+  font-family:var(--grot); font-size:11px; letter-spacing:.16em; line-height:1.7;
+  color:rgba(18,16,14,.72); text-wrap:pretty;
+}
+.rodape__autor{
+  color:inherit; text-decoration:none;
+  border-bottom:1px solid transparent;
+  transition:color .45s var(--ease), border-color .45s var(--ease);
+}
+.rodape__autor:hover,
+.rodape__autor:focus-visible{ color:rgba(18,16,14,.86); border-bottom-color:rgba(18,16,14,.42); }
+
+.rodape__pe{
+  display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  margin-top:clamp(44px,6vw,80px); padding-top:22px; border-top:1px solid rgba(18,16,14,.2);
+}
+
+/* ---------- REVEALS ---------- */
+.rev{ transition:clip-path .6s var(--ease), opacity .6s var(--ease); }
+.js .rev{ clip-path:inset(100% 0 0 0); opacity:.001; }
+.js .rev--foto{ transition-duration:.9s; }
+.js .rev.is-vis{ clip-path:inset(0 0 0 0); opacity:1; }
+.js .rev.sem-transicao{ transition:none; }
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ animation:none !important; transition:none !important; }
+  .js .rev,.rev{ clip-path:none; opacity:1; }
+  .pre{ display:none; }
+  .cursor{ display:none; }
+  .pouso{ display:none; }
+  .js .hero__marca .linha{ opacity:1; }
+  .js .pre__ave{ clip-path:none; }
+  .js .hero h1{ letter-spacing:.02em; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ==========================================================
+     PRELOADER · o ramo se desenha e o pássaro aparece por cima
+     (ILUSTRAÇÃO REAL: substituir o PNG por SVG traçado quando houver)
+     ========================================================== -->
+<div class="pre" id="pre" aria-hidden="true">
+  <div class="pre__cena">
+    <img class="pre__ave" src="./img/passaro-linha.png" alt="" width="660" height="939" decoding="async">
+    <svg class="pre__ramo" viewBox="0 0 300 40" fill="none" aria-hidden="true">
+      <path d="M2 30 C 60 30, 96 22, 150 21 C 206 20, 250 26, 298 24"
+            stroke="#EDE7DA" stroke-width="1" pathLength="1" vector-effect="non-scaling-stroke"/>
+      <path d="M104 22 C 112 12, 124 9, 132 12" stroke="#EDE7DA" stroke-width="1" pathLength="1" vector-effect="non-scaling-stroke"/>
+      <path d="M196 22 C 204 32, 216 35, 226 32" stroke="#EDE7DA" stroke-width="1" pathLength="1" vector-effect="non-scaling-stroke"/>
+    </svg>
+  </div>
+</div>
+
+
+<!-- cursor contextual -->
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__texto" id="cursor-texto"></span></div>
+
+
+<!-- ==========================================================
+     CHROME · marca e MENU (nada mais na primeira dobra)
+     ========================================================== -->
+<div class="chrome">
+  <a class="chrome__menu" href="./portal.html" aria-label="Voltar ao portal">Portal</a>
+  <button class="chrome__menu" id="abrir-menu" aria-expanded="false" aria-controls="veu">Menu</button>
+</div>
+
+<nav class="veu" id="veu" aria-label="Navegação" aria-hidden="true">
+  <button class="veu__fechar" id="fechar-menu">Fechar</button>
+  <div class="veu__lista">
+    <a href="#topo">Homepage</a>
+    <a href="#sobre">Sobre nós</a>
+    <a href="#terroir">O Terroir</a>
+    <a href="#vinhos">Nossos vinhos</a>
+  </div>
+  <div class="veu__pe">
+    <a class="elo mudo" href="https://gabriellroque9017-lab.github.io/casadolago-site/">Bistrô Casa do Lago</a>
+    <a class="elo mudo" href="./portal.html">Portal</a>
+    <a class="elo mudo" href="https://www.instagram.com/vilabotane/" target="_blank" rel="noopener">Instagram</a>
+    <a class="elo mudo" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;text&amp;type=phone_number&amp;app_absent=0&amp;utm_source=ig" target="_blank" rel="noopener">WhatsApp</a>
+  </div>
+</nav>
+
+
+<main id="topo">
+
+  <!-- ==========================================================
+       00 · HERO
+       FOTO REAL: a vinha e o telhado vistos de cima, em Ponte Funda
+       ========================================================== -->
+  <section class="hero">
+    <div class="hero__foto grao">
+      <image-slot id="vb-hero" shape="rect" fit="cover" src="./img/vinha-aerea.webp" placeholder="A foto de abertura"></image-slot>
+      <img class="hero__aquarela" src="./img/vinha-aquarela.webp" alt="" aria-hidden="true" decoding="async">
+    </div>
+    <div class="hero__veu" aria-hidden="true"></div>
+
+    <a class="hero__marca" href="#topo" aria-label="Vila Botané — início">
+      <span class="pilha">
+        <img class="linha" src="./img/passaro-linha.png" alt="Vila Botané" width="660" height="939" decoding="async">
+        <img class="cor" src="./img/passaro-aquarela.png" alt="" width="660" height="939" decoding="async" aria-hidden="true">
+      </span>
+    </a>
+    <span class="pouso" id="pouso" aria-hidden="true"></span>
+  </section>
+
+
+  <!-- ==========================================================
+       01 · SOBRE NÓS
+       ILUSTRAÇÃO: folha de videira, watermark a 6%
+       ========================================================== -->
+  <section class="sobre" id="sobre">
+    <svg class="sobre__folha" viewBox="0 0 420 420" fill="none" stroke="#EDE7DA" stroke-width="1" aria-hidden="true">
+      <path d="M210 396 C 208 320, 206 268, 206 214"/>
+      <path d="M206 214 C 150 214, 96 236, 62 206 C 30 178, 46 140, 30 108 C 66 112, 96 88, 122 92 C 108 62, 118 34, 146 24 C 160 54, 190 60, 206 92 C 222 60, 252 54, 266 24 C 294 34, 304 62, 290 92 C 316 88, 346 112, 382 108 C 366 140, 382 178, 350 206 C 316 236, 262 214, 206 214 Z"/>
+      <path d="M206 214 C 186 186, 150 168, 118 160"/>
+      <path d="M206 214 C 226 186, 262 168, 294 160"/>
+      <path d="M206 214 C 202 176, 206 140, 206 106"/>
+      <path d="M206 214 C 176 208, 140 202, 96 200"/>
+      <path d="M206 214 C 236 208, 272 202, 316 200"/>
+      <path d="M210 300 C 244 296, 262 276, 258 254"/>
+    </svg>
+
+    <div class="sobre__capa grao">
+      <image-slot id="vb-sobre" shape="rect" fit="cover" src="./img/cesto-colheita.webp" placeholder="A colheita, fundo da seção"></image-slot>
+    </div>
+    <div class="sobre__veu" aria-hidden="true"></div>
+
+    <div class="sobre__miolo">
+      <p class="rotulo sobre__rotulo sobre__slide">Sobre nós</p>
+      <div class="sobre__texto">
+        <p class="sobre__manifesto"><span class="sobre__capitular" aria-hidden="true">E</span><span class="sr-only">E</span>m meio à Mata Atlântica do Sul Fluminense,
+          a Vila Botané é uma microvinícola dedicada à produção de pequenos lotes. Cultivamos uma
+          relação atenta com a terra, observando o relevo, o clima e os ciclos da natureza para criar
+          vinhos que expressem, com autenticidade, as características singulares de onde nascem.
+          Mais do que seguir padrões, buscamos preservar a verdade de cada safra, com vinhos que
+          tenham identidade, personalidade e origem.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- divisor: gavinha atravessando a largura -->
+  <div style="padding:0 var(--margem)">
+    <svg class="gavinha" viewBox="0 0 1200 30" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true" preserveAspectRatio="none">
+      <path d="M0 15 H 470" vector-effect="non-scaling-stroke"/>
+      <path d="M470 15 C 494 15, 500 3, 516 5 C 532 7, 534 21, 552 22 C 570 23, 578 9, 596 9 C 614 9, 622 23, 640 22 C 658 21, 660 7, 676 5 C 692 3, 698 15, 722 15" vector-effect="non-scaling-stroke"/>
+      <path d="M722 15 H 1200" vector-effect="non-scaling-stroke"/>
+    </svg>
+  </div>
+
+
+  <!-- ==========================================================
+       01 · SCRUB · a garrafa, o serviço, o rótulo
+       O vídeo não toca: o scroll é que anda nele.
+       ========================================================== -->
+  <section class="scrub" id="scrub" aria-labelledby="scrub-titulo">
+    <h2 class="sr-only" id="scrub-titulo">A garrafa, o serviço e o rótulo</h2>
+
+    <div class="scrub__palco">
+      <!-- gavinha de videira, cortada pela direita -->
+      <svg class="scrub__vinha" viewBox="0 0 520 620" fill="none" stroke="#EDE7DA" stroke-width="1" aria-hidden="true">
+        <path d="M18 610 C 96 540, 120 470, 116 402 C 112 332, 64 292, 78 232 C 92 174, 168 166, 206 122 C 240 82, 236 34, 268 6"/>
+        <path d="M116 402 C 168 396, 214 372, 238 330 C 262 288, 254 244, 288 216"/>
+        <path d="M78 232 C 40 214, 22 178, 30 140 C 38 104, 74 92, 92 62"/>
+        <path d="M206 122 C 258 128, 306 116, 336 84"/>
+        <path d="M238 330 C 296 340, 344 330, 380 300 C 414 272, 418 232, 452 214"/>
+        <path d="M288 216 C 322 190, 366 186, 396 202"/>
+        <path d="M336 84 C 360 60, 396 54, 424 66 C 452 78, 458 108, 442 130 C 426 152, 392 152, 376 134"/>
+        <path d="M452 214 C 476 190, 512 186, 520 196"/>
+        <path d="M380 300 C 404 330, 444 340, 470 328"/>
+        <path d="M116 402 C 108 448, 118 494, 146 524"/>
+      </svg>
+
+      <!-- TROCAR AQUI o caminho dos vídeos.
+           Quando houver o encode mobile (854x480), descomente o primeiro <source>:
+           ele precisa vir ANTES do desktop para o navegador escolher primeiro. -->
+      <video class="scrub__fonte" id="scrub-video" muted loop autoplay playsinline preload="auto"
+             poster="./img/tie-poster.jpg" tabindex="-1" aria-hidden="true">
+        <source src="./img/tie-scrub.mp4" type="video/mp4">
+      </video>
+
+      <canvas class="scrub__tela" id="scrub-tela" width="1916" height="1080" aria-hidden="true"></canvas>
+      <img class="scrub__poster" src="./img/tie-poster.jpg" alt="Garrafa do Tiê no vinhedo, ao sol da tarde" width="1916" height="1080" decoding="async">
+
+      <div class="scrub__grao" aria-hidden="true"></div>
+      <span class="scrub__fio" aria-hidden="true"></span>
+      <div class="scrub__veu" aria-hidden="true"></div>
+
+      <!-- PARA AJUSTAR OS LIMITES DE CADA BLOCO: data-de / data-ate (0 a 1) -->
+      <div class="scrub__atos">
+        <article class="ato" data-de=".88" data-ate="1">
+          <p class="rotulo ato__tie">Tiê &amp; Tiê-preto</p>
+          <h2>Autênticos, únicos e solares.</h2>
+          <p class="ato__apoio">Cabernet Franc 2025, em duas maturações: ânfora de grès e carvalho francês.</p>
+        </article>
+      </div>
+
+      <div class="scrub__atos scrub__atos--dir">
+        <article class="ato" data-de=".88" data-ate="1">
+          <p class="ato__eco">Nasceram da mesma safra.<br>Da mesma uva.<br>Da mesma filosofia.</p>
+        </article>
+      </div>
+
+      <div class="medidor" aria-hidden="true">
+        <span class="medidor__pista"><span class="medidor__barra" id="scrub-barra"></span></span>
+        <span class="rotulo num" id="scrub-conta">Carregando</span>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- ==========================================================
+       01b · MATA ATLÂNTICA
+       FUNDO: vídeo em tela cheia — ver TROCAR AQUI abaixo
+       ========================================================== -->
+  <section class="mata" id="mata" aria-labelledby="mata-titulo">
+    <div class="mata__fundo" aria-hidden="true">
+      <!-- TROCAR AQUI o vídeo de fundo (mp4 H.264, 1920x1080, sem áudio).
+           Descomente o <source> e aponte para o arquivo; e ponha o still
+           correspondente em poster="" para o primeiro quadro. -->
+      <video class="mata__video" id="mata-video" muted loop autoplay playsinline
+             preload="auto" tabindex="-1" aria-hidden="true">
+        <source src="./img/mata-atlantica.mp4" type="video/mp4">
+      </video>
+      <span class="mata__veu"></span>
+      <span class="mata__grao"></span>
+    </div>
+
+    <div class="mata__miolo">
+      <p class="rotulo mata__rotulo rev" id="mata-titulo">Mata Atlântica</p>
+      <div class="mata__colunas">
+        <div class="mata__prosa rev">
+          <p>No Vale do Café, a Mata Atlântica permanece entre montanhas, vales e antigas fazendas
+            que atravessam a paisagem fluminense. Em Vassouras e seu entorno, seus remanescentes
+            formam um mosaico de florestas, nascentes e áreas de regeneração que ajudam a conservar
+            a biodiversidade e a riqueza natural deste território.</p>
+          <p>É nesse cenário que estão nossas videiras: cercadas pelo verde da mata, sob um clima
+            marcado pela umidade, pelas manhãs de neblina e pelas noites mais frescas que acompanham
+            o relevo da região.</p>
+          <p>Para a Vila Botané, a mata não é apenas parte da paisagem. Ela pertence ao nosso terroir,
+            um elemento vivo que ajuda a definir o lugar onde nossas uvas amadurecem e onde cada
+            safra encontra sua própria expressão.</p>
+          <p class="mata__coda">Entre a mata e as videiras, nasce a identidade de um território.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ==========================================================
+       02 · O TERROIR — scrollytelling
+       ========================================================== -->
+  <section class="terroir" id="terroir">
+    <div class="terroir__fundo">
+      <div class="terroir__fundo__cena">
+        <img src="img/animacaonova/cava-garrafa.jpeg" alt="">
+        <span class="terroir__fundo__veu"></span>
+        <div class="terroir__abertura">
+          <p class="terroir__rotulo">O terroir</p>
+          <p class="terroir__inscricao">Expressão da nossa terra</p>
+        </div>
+      </div>
+    </div>
+    <div class="terroir__abre" aria-hidden="true"></div>
+
+    <div class="terroir__palco" id="palco">
+      <!-- coluna fixa -->
+      <div class="terroir__fixo">
+        <div class="terroir__quadro" id="quadro">
+          <!-- ILUSTRAÇÃO: o território — o diagrama do terroir, revelado da esquerda para a direita -->
+          <div class="clima-cena panorama-cena is-atual" data-quadro="0">
+            <img class="traco-panorama" id="territorio-traco" src="./img/territorio-traco.webp"
+                 alt="Diagrama do terroir em traço: cristais e minerais, água, o Vale do Café, o vinhedo, o clima e, à direita, a garrafa e a taça"
+                 width="1900" height="668" fetchpriority="low" decoding="async">
+          </div>
+
+          <!-- ILUSTRAÇÃO: o solo em bloco — topo, face de corte e lateral -->
+          <div class="corte-cena" data-quadro="1">
+            <svg class="corte" viewBox="0 0 760 500" aria-label="Bloco de solo em projeção: face superior com a superfície, face frontal com o corte desenhado e face lateral apenas com a separação das camadas">
+              <path class="camada" pathLength="1" d="M30 150 H300 V420 H30 Z"/>
+              <path class="camada" pathLength="1" d="M30 150 L110 95 H380 L300 150"/>
+              <path class="camada" pathLength="1" d="M380 95 V365 L300 420"/>
+
+              <path class="camada" pathLength="1" d="M74 131 C 140 127, 214 129, 301 131"/>
+              <path class="camada" pathLength="1" d="M107 116 C 168 112, 244 114, 309 116"/>
+              <path class="camada" pathLength="1" d="M141 103 C 196 100, 244 101, 287 103"/>
+              <path class="camada" pathLength="1" d="M128 138 L 138 134 L 147 139 L 136 142 Z"/>
+              <path class="camada" pathLength="1" d="M226 122 L 236 118 L 245 123 L 234 126 Z"/>
+
+              <g transform="translate(30 150) scale(0.7258 0.7714) translate(-14 -120)">
+                <path class="camada" pathLength="1" d="M14 186 C 90 168, 148 178, 210 170 C 272 162, 330 172, 386 164"/>
+                <path class="camada" pathLength="1" d="M14 268 C 92 250, 146 262, 208 254 C 270 246, 332 256, 386 248"/>
+                <path class="camada" pathLength="1" d="M14 366 C 90 350, 150 360, 210 352 C 270 344, 330 354, 386 346"/>
+                <path class="camada" pathLength="1" d="M62 132 C 66 152, 60 168, 66 184"/>
+                <path class="camada" pathLength="1" d="M148 128 C 152 150, 146 166, 152 182"/>
+                <path class="camada" pathLength="1" d="M300 126 C 304 148, 298 164, 304 180"/>
+                <path class="camada" pathLength="1" d="M96 200 C 104 224, 92 246, 100 264"/>
+                <path class="camada" pathLength="1" d="M244 196 C 252 220, 240 242, 248 260"/>
+                <path class="camada" pathLength="1" d="M200 120 C 200 158, 196 210, 204 268 C 210 320, 198 350, 202 400 C 205 430, 196 448, 200 466"/>
+                <path class="camada" pathLength="1" d="M202 300 C 176 316, 160 330, 150 352"/>
+                <path class="camada" pathLength="1" d="M202 336 C 228 350, 244 364, 252 386"/>
+              </g>
+
+              <path class="camada" pathLength="1" d="M300 201 L380 146"/>
+              <path class="camada" pathLength="1" d="M300 264 L380 209"/>
+              <path class="camada" pathLength="1" d="M300 340 L380 285"/>
+
+              <path class="camada" pathLength="1" d="M382 120 H 398"/>
+              <path class="camada" pathLength="1" d="M382 177 H 398"/>
+              <path class="camada" pathLength="1" d="M382 247 H 398"/>
+              <path class="camada" pathLength="1" d="M382 325 H 398"/>
+            </svg>
+            <span class="rotulo legenda legenda--tique" style="top:24%">Manta orgânica</span>
+            <span class="rotulo legenda legenda--tique" style="top:35.4%">Argissolo</span>
+            <span class="rotulo legenda legenda--tique" style="top:49.4%">Saprolito</span>
+            <span class="rotulo legenda legenda--tique" style="top:65%">Gnaisse</span>
+            <span class="rotulo legenda" style="left:6%;top:11%">Superfície</span>
+          </div>
+
+          <!-- ILUSTRAÇÃO: o clima — o vale da Mata Atlântica desenhado em traço, conforme a página desce -->
+          <div class="clima-cena" data-quadro="2">
+            <img class="clima-traco" id="clima-traco" src="./img/clima-mata-traco.webp"
+                 alt="Gravura do vale da Mata Atlântica: serras, o rio, o povoado e a floresta em primeiro plano"
+                 width="1600" height="1247" loading="lazy" decoding="async">
+          </div>
+
+          <!-- ILUSTRAÇÃO: a expressão — o vale em gravura, revelado da direita para a esquerda até a taça -->
+          <div class="clima-cena" data-quadro="3">
+            <img class="clima-traco" id="expressao-traco" src="./img/expressao-traco.webp"
+                 alt="Gravura do Vale do Café: a colheita entre as fileiras, a serra ao fundo, o sol nascendo e, à esquerda, a garrafa e a taça"
+                 width="1800" height="1012" loading="lazy" decoding="async">
+          </div>
+        </div>
+      </div>
+
+      <!-- coluna que rola -->
+      <div class="terroir__capitulos">
+        <article class="cap" data-cap="0">
+          <p class="rotulo cap__num num rev">01</p>
+          <h3 class="rev">O território</h3>
+          <div class="prosa mudo rev">
+            <p>Terroir é o encontro entre solo, relevo, altitude, clima e a relação humana com a
+              terra, um conjunto de fatores que influencia a forma como a uva amadurece e se expressa.</p>
+            <p>Na Vila Botané, esse conjunto ganha características próprias entre as colinas do Vale
+              do Café, onde diferentes formações de solo e o relevo das encostas criam condições
+              particulares para o cultivo. É a partir da observação dessas nuances, safra após safra,
+              que buscamos compreender seu potencial e traduzi-lo em vinho.</p>
+            <p>Por isso, não partimos de uma fórmula pronta. Partimos do que a terra oferece, para
+              que cada vinho revele, com autenticidade, a sua origem.</p>
+          </div>
+        </article>
+
+        <article class="cap" data-cap="1">
+          <p class="rotulo cap__num num rev">02</p>
+          <h3 class="rev">O solo</h3>
+          <div class="prosa mudo rev">
+            <p>Entre as colinas do Vale do Café, a Vila Botané encontra um território de
+              características singulares. Em Vassouras, predominam os Argissolos
+              Vermelho-Amarelos, acompanhados por Latossolos e, nas áreas de relevo mais
+              acidentado, Cambissolos. São solos formados sobre um território de morros e
+              encostas, marcado pela diversidade geológica e pela presença histórica da
+              Mata Atlântica.</p>
+          </div>
+        </article>
+
+        <article class="cap" data-cap="2">
+          <p class="rotulo cap__num num rev">03</p>
+          <h3 class="rev">O clima</h3>
+          <div class="prosa mudo rev">
+            <p>Nosso clima se caracteriza por relevo ondulado e montanhoso somado ao clima
+              tropical de altitude, com verões quentes e chuvosos com período de inverno mais seco.
+              A combinação entre solo, altitude, relevo, disponibilidade hídrica e luminosidade
+              influencia o desenvolvimento das videiras e a maturação das uvas e, portanto,
+              a expressão de cada safra.</p>
+          </div>
+        </article>
+
+        <article class="cap" data-cap="3">
+          <p class="rotulo cap__num num rev">04</p>
+          <h3 class="rev">A expressão</h3>
+          <div class="prosa mudo rev">
+            <p>Tudo isso se traduz num vinho solar, vivo e frutado, concebido para dialogar com
+              a luz, o calor e a paisagem fluminense. Não procuramos reproduzir outro lugar:
+              revelamos o nosso, o Vale do Café em uma nova expressão.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- ficha técnica · DADOS: confirmar com a medição da propriedade -->
+    <div class="ficha">
+      <div class="ficha__grade">
+        <div class="ficha__linha rev">
+          <p class="rotulo">Altitude</p>
+          <p class="ficha__valor num"><span data-conta="520">520</span><small>M</small></p>
+          <p class="rotulo ficha__nota">Acima do mar</p>
+        </div>
+        <div class="ficha__linha rev">
+          <p class="rotulo">Latitude</p>
+          <p class="ficha__valor num">22°26<span aria-hidden="true">′</span><small>S</small></p>
+          <p class="rotulo ficha__nota">Ponte Funda, Vassouras</p>
+        </div>
+        <div class="ficha__linha rev">
+          <p class="rotulo">Solo</p>
+          <p class="ficha__valor">Argissolo vermelho-amarelo</p>
+          <p class="rotulo ficha__nota">Latossolo e cambissolo nas encostas</p>
+        </div>
+        <div class="ficha__linha rev">
+          <p class="rotulo">Pluviosidade</p>
+          <p class="ficha__valor num"><span data-conta="1590">1590</span><small>MM</small></p>
+          <p class="rotulo ficha__nota">Média anual</p>
+        </div>
+        <div class="ficha__linha rev">
+          <p class="rotulo">Colheita</p>
+          <p class="ficha__valor">Janeiro <span aria-hidden="true">—</span> fevereiro</p>
+          <p class="rotulo ficha__nota">Manual, em caixas rasas</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- ==========================================================
+       03 · NOSSOS VINHOS — trilho arrastável
+       FOTO REAL: cada garrafa fotografada sobre fundo tinta
+       ========================================================== -->
+  <section class="vinhos" id="vinhos">
+
+    <div class="vinhos__cabeca">
+      <div>
+        <p class="rotulo rev">03 <span aria-hidden="true">—</span> Nossos vinhos</p>
+        <h2 class="secao__titulo rev">Dois rótulos, uma encosta</h2>
+      </div>
+    </div>
+
+    <div class="trilho" id="trilho" tabindex="0" role="group" aria-label="Rótulos">
+      <article class="garrafa">
+        <div class="garrafa__foto grao rev rev--foto">
+          <image-slot id="vb-garrafa-1" shape="rect" fit="cover" placeholder="Garrafa Tiê"></image-slot>
+        </div>
+        <a class="garrafa__ficha" href="#ficha-tie" id="abre-tie" aria-controls="ficha-tie" aria-expanded="false" aria-label="Tiê — ver ficha">
+          <h3>Tiê</h3>
+          <span class="garrafa__desc">Cabernet Franc 2025, doze meses em ânfora de grès. Lote único.</span>
+          <span class="garrafa__reservar">Ver</span>
+          <span class="garrafa__risco" aria-hidden="true"></span>
+        </a>
+      </article>
+      <article class="garrafa">
+        <div class="garrafa__foto grao rev rev--foto">
+          <image-slot id="vb-garrafa-2" shape="rect" fit="cover" placeholder="Garrafa Tiê Preto"></image-slot>
+        </div>
+        <a class="garrafa__ficha" href="#ficha-tiepreto" id="abre-tiepreto" aria-controls="ficha-tiepreto" aria-expanded="false" aria-label="Tiê Preto — ver ficha">
+          <h3>Tiê Preto</h3>
+          <span class="garrafa__desc">Cabernet Franc 2025, oito meses em carvalho francês. Lote único.</span>
+          <span class="garrafa__reservar">Ver</span>
+          <span class="garrafa__risco" aria-hidden="true"></span>
+        </a>
+      </article>
+    </div>
+
+    <div class="ficha-vinho ficha-vinho--chapa ficha-vinho--uva ficha-vinho--denso" id="ficha-tie" role="dialog" aria-modal="true" aria-label="Tiê, Cabernet Franc 2025" hidden>
+      <div class="ficha-vinho__chapa">
+        <button class="ficha-vinho__x" type="button" id="fecha-tie" aria-label="Fechar">✕</button>
+        <span class="uva-zona" aria-hidden="true"></span>
+        <img class="uva-aquarela" src="./img/ficha-tie-uva-aquarela.webp" alt="" aria-hidden="true" decoding="async">
+        <img src="./img/ficha-tie-uva.webp" alt="Tiê, Cabernet Franc 2025: a garrafa entre os cachos de Cabernet Franc. R$ 280 por garrafa." decoding="async">
+        <div class="ficha-vinho__prosa-uva">
+          <h3>Tiê <span aria-hidden="true">·</span> Cabernet Franc <span class="num">2025</span></h3>
+          <p>Colheita manual e fermentação espontânea com leveduras nativas. Amadurecimento de <span class="ficha-vinho__forte">12 meses em ânfora de cerâmica grès</span>, que preserva a pureza da fruta e permite uma expressão mais direta do terroir.</p>
+          <p class="ficha-vinho__perfil">Solar, autêntico e vivo.</p>
+          <span class="ficha-vinho__fio-uva" aria-hidden="true"></span>
+          <dl class="ficha-vinho__tecnica">
+            <div><dt>Uva</dt><dd>Cabernet Franc</dd></div>
+            <div><dt>Safra</dt><dd class="num">2025</dd></div>
+            <div><dt>Álcool</dt><dd class="num">14,5% vol.</dd></div>
+            <div><dt>Volume</dt><dd class="num">750 ml</dd></div>
+            <div><dt>Maturação</dt><dd>Ânfora de grès, 12 meses</dd></div>
+            <div><dt>Sulfitos</dt><dd>Sem adição</dd></div>
+          </dl>
+          <p class="ficha-vinho__nota">O nome faz referência ao <span class="ficha-vinho__forte">Tiê-Sangue</span>, ave nativa da Mata Atlântica que envolve nosso vinhedo e inspira a identidade da Vila Botané. Para nós, terroir também é a biodiversidade que habita o entorno.</p>
+          <span class="ficha-vinho__fio-uva" aria-hidden="true"></span>
+          <span class="ficha-vinho__compra-uva">
+            <span class="preco num">R$ 280</span>
+            <span class="rotulo">por garrafa</span>
+          </span>
+          <a class="ficha-vinho__botao-uva" id="reserva-tie" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20o%20Ti%C3%AA%20Cabernet%20Franc%202025.&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">Reservar</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ficha-vinho ficha-vinho--chapa ficha-vinho--uva ficha-vinho--denso" id="ficha-tiepreto" role="dialog" aria-modal="true" aria-label="Tiê Preto, Cabernet Franc 2025" hidden>
+      <div class="ficha-vinho__chapa">
+        <button class="ficha-vinho__x" type="button" id="fecha-tiepreto" aria-label="Fechar">✕</button>
+        <span class="uva-zona" aria-hidden="true"></span>
+        <img class="uva-aquarela" src="./img/ficha-tiepreto-cesto-aquarela.webp" alt="" aria-hidden="true" decoding="async">
+        <img src="./img/ficha-tiepreto-cesto.webp" alt="Tiê Preto, Cabernet Franc 2025: a garrafa junto aos cestos de colheita. R$ 340 por garrafa." decoding="async">
+        <div class="ficha-vinho__prosa-uva">
+          <h3>Tiê Preto <span aria-hidden="true">·</span> Cabernet Franc <span class="num">2025</span></h3>
+          <p>Colheita manual e fermentação espontânea com leveduras nativas. Amadurecimento de <span class="ficha-vinho__forte">8 meses em barrica de carvalho francês</span>, que acrescenta textura, estrutura e complexidade ao vinho.</p>
+          <p class="ficha-vinho__perfil">Solar, autêntico e vivo.</p>
+          <span class="ficha-vinho__fio-uva" aria-hidden="true"></span>
+          <dl class="ficha-vinho__tecnica">
+            <div><dt>Uva</dt><dd>Cabernet Franc</dd></div>
+            <div><dt>Safra</dt><dd class="num">2025</dd></div>
+            <div><dt>Álcool</dt><dd class="num">14% vol.</dd></div>
+            <div><dt>Volume</dt><dd class="num">750 ml</dd></div>
+            <div><dt>Maturação</dt><dd>Carvalho francês, 8 meses</dd></div>
+            <div><dt>Sulfitos</dt><dd>Sem adição</dd></div>
+          </dl>
+          <p class="ficha-vinho__nota">O nome faz referência ao Tiê-Preto, ave nativa da Mata Atlântica que envolve nosso vinhedo e inspira a identidade da Vila Botané. Para nós, terroir também é a biodiversidade que habita o entorno.</p>
+          <span class="ficha-vinho__fio-uva" aria-hidden="true"></span>
+          <span class="ficha-vinho__compra-uva">
+            <span class="preco num">R$ 340</span>
+            <span class="rotulo">por garrafa</span>
+          </span>
+          <a class="ficha-vinho__botao-uva" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20o%20Ti%C3%AA%20Preto%20Cabernet%20Franc%202025.&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">Reservar</a>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ==========================================================
+       03b · NA TAÇA · o Tiê Preto servido
+       ========================================================== -->
+  <section class="taca" id="taca">
+    <div class="taca__palco">
+      <div class="taca__video">
+        <video autoplay muted loop playsinline preload="metadata"
+               poster="./img/tiepreto-poster.jpg" tabindex="-1" aria-hidden="true">
+          <source src="./img/tiepreto.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="taca__grao" aria-hidden="true"></div>
+      <div class="taca__veu" aria-hidden="true"></div>
+      <div class="taca__texto">
+        <h2 class="taca__titulo rev">Para ser sentido, não apenas degustado</h2>
+        <p class="taca__linha rev"><strong>Solar, vivo e autêntico.</strong> Um vinho que carrega em cada
+          taça a identidade de um terroir singular, revelando uma expressão autêntica e verdadeira.</p>
+      </div>
+    </div>
+  </section>
+
+
+</main>
+
+
+<!-- ==========================================================
+     A SOLEIRA · a passagem para a casa irmã
+     ========================================================== -->
+<section class="soleira" aria-labelledby="soleira-nome">
+  <a class="soleira__vao" href="https://gabriellroque9017-lab.github.io/casadolago-site/">
+    <span class="soleira__marca" aria-hidden="true">
+      <img class="traco" src="./img/casa-marca-topo.png" alt="" width="1706" height="1139" loading="lazy" decoding="async">
+      <img class="traco" src="./img/casa-marca-agua.png" alt="" width="1706" height="1139" loading="lazy" decoding="async">
+      <img class="cor" src="./img/casa-logo-cheia.png" alt="" width="1706" height="1139" loading="lazy" decoding="async">
+    </span>
+    <span class="soleira__parede"></span>
+    <span class="soleira__texto">
+      <span class="rotulo">A outra casa</span>
+      <span class="soleira__nome" id="soleira-nome">Casa do Lago</span>
+      <span class="soleira__linha">O bistrô à beira d’água, a duzentos metros da vinha.
+        Mesma terra, mesma safra, outra mesa.</span>
+      <span class="elo">Atravessar</span>
+    </span>
+  </a>
+</section>
+
+
+<!-- ==========================================================
+     RODAPÉ · a serra em silhueta
+     ========================================================== -->
+<footer class="rodape" id="rodape">
+  <div class="rodape__cena" id="serra-cena">
+  <svg class="rodape__serra" id="serra-svg" viewBox="0 0 1200 96" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true" preserveAspectRatio="none">
+    <path class="serra__traco" pathLength="1" d="M0 82 C 84 78, 128 46, 196 40 C 258 34, 296 62, 356 58 C 420 54, 452 20, 528 22 C 598 24, 628 60, 700 56 C 768 52, 800 26, 872 30 C 942 34, 976 64, 1044 60 C 1108 56, 1146 36, 1200 40" vector-effect="non-scaling-stroke"/>
+    <path class="serra__traco" pathLength="1" d="M0 88 C 96 86, 160 68, 244 66 C 330 64, 384 80, 470 76 C 560 72, 604 54, 700 58 C 790 62, 840 80, 930 76 C 1020 72, 1120 58, 1200 62" vector-effect="non-scaling-stroke"/>
+  </svg>
+  </div>
+
+  <div class="rodape__grade">
+    <div>
+      <p class="rotulo" aria-hidden="true" style="visibility:hidden">·</p>
+      <p class="mudo rodape__lema" style="margin-top:14px">Microvinícola de pesquisa em terroir tropical<br>Mata Atlântica • Vale do Café • Brasil<br>Vinhos de mínima intervenção e lotes únicos</p>
+    </div>
+    <div class="rodape__meio">
+      <p class="rotulo rodape__marca">Vila Botané</p>
+      <div style="margin-top:14px;text-align:center">
+        <p class="mudo rodape__endereco">Rua Luiz Francisco de Souza, 555<br>Ponte Funda, Vassouras/RJ</p>
+        <a class="elo" href="https://www.google.com/maps/search/?api=1&amp;query=Rua+Luiz+Francisco+de+Souza%2C+555+-+Ponte+Funda%2C+Vassouras+-+RJ%2C+27700-000" target="_blank" rel="noopener">Abrir rota</a>
+      </div>
+    </div>
+    <div class="rodape__redes">
+      <p class="rotulo" aria-hidden="true" style="visibility:hidden">·</p>
+      <p class="rodape__rede" style="margin-top:14px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;flex:0 0 auto;color:var(--tinta)">
+          <rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.4"/>
+          <circle cx="12" cy="12" r="4.6"/>
+          <circle cx="17.4" cy="6.6" r=".95" fill="currentColor" stroke="none"/>
+        </svg>
+        <a class="elo" href="https://www.instagram.com/vilabotane/" target="_blank" rel="noopener">Instagram</a>
+      </p>
+      <p class="rodape__rede" style="margin-top:18px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;flex:0 0 auto;color:var(--tinta)">
+          <path d="M3.1 20.9l1.36-4.9a8.4 8.4 0 1 1 3.54 3.54z"/>
+          <path d="M8.9 8.1c.28-.02.5.02.72.5l.62 1.36c.1.24.08.42-.06.62l-.42.56c-.14.18-.16.36-.06.56a6.1 6.1 0 0 0 2.9 2.86c.22.1.42.06.58-.1l.5-.5c.18-.18.38-.22.62-.12l1.44.66c.4.18.48.4.42.72-.1.6-.66 1.36-1.5 1.44-2.36.22-6.62-3.66-6.68-6.32-.02-.9.66-1.68 1.4-1.74z"/>
+        </svg>
+        <a class="elo" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;text&amp;type=phone_number&amp;app_absent=0&amp;utm_source=ig" target="_blank" rel="noopener">WhatsApp</a>
+      </p>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="rodape__pe">
+    <span class="rotulo"><span class="num">© 2026</span> Vila Botané, Vassouras, Rio de Janeiro</span>
+    <span class="rotulo">Aprecie com moderação</span>
+  </div>
+
+  <p class="rodape__credito">Microvinícola Vila Botané <span aria-hidden="true">·</span>
+    Website desenvolvido por <a class="rodape__autor" href="https://www.linkedin.com/in/gabriel-hossana-lopes-roque-18111b246/" target="_blank" rel="noopener noreferrer">Gabriel Hossana</a></p>
+</footer>
+
+<script src="./js/image-slot.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fino     = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- preloader: só na primeira visita ---------- */
+  var pre = document.getElementById('pre');
+  var jaVeio;
+  try { jaVeio = localStorage.getItem('vb-visitado'); } catch (e) { jaVeio = '1'; }
+  if (jaVeio || reduzido) {
+    pre.classList.add('is-fim');
+  } else {
+    setTimeout(function () { pre.classList.add('is-fim'); }, 1750);
+    try { localStorage.setItem('vb-visitado', '1'); } catch (e) {}
+  }
+
+  /* ---------- menu em tela cheia ---------- */
+  var veu = document.getElementById('veu'), abrir = document.getElementById('abrir-menu'),
+      fechar = document.getElementById('fechar-menu');
+  function menu(estado) {
+    veu.classList.toggle('is-aberto', estado);
+    veu.setAttribute('aria-hidden', estado ? 'false' : 'true');
+    abrir.setAttribute('aria-expanded', estado ? 'true' : 'false');
+    document.body.style.overflow = estado ? 'hidden' : '';
+    if (estado) veu.querySelector('a').focus();
+  }
+  abrir.addEventListener('click', function () { menu(true); });
+  fechar.addEventListener('click', function () { menu(false); abrir.focus(); });
+  veu.addEventListener('click', function (e) { if (e.target.tagName === 'A') menu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && veu.classList.contains('is-aberto')) { menu(false); abrir.focus(); }
+  });
+
+  /* ---------- cursor contextual ---------- */
+  var cursor = document.getElementById('cursor'), cTexto = document.getElementById('cursor-texto');
+  if (fino && !reduzido) {
+    var ax = 0, ay = 0, bx = 0, by = 0, vivo = false;
+    window.addEventListener('mousemove', function (e) {
+      bx = e.clientX; by = e.clientY;
+      if (!vivo) { vivo = true; ax = bx; ay = by; cursor.classList.add('is-vivo'); }
+    }, { passive: true });
+    (function laco() {
+      ax += (bx - ax) * 0.22; ay += (by - ay) * 0.22;
+      cursor.style.transform = 'translate(' + ax + 'px,' + ay + 'px)';
+      requestAnimationFrame(laco);
+    })();
+    document.addEventListener('mouseover', function (e) {
+      var alvo = e.target.closest('[data-cursor], a, button');
+      if (!alvo) { cursor.classList.remove('is-grande'); cTexto.textContent = ''; return; }
+      cursor.classList.add('is-grande');
+      cTexto.textContent = alvo.getAttribute('data-cursor') || 'Ver';
+    });
+  }
+
+  /* ---------- chegada: o pássaro vem voando e pousa no logotipo ----------
+     Nesta página o voo não começa sozinho: quem manda é o painel de teste.
+     Todo o desenho de um instante vive em pinta(), função só do tempo tt —
+     por isso dá para pausar, arrastar, ir devagar e andar quadro a quadro. */
+  (function () {
+    var marca = document.querySelector('.hero__marca');
+    var linha = marca && marca.querySelector('.linha');
+    var cor   = marca && marca.querySelector('.cor');
+    var ave   = document.getElementById('pouso');
+    var folha = document.querySelector('.hero__aquarela');
+
+    /* a aquarela dá lugar à fotografia. Quando o canvas do rastro está de pé, é ele
+       quem mostra a capa: a troca acontece na textura dele. Sem WebGL, some a folha. */
+    function revelaFoto(comFade) {
+      window.vbCapaJaSecou = true;
+      if (window.vbCapaSeca) { window.vbCapaSeca(comFade); return; }
+      if (!folha) return;
+      if (!comFade) folha.classList.add('sem-fade');
+      folha.classList.add('is-fim');
+      if (!comFade) requestAnimationFrame(function () { folha.classList.remove('sem-fade'); });
+    }
+
+    function assenta() {                       /* estado final: só o traço branco */
+      if (!marca) return;
+      linha.style.opacity = 1; cor.style.opacity = 0;
+      if (ave) ave.style.opacity = 0;
+      marca.classList.add('is-pousado');
+      revelaFoto(false);
+    }
+    if (!marca || !ave || reduzido) { assenta(); return; }
+
+    /* os 71 recortes do vídeo, quadros 37 a 107, tocados uma única vez, na ordem,
+       do primeiro ao último — sem laço nenhum. Do 87 em diante são os quadros 21 a 1
+       ao contrário: o disco volta a se fechar em torno do pássaro pousado. */
+    var DE = 37, TOTAL = 71, FPS = 9, POUSADO = TOTAL - 1, DISCO = 87;
+    var SRC = './img/voo-video/ciclo2/';
+    /* os 71 quadros vivem empilhados dentro do pássaro, um por camada: trocar de
+       quadro é só acender uma e apagar a outra. Trocar a imagem de fundo fazia o
+       navegador decodificar na hora e o bicho sumia entre um quadro e outro. */
+    var qAtual = 0, camadas = [];
+    for (var pk = 0; pk < TOTAL; pk++) {
+      var im = document.createElement('img');
+      im.src = SRC + 'f' + (DE + pk) + '.png';
+      im.alt = ''; im.decoding = 'sync';
+      im.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;pointer-events:none';
+      if (im.decode) im.decode().catch(function () {});
+      ave.appendChild(im);
+      camadas.push(im);
+    }
+    function quadro(n) {
+      if (camadas[qAtual]) camadas[qAtual].style.opacity = '0';
+      qAtual = n;
+      if (camadas[n]) camadas[n].style.opacity = '1';
+    }
+
+    function amostra(A, B, C, D) {
+      var p = [[2*A[0]-B[0], 2*A[1]-B[1]], A, B, C, D, [2*D[0]-C[0], 2*D[1]-C[1]]];
+      var out = [], N = 200, s, i;
+      for (s = 1; s < p.length - 2; s++) {
+        var p0 = p[s-1], p1 = p[s], p2 = p[s+1], p3 = p[s+2];
+        for (i = 0; i < N; i++) {
+          var u = i/N, u2 = u*u, u3 = u2*u;
+          out.push([
+            0.5*((2*p1[0]) + (-p0[0]+p2[0])*u + (2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*u2 + (-p0[0]+3*p1[0]-3*p2[0]+p3[0])*u3),
+            0.5*((2*p1[1]) + (-p0[1]+p2[1])*u + (2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*u2 + (-p0[1]+3*p1[1]-3*p2[1]+p3[1])*u3)
+          ]);
+        }
+      }
+      out.push([D[0], D[1]]);
+      var acc = [0];
+      for (i = 1; i < out.length; i++)
+        acc[i] = acc[i-1] + Math.hypot(out[i][0]-out[i-1][0], out[i][1]-out[i-1][1]);
+      return { pts: out, acc: acc, total: acc[acc.length-1] || 1 };
+    }
+    function no(cam, frac) {
+      var alvo = frac * cam.total, lo = 0, hi = cam.acc.length - 1, mid;
+      while (lo < hi - 1) { mid = (lo + hi) >> 1; if (cam.acc[mid] < alvo) lo = mid; else hi = mid; }
+      var seg = (cam.acc[hi] - cam.acc[lo]) || 1, u = (alvo - cam.acc[lo]) / seg;
+      var a = cam.pts[lo], b = cam.pts[hi];
+      return { x: a[0] + (b[0]-a[0])*u, y: a[1] + (b[1]-a[1])*u,
+               ang: Math.atan2(b[1]-a[1], b[0]-a[0]) * 180 / Math.PI };
+    }
+
+    /* 37 a 50 vêm da travessia (o bicho no ar, âncora quase parada); do 51 em
+       diante são as medidas do pouso. */
+    var ANC = [[0.7174,0.4080],[0.7169,0.4055],[0.7156,0.4056],[0.7184,0.4074],[0.7185,0.4073],
+      [0.7164,0.4062],[0.7182,0.4036],[0.7166,0.4061],[0.7161,0.4057],[0.7171,0.4070],
+      [0.7178,0.4074],[0.7157,0.4056],[0.7184,0.4060],[0.7189,0.4068],
+      [0.6773,0.4250],[0.6933,0.4154],[0.6584,0.4308],[0.6599,0.3673],[0.6570,0.3462],
+      [0.6512,0.3269],[0.6279,0.2981],[0.6948,0.2673],[0.7253,0.2635],[0.7180,0.2635],[0.6977,0.2654],
+      [0.6802,0.2635],[0.6744,0.2654],[0.6890,0.2654],[0.7180,0.2827],[0.7195,0.2846],[0.7311,0.2615],
+      [0.7238,0.2615],[0.7282,0.2673],[0.7209,0.2769],[0.7093,0.2731],[0.7529,0.2808],[0.7558,0.3077],
+      [0.7587,0.3115],[0.7587,0.3654],[0.7544,0.3692],[0.7456,0.4077],[0.7413,0.4269],[0.7442,0.4423],
+      [0.7529,0.4404],[0.7558,0.4385],[0.7544,0.4365],[0.7544,0.4404],[0.7544,0.4442],[0.7544,0.4442],
+      [0.7544,0.4442],
+      [0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],
+      [0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],
+      [0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5],[0.5,0.5]];
+    var MARCA_AQ = { fx: 0.4362, fy: 0.5447 };
+
+    /* nas células do disco (87 a 107) o desenho está registrado pelo centro do
+       disco, não pelo corpo: então a marca é encostada pelo próprio centro. */
+    function medida(disco) {
+      var r = linha.getBoundingClientRect();
+      var h = r.height * 1.46;
+      return { w: h * 344 / 260, h: h,
+               x: r.left + r.width * (disco ? 0.5 : MARCA_AQ.fx),
+               y: r.top + r.height * (disco ? 0.5 : MARCA_AQ.fy) };
+    }
+
+    /* o acerto de centro e tamanho dos quadros 37 a 50, medido contra o 51 na
+       segunda dobra. Fica aqui gravado; o navegador só sobrepõe se houver
+       ajuste novo em curso. */
+    var AJU_PADRAO = {
+      37: { dx: -57.42, dy:  38.55, s: 1.557 }, 38: { dx: -88.06, dy:  -5.92, s: 1.557 },
+      39: { dx: -74.23, dy:   0.43, s: 1.557 }, 40: { dx: -75.35, dy:  34.06, s: 1.557 },
+      41: { dx: -70.13, dy:   5.29, s: 1.557 }, 42: { dx: -79.10, dy: -10.41, s: 1.557 },
+      43: { dx: -69.01, dy:  16.87, s: 1.557 }, 44: { dx: -66.40, dy:  22.83, s: 1.537 },
+      45: { dx: -79.86, dy:   3.39, s: 1.527 }, 46: { dx: -66.79, dy:  18.70, s: 1.503 },
+      47: { dx: -63.44, dy:   6.37, s: 1.485 }, 48: { dx: -70.54, dy: -14.19, s: 1.469 },
+      49: { dx: -47.00, dy:   2.62, s: 1.469 }, 50: { dx: -44.39, dy: -18.68, s: 1.463 }
+    };
+    var AJU = AJU_PADRAO;
+
+    var CHEGA = (60 - DE) / FPS;             /* encosta na marca no quadro 60 */
+    var DUR = TOTAL / FPS, POUSAR = DUR - CHEGA;
+
+    /* ---------- respingos de aquarela, os mesmos da landpage ----------
+       Recortes de verdade da folha de tinta (img/tinta/): a cada batida de asa a
+       ave larga duas ou três manchas em rumos diferentes — um sopro para sudoeste
+       e noroeste, o seguinte para norte e nordeste, e assim por diante. Cada
+       mancha nasce pequena, abre como tinta molhada no papel, escorre um pouco
+       para baixo e seca. Nenhuma delas é o pássaro. */
+    var TINTAS_ARQ = [16,17,18,19,20,21,22,23,24,25,34,35,36,37,38,39].map(function (n) {
+      return './img/tinta/tinta-' + n + '.png';
+    });
+    var RUMOS = { N: -90, NE: -45, E: 0, SE: 45, S: 90, SO: 135, O: 180, NO: -135 };
+    var SOPROS = [
+      ['SO', 'NO', 'O'],
+      ['N', 'NE', 'E'],
+      ['S', 'SE', 'O', 'SO'],
+      ['NE', 'SE', 'N'],
+      ['NO', 'N', 'SO', 'O'],
+      ['S', 'SO', 'SE'],
+      ['NE', 'E', 'S'],
+      ['NO', 'O', 'S', 'N'],
+      ['E', 'SE', 'NE'],
+      ['SO', 'S', 'NO']
+    ];
+    var cena = document.createElement('div');
+    cena.setAttribute('aria-hidden', 'true');
+    cena.style.cssText = 'position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden';
+    document.body.appendChild(cena);
+    TINTAS_ARQ.forEach(function (u) { var im = new Image(); im.src = u; });
+    var vivos = [], batida = 0, ultimoQ = -1;
+    function solta(x, y, forca, raio) {
+      if (typeof gsap === 'undefined') return;
+      var grupo = SOPROS[batida++ % SOPROS.length];
+      for (var i = 0; i < grupo.length; i++) {
+        var rad = (RUMOS[grupo[i]] + (Math.random() - 0.5) * 26) * Math.PI / 180;
+        var dist = raio * (0.62 + Math.random() * 0.8);
+        var lado = raio * (0.16 + Math.random() * 0.5);
+        var im = document.createElement('img');
+        im.src = TINTAS_ARQ[(Math.random() * TINTAS_ARQ.length) | 0];
+        im.style.cssText = 'position:absolute;left:0;top:0;will-change:transform,opacity';
+        im.style.width = (raio * (0.17 + Math.random() * 0.31) * (0.7 + forca * 0.5)) + 'px';
+        cena.appendChild(im);
+        vivos.push(im);
+        var px = x + Math.cos(rad) * dist, py = y + Math.sin(rad) * dist;
+        gsap.set(im, { x: px, y: py, xPercent: -50, yPercent: -50,
+                       rotation: Math.random() * 360, scale: 0.34, opacity: 0 });
+        (function (el, rd, ld) {
+          /* a tinta não seca: a mancha abre, escorre e fica no papel até a
+             página virar — quem apaga tudo é o limpaRastro() */
+          gsap.timeline()
+            .to(el, { opacity: 0.62 + Math.random() * 0.3, scale: 1,
+                      duration: 0.16 + Math.random() * 0.12, ease: 'power2.out' })
+            .to(el, { x: px + Math.cos(rd) * ld, y: py + Math.sin(rd) * ld + raio * (0.22 + Math.random() * 0.3),
+                      scale: 1.12 + Math.random() * 0.22,
+                      duration: 0.95 + Math.random() * 0.75, ease: 'power1.in' }, '>-0.04');
+        })(im, rad, lado);
+      }
+    }
+    function limpaRastro() {
+      vivos.forEach(function (im) {
+        if (typeof gsap !== 'undefined') gsap.killTweensOf(im);
+        if (im.parentNode) im.parentNode.removeChild(im);
+      });
+      vivos.length = 0; batida = 0; ultimoQ = -1;
+      if (typeof gsap !== 'undefined') gsap.set(cena, { opacity: 1 });
+      else cena.style.opacity = '';
+    }
+    /* acabado o pouso, a tinta que ficou no papel some junto com o pássaro */
+    function secaRastro() {
+      if (!vivos.length) return;
+      if (typeof gsap === 'undefined') { limpaRastro(); return; }
+      gsap.to(cena, { opacity: 0, duration: 1.1, ease: 'power1.in', onComplete: limpaRastro });
+    }
+
+    /* ---------- o relógio, agora nas mãos do painel ---------- */
+    var tt = 0, tocando = false, vel = 1, raf = 0, marcaT = 0;
+    var cam = null, base = null, feito = false;
+    var travado = false, qFixo = 0, comRastro = false, comDesfecho = true;
+
+    function prepara() {
+      var m = medida(), W = window.innerWidth, H = window.innerHeight;
+      base = { x: m.x, y: m.y };
+      ave.style.width = m.w + 'px'; ave.style.height = m.h + 'px';
+      var ix = -m.w * 0.62;
+      var iy = Math.min(H * 0.72, H - m.h / 2);
+      var subida = iy - m.y;
+      cam = amostra([ix,                           iy],
+                    [ix + W * 0.26,                iy - subida * 0.40],
+                    [Math.max(m.x - W * 0.17, ix), m.y + subida * 0.26],
+                    [m.x,                          m.y]);
+    }
+    prepara();
+    window.addEventListener('resize', function () { prepara(); pinta(); });
+
+    function termina() {
+      if (feito) return;
+      feito = true;
+      secaRastro();
+      if (!travado) quadro(POUSADO);
+      var descorou = false;
+      cor.style.transition = 'opacity .5s var(--ease), filter .5s var(--ease)';
+      ave.style.transition = 'opacity .4s var(--ease), filter .4s var(--ease)';
+      cor.style.filter = 'blur(7px)';
+      cor.style.opacity = 1;
+      requestAnimationFrame(function () {
+        if (descorou) return;
+        cor.style.filter = 'blur(0px)';
+        ave.style.filter = 'blur(7px)'; ave.style.opacity = 0;
+      });
+      marcaT = setTimeout(function () {
+        descorou = true;
+        linha.style.transition = 'opacity .9s var(--ease)';
+        cor.style.transition   = 'opacity .9s var(--ease)';
+        linha.style.opacity = 1;
+        cor.style.opacity = 0;
+        cor.style.filter = 'blur(0px)';
+        ave.style.opacity = 0;
+        marca.classList.add('is-pousado');
+        revelaFoto(true);              /* o pássaro virou traço branco: a folha seca */
+        /* passada a travessia, as regras de .is-pousado assumem: sem opacidade
+           inline, o traço branco continua visível mesmo se a transição não correr */
+        setTimeout(function () {
+          linha.style.removeProperty('opacity');
+          cor.style.removeProperty('opacity');
+          fixaPouso();
+        }, 950);
+      }, 1000);
+    }
+
+    /* trava o desenho final: cancela transições pendentes nas duas camadas para
+       que o valor mostrado seja o das regras de .is-pousado, e não o início de
+       uma transição que ficou pelo caminho (aba em segundo plano, voo cortado). */
+    function fixaPouso() {
+      marca.classList.add('sem-fade');                 /* mata transição em curso */
+      linha.style.removeProperty('opacity');
+      cor.style.removeProperty('opacity');
+      linha.style.removeProperty('transition');
+      cor.style.removeProperty('transition');
+      ave.style.transition = 'none';
+      ave.style.opacity = 0;
+      void marca.offsetWidth;                          /* o valor final já vale */
+      requestAnimationFrame(function () { marca.classList.remove('sem-fade'); });
+      setTimeout(function () { marca.classList.remove('sem-fade'); }, 120);
+    }
+
+    /* Rolou a página e o pássaro saiu de vista: a animação não continua às
+       escondidas — ela é cortada e o logotipo já fica no estado final, o traço
+       branco pousado. */
+    function corta() {
+      if (feito) return;
+      tocando = false;
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      if (marcaT) { clearTimeout(marcaT); marcaT = 0; }
+      feito = true;
+      limpaRastro();
+      quadro(POUSADO);
+      /* nada de transição pendente segurando o desenho: corta tudo e devolve
+         o controle às regras de .is-pousado */
+      [linha, cor, ave].forEach(function (el) {
+        if (el.getAnimations) el.getAnimations().forEach(function (a) { a.cancel(); });
+        el.style.removeProperty('transition');
+        el.style.removeProperty('opacity');
+        el.style.removeProperty('filter');
+      });
+      ave.style.opacity = 0;
+      marca.classList.add('is-pousado');
+      fixaPouso();
+      revelaFoto(false);
+    }
+    /* fora de vista = a marca do topo saiu inteira pela borda de cima */
+    function vigia() {
+      if (feito) { window.removeEventListener('scroll', vigia); return; }
+      var r = marca.getBoundingClientRect();
+      if (r.bottom <= 0) corta();
+    }
+    window.addEventListener('scroll', vigia, { passive: true });
+
+    /* um instante inteiro do pouso, desenhado a partir de tt */
+    function pinta() {
+      if (!cam || !base) prepara();
+      var p = Math.min(1, tt / DUR), resta = DUR - tt, fase;
+      if (travado) { quadro(qFixo); fase = 'parado na marca'; }
+      else {
+        quadro(Math.min(POUSADO, Math.floor(tt * FPS)));      /* em sequência, sem laço */
+        fase = resta > POUSAR ? 'travessia' : 'pouso';
+      }
+
+      var f = Math.min(1, (1 - Math.pow(1 - p, 3)) / (1 - Math.pow(POUSAR / DUR, 3)));
+      var pos = no(cam, f), d = medida(DE + qAtual >= DISCO);
+      var dx = d.x - base.x, dy = d.y - base.y;
+      var chega = Math.min(1, Math.max(0, (tt - (DUR - POUSAR)) / POUSAR));
+      var bal = Math.sin(tt * 2 * Math.PI * FPS / 18) * 6 * (1 - chega);
+      var esc = 0.84 + 0.16 * f;
+      /* do 37 ao 50 o encaixe é o acerto manual, medido contra o 51: por isso eles
+         herdam a âncora do 51 e recebem por cima o deslocamento e o tamanho salvos. */
+      var iRef = 51 - DE;
+      var a = (qAtual < iRef ? ANC[iRef] : ANC[qAtual]) || ANC[POUSADO];
+      var aj = (qAtual < iRef && AJU[DE + qAtual]) || { dx: 0, dy: 0, s: 1 };
+      var dxp = aj.dx / 344 * d.w, dyp = aj.dy / 260 * d.h;
+      var cx, cy, ang;
+      /* o desenho já nasce um pouco caído para a frente: 10° no sentido horário
+         endireitam o bicho sem mexer no caminho */
+      var INCLINA = 10;
+      if (travado) {                        /* o sprite encaixado na marca, sem voo */
+        cx = d.x; cy = d.y; esc = 1; ang = INCLINA;
+      } else {
+        cx = Math.min(Math.max(pos.x + dx, -d.w * 0.72), window.innerWidth - d.w/2);
+        cy = Math.min(Math.max(pos.y + dy + bal, d.h/2), window.innerHeight - d.h/2);
+        ang = pos.ang * 0.5 * (1 - chega) + INCLINA;
+      }
+      ave.style.transform =
+        'translate(' + (cx - d.w/2 + (d.w * (0.5 - a[0]) * aj.s - dxp) * esc) + 'px,' +
+                       (cy - d.h/2 + (d.h * (0.5 - a[1]) * aj.s - dyp) * esc) + 'px)' +
+        ' rotate(' + ang + 'deg) scale(' + esc + ')' +
+        ' translate(' + dxp + 'px,' + dyp + 'px) scale(' + aj.s + ')';
+      /* uma batida de asa a cada dois quadros: é aí que a tinta se solta.
+         Do quadro 67 em diante o bicho já está freando — a tinta cai pela metade;
+         do 80 em diante ele já está pousando e não solta mais nada. */
+      if (tocando && comRastro && !travado && chega < 0.92 && qAtual !== ultimoQ) {
+        ultimoQ = qAtual;
+        var cadaN = (DE + qAtual) >= 67 ? 4 : 2;
+        if ((DE + qAtual) < 80 && qAtual % cadaN === 0)
+          solta(cx, cy, (1 - chega) * (0.5 + 0.5 * f), d.w * esc * 0.36);
+      }
+
+    }
+
+    function laco(ts) {
+      raf = 0;
+      if (!tocando) return;
+      var dt = Math.min(0.05, (ts - laco.ultimo) / 1000);
+      laco.ultimo = ts;
+      tt = Math.min(DUR, tt + dt * vel);
+      pinta();
+      if (tt >= DUR) { tocando = false; if (comDesfecho) termina(); pinta(); return; }
+      raf = requestAnimationFrame(laco);
+    }
+
+    function acorda() { ave.style.transition = ''; ave.style.filter = ''; ave.style.opacity = 1; }
+
+    quadro(0);
+    ave.style.opacity = 0;
+
+    function comeca() {
+      prepara(); acorda();
+      tt = 0; feito = false; tocando = true;
+      laco.ultimo = performance.now();
+      raf = requestAnimationFrame(laco);
+    }
+    setTimeout(comeca, jaVeio ? 260 : 1900);
+    /* rede de segurança: se o laço tropeçar, o logotipo branco aparece de todo jeito */
+    setTimeout(function () { if (!feito) termina(); }, (jaVeio ? 260 : 1900) + DUR * 1000 + 2200);
+  })();
+
+  /* ---------- reveals: clip-path subindo, com stagger ---------- */
+  var blocos = [].slice.call(document.querySelectorAll('.rev'));
+  function revelaTudo() {
+    blocos.forEach(function (b) { b.classList.add('sem-transicao', 'is-vis'); });
+  }
+
+  if (reduzido || !('IntersectionObserver' in window)) {
+    revelaTudo();
+  } else {
+    var obs = new IntersectionObserver(function (ent) {
+      ent.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var irmaos = [].slice.call(e.target.parentNode.querySelectorAll('.rev'));
+        e.target.style.transitionDelay = Math.min(irmaos.indexOf(e.target), 6) * 0.04 + 's';
+        e.target.classList.add('is-vis');
+        obs.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.06 });
+    blocos.forEach(function (b) { obs.observe(b); });
+    setTimeout(revelaTudo, 2600);          /* rede de segurança: aba em segundo plano */
+  }
+
+  /* ---------- números da ficha técnica ---------- */
+  var contas = [].slice.call(document.querySelectorAll('[data-conta]'));
+  if (!reduzido && 'IntersectionObserver' in window) {
+    var oc = new IntersectionObserver(function (ent) {
+      ent.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        oc.unobserve(e.target);
+        var fim = parseFloat(e.target.dataset.conta), t0 = 0;
+        (function passo(t) {
+          if (!t0) t0 = t;
+          var p = Math.min(1, (t - t0) / 1400);
+          e.target.textContent = Math.round(fim * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) requestAnimationFrame(passo);
+        })(0);
+      });
+    }, { threshold: .6 });
+    contas.forEach(function (c) { oc.observe(c); });
+  }
+
+  /* ---------- terroir: troca de quadro + desenho do corte ---------- */
+  var palco = document.getElementById('palco'), quadro = document.getElementById('quadro');
+  if (palco && quadro) {
+    var telas   = [].slice.call(quadro.children);
+    var caps    = [].slice.call(palco.querySelectorAll('.cap'));
+    var camadas = [].slice.call(quadro.querySelectorAll('.corte .camada'));
+    var territorio = document.getElementById('territorio-traco');
+    var gravura = document.getElementById('clima-traco');
+    var expressao = document.getElementById('expressao-traco');
+    var atual   = -1;
+
+    function mostra(i) {
+      if (i === atual) return;
+      atual = i;
+      telas.forEach(function (t, k) { t.classList.toggle('is-atual', k === i); });
+    }
+    function desenha(p) {                                  /* p: 0 → 1 dentro do capítulo do solo */
+      camadas.forEach(function (c, k) {
+        var ini = k / camadas.length * 0.72;
+        var q = Math.max(0, Math.min(1, (p - ini) / 0.28));
+        c.style.strokeDashoffset = String(1 - q);
+      });
+    }
+    /* as gravuras aparecem da esquerda para a direita, como se fossem traçadas */
+    function revela(el, p) {
+      if (el) el.style.clipPath = 'inset(0 ' + ((1 - p) * 100).toFixed(2) + '% 0 0)';
+    }
+    function desenhaClima(p) { revela(gravura, p); }
+    /* a expressão vem no sentido contrário: da direita para a esquerda, até a taça */
+    function revelaAoContrario(el, p) {
+      if (el) el.style.clipPath = 'inset(0 0 0 ' + ((1 - p) * 100).toFixed(2) + '%)';
+    }
+    /* o território não se revela: a tela anda por cima dele, da esquerda até a taça */
+    function caminha(el, p) {
+      if (!el) return;
+      var sobra = el.offsetWidth - el.parentNode.clientWidth;
+      if (sobra < 1) { el.style.transform = 'translate3d(0,0,0)'; return; }
+      el.style.transform = 'translate3d(' + (-sobra * p).toFixed(1) + 'px,-50%,0)';
+    }
+    function acompanha() {
+      var meio = window.innerHeight * 0.5, escolhido = 0;
+      var sec = document.getElementById('terroir');
+      if (sec) sec.classList.toggle('is-lendo', palco.getBoundingClientRect().top < window.innerHeight * 0.55);
+      caps.forEach(function (c, i) {
+        if (c.getBoundingClientRect().top <= meio) escolhido = i;    /* o último que já cruzou o meio */
+      });
+      mostra(escolhido);
+      var solo = caps[1].getBoundingClientRect();
+      desenha(Math.max(0, Math.min(1, (meio - solo.top) / Math.max(1, solo.height * 0.75))));
+      var clima = caps[2].getBoundingClientRect();
+      desenhaClima(Math.max(0, Math.min(1, (meio - clima.top) / Math.max(1, clima.height * 0.7))));
+      var terr = caps[0].getBoundingClientRect();
+      var pt = Math.max(0, Math.min(1, (meio - terr.top) / Math.max(1, terr.height * 0.78)));
+      caminha(territorio, pt);
+      if (caps[3]) {
+        var expr = caps[3].getBoundingClientRect();
+        revelaAoContrario(expressao, Math.max(0, Math.min(1, (meio - expr.top) / Math.max(1, expr.height * 0.72))));
+      }
+    }
+    if (reduzido) { desenha(1); desenhaClima(1); caminha(territorio, 0); revelaAoContrario(expressao, 1); }
+    else {
+      acompanha();
+      window.addEventListener('scroll', acompanha, { passive: true });
+      window.addEventListener('resize', acompanha);
+    }
+  }
+
+  /* ---------- 04 · na taça: o quadro sobe conforme a página desce ---------- */
+  (function () {
+    var sec = document.getElementById('taca');
+    var vid = sec && sec.querySelector('.taca__video video');
+    if (!sec || !vid || reduzido || !window.gsap) return;
+    gsap.fromTo(vid, { '--sobe': '-20%' }, {
+      '--sobe': '-23%', ease: 'none',
+      scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: true }
+    });
+    vid.playbackRate = 0.65;                 /* mais devagar: o vinho pede tempo */
+    vid.addEventListener('loadeddata', function () { vid.playbackRate = 0.65; });
+  })();
+
+  /* ---------- trilho de vinhos: arrastar, roda e teclado ---------- */  var trilho = document.getElementById('trilho');
+  if (trilho) {
+    trilho.scrollLeft = 0;
+    var baixo = false, x0 = 0, s0 = 0, moveu = 0;
+    trilho.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch') return;
+      /* clicar numa foto é para abrir o seletor de arquivo, não arrastar o trilho */
+      if (e.target && e.target.closest && e.target.closest('image-slot')) return;
+      /* nem arrastar sobre um link: a captura do ponteiro engoliria o clique dele */
+      if (e.target && e.target.closest && e.target.closest('a')) return;
+      baixo = true; moveu = 0; x0 = e.clientX; s0 = trilho.scrollLeft;
+      trilho.classList.add('is-arrastando'); trilho.setPointerCapture(e.pointerId);
+    });
+    trilho.addEventListener('pointermove', function (e) {
+      if (!baixo) return;
+      var d = e.clientX - x0; moveu = Math.max(moveu, Math.abs(d));
+      trilho.scrollLeft = s0 - d;
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) {
+      trilho.addEventListener(ev, function () { baixo = false; trilho.classList.remove('is-arrastando'); });
+    });
+    trilho.addEventListener('click', function (e) { if (moveu > 6) e.preventDefault(); });
+    trilho.addEventListener('wheel', function (e) {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      if (trilho.scrollWidth <= trilho.clientWidth) return;
+      var fim = (e.deltaY > 0 && trilho.scrollLeft + trilho.clientWidth >= trilho.scrollWidth - 1) ||
+                (e.deltaY < 0 && trilho.scrollLeft <= 0);
+      if (fim) return;
+      e.preventDefault(); trilho.scrollLeft += e.deltaY;
+    }, { passive: false });
+    trilho.addEventListener('keydown', function (e) {
+      var passo = trilho.querySelector('.garrafa').offsetWidth + 24;
+      if (e.key === 'ArrowRight') { e.preventDefault(); trilho.scrollLeft += passo; }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); trilho.scrollLeft -= passo; }
+    });
+    trilho.addEventListener('focusin', function (e) {          /* mantém o foco visível sem scrollIntoView */
+      var c = e.target.closest('.garrafa'); if (!c) return;
+      var r = c.getBoundingClientRect(), t = trilho.getBoundingClientRect();
+      if (r.left < t.left) trilho.scrollLeft -= (t.left - r.left) + 24;
+      else if (r.right > t.right) trilho.scrollLeft += (r.right - t.right) + 24;
+    });
+  }
+
+})();
+</script>
+<script>
+/* ==========================================================================
+   FLUID DISTORTION · o cursor arrasta um rastro líquido pela fotografia
+   Três etapas, em ping-pong de framebuffers:
+     1. pinta o borrão na posição interpolada do cursor, com intensidade
+        proporcional à VELOCIDADE (é isso que faz parecer físico);
+     2. decai e difunde o rastro do frame anterior;
+     3. usa a inclinação do rastro para deslocar a amostra da foto.
+   ========================================================================== */
+(function () {
+  'use strict';
+  var P = {
+    uStrength:   0.35,  /* força da deformação.  ↑ vira lente; ↓ quase plano   */
+    uDecay:      0.93,  /* persistência do rastro. ↑ cauda longa; ↓ some logo  */
+    brushRadius: 0.045, /* raio do borrão, em altura de tela                   */
+    lerpFactor:  0.10,  /* peso do movimento. ↑ cola no cursor; ↓ mais pesado  */
+    chromatic:   0.02,  /* aberração cromática. ↑ franja colorida              */
+    focoY:       0.50,  /* recorte da foto, medido do topo (igual object-position) */
+    ganho:       0.06,  /* quanto de tela o rastro empurra na força máxima     */
+    velEscala:   14.0   /* quanto de velocidade satura o borrão                */
+  };
+
+  var palco = document.querySelector('.hero__foto');
+  if (!palco) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (window.matchMedia('(hover: none)').matches) return;   /* sem cursor, sem efeito */
+
+  var canvas = document.createElement('canvas');
+  canvas.className = 'hero__fluido';
+  canvas.setAttribute('aria-hidden', 'true');
+  var op = { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: false };
+  var gl = canvas.getContext('webgl2', op) || canvas.getContext('webgl', op);
+  if (!gl) return;
+
+  var VERT = [
+    'attribute vec2 position;',
+    'varying vec2 vUv;',
+    'void main(){ vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }'
+  ].join('\n');
+
+  var FRAG_RASTRO = [
+    'precision highp float;',
+    'uniform sampler2D tPrev;',
+    'uniform vec2  uTexel;',
+    'uniform vec2  uMouse;',
+    'uniform vec2  uPrev;',
+    'uniform float uDecay;',
+    'uniform float uRadius;',
+    'uniform float uSpeed;',
+    'uniform float uAspect;',
+    'varying vec2 vUv;',
+    /* distância ao segmento percorrido no frame: sem isso o rastro vira uma
+       fileira de bolinhas quando o cursor corre */
+    'float distSeg(vec2 p, vec2 a, vec2 b){',
+    '  vec2 pa = p - a, ba = b - a;',
+    '  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0);',
+    '  return length(pa - ba * h);',
+    '}',
+    'void main(){',
+    '  float c = texture2D(tPrev, vUv).r;',
+    '  float b = texture2D(tPrev, vUv + vec2(uTexel.x, 0.0)).r',
+    '          + texture2D(tPrev, vUv - vec2(uTexel.x, 0.0)).r',
+    '          + texture2D(tPrev, vUv + vec2(0.0, uTexel.y)).r',
+    '          + texture2D(tPrev, vUv - vec2(0.0, uTexel.y)).r;',
+    '  float t = mix(c, b * 0.25, 0.28) * uDecay;',
+    /* piso: 8 bits não chegam a zero só multiplicando, e o resto de rastro
+       deixaria a foto levemente torta para sempre */
+    '  t = max(t - 0.004, 0.0);',
+    '  vec2 p = vec2(vUv.x * uAspect, vUv.y);',
+    '  float d = distSeg(p, uPrev, uMouse);',
+    '  float brush = smoothstep(uRadius, 0.0, d) * uSpeed;',
+    '  gl_FragColor = vec4(min(t + brush, 1.0), 0.0, 0.0, 1.0);',
+    '}'
+  ].join('\n');
+
+  /* a inclinação sai por diferença central, e não por dFdx/dFdy: derivadas
+     dependem de extensão em WebGL1 e faltam em algumas implementações */
+  var FRAG_FINAL = [
+    'precision highp float;',
+    'uniform sampler2D tMap;',
+    'uniform sampler2D tTrail;',
+    'uniform vec2  uTexel;',
+    'uniform vec2  uCover;',
+    'uniform float uFocoY;',
+    'uniform float uStrength;',
+    'uniform float uChromatic;',
+    'uniform float uGanho;',
+    'uniform float uRadius;',
+    'varying vec2 vUv;',
+    'void main(){',
+    '  float tx = texture2D(tTrail, vUv + vec2(uTexel.x, 0.0)).r',
+    '           - texture2D(tTrail, vUv - vec2(uTexel.x, 0.0)).r;',
+    '  float ty = texture2D(tTrail, vUv + vec2(0.0, uTexel.y)).r',
+    '           - texture2D(tTrail, vUv - vec2(0.0, uTexel.y)).r;',
+    '  vec2 grad = vec2(tx, ty) * 0.5 / uTexel * uRadius;',
+    '  vec2 disp = grad * uStrength * uGanho;',
+    '  vec2 uv = (vUv - 0.5) * uCover + vec2(0.5, uFocoY);',
+    /* R, G e B a 1.02, 1.00 e 0.98 do deslocamento — é isso que dá vidro */
+    '  vec3 col;',
+    '  col.r = texture2D(tMap, uv + disp * (1.0 + uChromatic)).r;',
+    '  col.g = texture2D(tMap, uv + disp).g;',
+    '  col.b = texture2D(tMap, uv + disp * (1.0 - uChromatic)).b;',
+    /* menisco: a crista do rastro pega luz, como a borda de uma gota */
+    '  float crista = smoothstep(0.0, 1.0, length(grad) * 1.6);',
+    '  col += crista * 0.16 * vec3(1.0, 0.97, 0.92);',
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'
+  ].join('\n');
+
+  function compila(tipo, fonte) {
+    var s = gl.createShader(tipo);
+    gl.shaderSource(s, fonte); gl.compileShader(s);
+    return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+  }
+  function programa(frag) {
+    var v = compila(gl.VERTEX_SHADER, VERT), f = compila(gl.FRAGMENT_SHADER, frag);
+    if (!v || !f) return null;
+    var p = gl.createProgram();
+    gl.attachShader(p, v); gl.attachShader(p, f);
+    gl.bindAttribLocation(p, 0, 'position'); gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) return null;
+    var u = {}, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS), i;
+    for (i = 0; i < n; i++) { var nm = gl.getActiveUniform(p, i).name; u[nm] = gl.getUniformLocation(p, nm); }
+    return { p: p, u: u };
+  }
+  var progRastro = programa(FRAG_RASTRO), progFinal = programa(FRAG_FINAL);
+  if (!progRastro || !progFinal) return;
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  gl.disable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
+
+  function textura(l, a, dados) {
+    var t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (dados) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, dados);
+    else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, l, a, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    return t;
+  }
+
+  /* ping-pong: ler e escrever a mesma textura no mesmo frame é indefinido */
+  function alvo(l, a) {
+    var t = textura(l, a, null), fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { fb: fb, tex: t, l: l, a: a };
+  }
+
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var A = null, B = null, texFoto = null;
+  var aspecto = 1, razaoFoto = 1400 / 2100;
+  var cover = [1, 1], focoV = 0.5;
+
+  function dimensiona() {
+    var r = palco.getBoundingClientRect();
+    var W = Math.max(1, Math.round(r.width)), H = Math.max(1, Math.round(r.height));
+    aspecto = W / H;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+
+    /* FBOs a metade do DPR: o rastro é borrado de qualquer forma */
+    var lw = Math.max(2, Math.round(W * dpr * 0.5)), lh = Math.max(2, Math.round(H * dpr * 0.5));
+    if (A) { gl.deleteTexture(A.tex); gl.deleteFramebuffer(A.fb); }
+    if (B) { gl.deleteTexture(B.tex); gl.deleteFramebuffer(B.fb); }
+    A = alvo(lw, lh); B = alvo(lw, lh);
+
+    cover = razaoFoto > aspecto ? [aspecto / razaoFoto, 1] : [1, razaoFoto / aspecto];
+    /* mesma conta do CSS: a imagem é posicionada DENTRO da caixa */
+    focoV = 1 - ((1 - cover[1]) * P.focoY + cover[1] / 2);
+  }
+
+  var alv = { x: .5, y: .5 }, atual = { x: .5, y: .5 }, antes = { x: .5, y: .5 };
+  var velocidade = 0, tocou = false;
+  window.addEventListener('pointermove', function (e) {
+    var r = palco.getBoundingClientRect();
+    alv.x = (e.clientX - r.left) / r.width;
+    alv.y = 1 - (e.clientY - r.top) / r.height;
+    if (!tocou) { tocou = true; atual.x = antes.x = alv.x; atual.y = antes.y = alv.y; }
+  }, { passive: true });
+
+  var raf = 0, visivel = false, pronto = false;
+
+  function frame() {
+    raf = requestAnimationFrame(frame);
+    atual.x += (alv.x - atual.x) * P.lerpFactor;
+    atual.y += (alv.y - atual.y) * P.lerpFactor;
+    var dx = (atual.x - antes.x) * aspecto, dy = atual.y - antes.y;
+    var v = Math.min(1, Math.sqrt(dx * dx + dy * dy) * P.velEscala);
+    /* sobe rápido e cai devagar: o rastro não corta seco quando o cursor para */
+    velocidade += (v - velocidade) * (v > velocidade ? 0.55 : 0.07);
+
+    var r = progRastro;
+    gl.useProgram(r.p);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, B.fb);
+    gl.viewport(0, 0, B.l, B.a);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, A.tex);
+    gl.uniform1i(r.u.tPrev, 0);
+    gl.uniform2f(r.u.uTexel, 1.4 / B.l, 1.4 / B.a);
+    gl.uniform2f(r.u.uMouse, atual.x * aspecto, atual.y);
+    gl.uniform2f(r.u.uPrev, antes.x * aspecto, antes.y);
+    gl.uniform1f(r.u.uDecay, P.uDecay);
+    gl.uniform1f(r.u.uRadius, P.brushRadius);
+    gl.uniform1f(r.u.uSpeed, velocidade);
+    gl.uniform1f(r.u.uAspect, aspecto);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    var t = A; A = B; B = t;
+
+    var f = progFinal;
+    gl.useProgram(f.p);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texFoto); gl.uniform1i(f.u.tMap, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, A.tex);   gl.uniform1i(f.u.tTrail, 1);
+    gl.uniform2f(f.u.uTexel, 1 / A.l, 1 / A.a);
+    gl.uniform2f(f.u.uCover, cover[0], cover[1]);
+    gl.uniform1f(f.u.uFocoY, focoV);
+    gl.uniform1f(f.u.uStrength, P.uStrength);
+    gl.uniform1f(f.u.uChromatic, P.chromatic);
+    gl.uniform1f(f.u.uGanho, P.ganho);
+    gl.uniform1f(f.u.uRadius, P.brushRadius);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    antes.x = atual.x; antes.y = atual.y;
+  }
+  function liga() { if (pronto && visivel && !raf) raf = requestAnimationFrame(frame); }
+  function pausa() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+  var redim;
+  window.addEventListener('resize', function () {
+    clearTimeout(redim);
+    redim = setTimeout(function () { if (pronto) dimensiona(); }, 140);
+  });
+  canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); pausa(); canvas.remove(); });
+
+  /* a capa em aquarela enquanto o pássaro voa; no pouso a textura vira a fotografia */
+  var foto = new Image();
+  foto.decoding = 'async';
+  foto.onload = function () {
+    razaoFoto = foto.naturalWidth / foto.naturalHeight;
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    texFoto = textura(0, 0, foto);
+    palco.appendChild(canvas);
+    dimensiona();
+    pronto = true;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (ent) {
+        visivel = ent[0].isIntersecting;
+        if (visivel) liga(); else pausa();
+      }, { rootMargin: '15% 0px' }).observe(palco);
+    } else { visivel = true; }
+    liga();
+  };
+  foto.src = window.vbCapaJaSecou ? './img/vinha-aerea.webp' : './img/vinha-aquarela.webp';
+
+  /* o pouso seca a folha: a fotografia entra por cima da aquarela que está embaixo
+     do canvas, num fade de 0,9 s — o mesmo tempo do traço branco do logotipo */
+  window.vbCapaSeca = function (comFade) {
+    var real = new Image();
+    real.decoding = 'async';
+    real.onload = function () {
+      razaoFoto = real.naturalWidth / real.naturalHeight;
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      texFoto = textura(0, 0, real);
+      if (pronto) dimensiona();
+      if (comFade) {
+        canvas.style.transition = 'none';
+        canvas.style.opacity = 0;
+        void canvas.offsetWidth;
+        canvas.style.transition = 'opacity .9s cubic-bezier(.65,0,.35,1)';
+        requestAnimationFrame(function () { canvas.style.opacity = 1; });
+      }
+      liga();
+    };
+    real.src = './img/vinha-aerea.webp';
+  };
+})();
+
+/* ==========================================================
+   SCRUB · o scroll anda dentro do vídeo (nunca o vídeo toca)
+   ========================================================== */
+(function () {
+  'use strict';
+  var secao = document.getElementById('scrub');
+  if (!secao) return;
+
+  var reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var video = document.getElementById('scrub-video');
+  var tela  = document.getElementById('scrub-tela');
+  var barra = document.getElementById('scrub-barra');
+  var conta = document.getElementById('scrub-conta');
+  var atos  = [].slice.call(secao.querySelectorAll('.ato'));
+
+  function estatico() {                       /* poster + três blocos em fluxo */
+    secao.classList.add('is-estatico');
+    atos.forEach(function (a) { a.classList.add('is-dentro'); });
+  }
+  if (reduzido || !window.gsap || !window.ScrollTrigger || !tela.getContext) { estatico(); return; }
+  video.addEventListener('error', estatico);
+
+  gsap.registerPlugin(ScrollTrigger);
+  var ctx = tela.getContext('2d', { alpha: false });
+
+  /* a marca d'água do canto inferior direito é apagada quadro a quadro. Ela é
+     larga e baixa ("Happy Horse 1.1"), então o que cobre é um retângulo com as
+     bordas desmanchadas — e não um disco. Sob blend screen, preto some.
+     O retângulo declarado é o que fica OPACO; o desmanche sobra para fora dele,
+     então mexer no feather nunca descobre a marca. */
+  var MARCA = { x0: 0.872, y0: 0.928, x1: 1.004, y1: 0.978 };
+  function pinta() {
+    ctx.drawImage(video, 0, 0, tela.width, tela.height);
+    var W = tela.width, H = tela.height;
+    var a = MARCA.x0 * W, b = MARCA.y0 * H, c = MARCA.x1 * W, d = MARCA.y1 * H;
+    var f = Math.max(6, W * 0.012);
+    ctx.save();
+    if ('filter' in ctx) ctx.filter = 'blur(' + f + 'px)';
+    ctx.fillStyle = '#000';
+    ctx.fillRect(a - f, b - f, (c - a) + 2 * f, (d - b) + 2 * f);
+    ctx.restore();
+    ctx.fillStyle = '#000';
+    ctx.fillRect(a, b, c - a, d - b);
+  }
+
+  function medidor(p, texto) {
+    barra.style.transform = 'scaleX(' + Math.max(0, Math.min(1, p)) + ')';
+    conta.textContent = texto || (Math.round(p * 100) + '%');
+  }
+  /* o texto do Tiê não depende da rolagem: entra quando o vídeo passa da metade
+     e fica até o fim da seção — inclusive nas voltas seguintes do laço */
+  var atosLigados = false;
+  function checaAtos() {
+    if (atosLigados || !video.duration) return;
+    if (video.currentTime >= video.duration * 0.5) {
+      atosLigados = true;
+      atos.forEach(function (a) { a.classList.remove('is-fora'); a.classList.add('is-dentro'); });
+    }
+  }
+
+  var alvo = 0, aplicado = -1, pronto = false, visivel = false, rodando = false;
+
+  /* o laço só repinta o quadro corrente: quem avança o tempo é o próprio vídeo */
+  function laco() {
+    if (!visivel) { rodando = false; return; }
+    if (pronto) {
+      pinta();
+      if (video.duration) medidor(video.currentTime / video.duration);
+    }
+    checaAtos();
+    requestAnimationFrame(laco);
+  }
+  function acorda() { if (visivel && !rodando) { rodando = true; requestAnimationFrame(laco); } }
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (ent) {
+      visivel = ent[0].isIntersecting; acorda();
+    }, { rootMargin: '20% 0px' }).observe(secao);
+  } else { visivel = true; acorda(); }
+
+  /* o pino é do CSS (position:sticky). O vídeo toca sozinho, em laço: a rolagem
+     só liga/desliga a pintura e troca os atos do texto. */
+  function criaTrigger() {
+    ScrollTrigger.create({
+      trigger: secao, start: 'top bottom', end: 'bottom top',
+      onUpdate: function (self) {
+        var dentro = self.isActive;
+        if (dentro === visivel) return;
+        visivel = dentro;
+        if (dentro) { video.play()['catch'](function () {}); acorda(); }
+        else video.pause();
+      }
+    });
+  }
+
+  /* espera obrigatória: sem metadata, video.duration é NaN.
+     O arquivo é baixado como Blob de propósito: o servidor não responde a
+     Range requests, e sem Range o <video> reporta seekable vazio e ignora
+     currentTime — não haveria scrub nenhum. O filete mostra o download real. */
+  var FONTE = './img/tie-scrub.mp4';
+
+  function comMetadata() {
+    if (!video.duration || isNaN(video.duration)) { estatico(); return; }
+    if (!video.seekable.length || video.seekable.end(0) < 1) { estatico(); return; }
+    criaTrigger();
+    pronto = true;
+    video.loop = true;
+    video.play()['catch'](function () {});
+    pinta();
+    medidor(0);
+    ScrollTrigger.refresh();
+    acorda();
+  }
+
+  (function baixa() {
+    medidor(0, 'Carregando');
+    fetch(FONTE).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      var total = +r.headers.get('content-length') || 0;
+      if (!r.body || !total) return r.blob();
+      var leitor = r.body.getReader(), pedacos = [], lidos = 0;
+      return (function proximo() {
+        return leitor.read().then(function (res) {
+          if (res.done) return new Blob(pedacos, { type: 'video/mp4' });
+          pedacos.push(res.value); lidos += res.value.length;
+          medidor(lidos / total, 'Carregando');
+          return proximo();
+        });
+      })();
+    }).then(function (blob) {
+      video.removeAttribute('poster');
+      video.src = URL.createObjectURL(blob);
+      video.addEventListener('loadedmetadata', comMetadata, { once: true });
+      video.load();
+    })['catch'](estatico);
+  })();
+})();
+</script>
+<script>
+/* Mata Atlântica · o vídeo de fundo só roda enquanto a seção está em vista —
+   o autoplay do navegador não basta, ele adia o início e não retoma. */
+(function () {
+  var v = document.getElementById('mata-video');
+  var s = document.getElementById('mata');
+  if (!v || !s) return;
+  function toca() { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) toca(); else v.pause(); });
+    }, { rootMargin: '10% 0px' }).observe(s);
+  } else { toca(); }
+  v.addEventListener('loadeddata', function () {
+    if (s.getBoundingClientRect().top < innerHeight) toca();
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && s.getBoundingClientRect().bottom > 0 &&
+        s.getBoundingClientRect().top < innerHeight) toca();
+  });
+})();
+/* ---------- sobre nós: o bloco entra deslizando da esquerda, linha a linha ---------- */
+(function () {
+  var secao = document.getElementById('sobre');
+  if (!secao) return;
+  var rotulo = secao.querySelector('.sobre__rotulo');
+  var par = secao.querySelector('.sobre__manifesto');
+  if (!par) return;
+  var reduz = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var original = par.innerHTML;
+  var jaEntrou = false;
+
+  function divide() {
+    par.innerHTML = original;
+    par.style.hyphens = 'manual';
+    par.style.webkitHyphens = 'manual';
+    var unidades = [], frag = document.createDocumentFragment(), espaco = false;
+    Array.prototype.slice.call(par.childNodes).forEach(function (no) {
+      if (no.nodeType === 3) {
+        no.textContent.split(/(\s+)/).forEach(function (t) {
+          if (!t) return;
+          if (/^\s+$/.test(t)) { espaco = true; frag.appendChild(document.createTextNode(' ')); return; }
+          var s = document.createElement('span');
+          s.textContent = t; s.dataset.esp = espaco ? '1' : '0'; espaco = false;
+          frag.appendChild(s); unidades.push(s);
+        });
+      } else {
+        var s = document.createElement('span');
+        s.appendChild(no.cloneNode(true));
+        s.dataset.esp = espaco ? '1' : '0'; espaco = false;
+        if (no.classList && (no.classList.contains('sobre__capitular') || no.classList.contains('sr-only'))) s.dataset.solta = '1';
+        frag.appendChild(s); unidades.push(s);
+      }
+    });
+    par.innerHTML = '';
+    par.appendChild(frag);
+
+    var linhas = [], atual = null, topo = null;
+    unidades.forEach(function (u) {
+      if (u.dataset.solta === '1') {                 /* capitular acompanha a 1ª linha */
+        if (!atual) { atual = []; linhas.push(atual); }
+        atual.push(u); return;
+      }
+      var t = Math.round(u.offsetTop);
+      if (topo === null) { if (!atual) { atual = []; linhas.push(atual); } topo = t; }
+      else if (Math.abs(t - topo) > 4) { atual = []; linhas.push(atual); topo = t; }
+      atual.push(u);
+    });
+
+    var html = linhas.map(function (linha, i) {
+      var dentro = linha.map(function (u, j) {
+        return (j > 0 && u.dataset.esp === '1' ? ' ' : '') + u.innerHTML;
+      }).join('');
+      var cls = 'sobre__linha sobre__slide' + (i < linhas.length - 1 ? ' sobre__linha--justa' : '');
+      return '<span class="' + cls + '">' + dentro + '</span>';
+    }).join('');
+    par.innerHTML = html;
+    return par.querySelectorAll('.sobre__linha');
+  }
+
+  function anima() {
+    var alvos = [rotulo].concat(Array.prototype.slice.call(par.querySelectorAll('.sobre__linha')));
+    alvos.forEach(function (el, i) {
+      if (!el) return;
+      el.style.transitionDelay = (0.06 + i * 0.1) + 's';
+      el.classList.add('is-dentro');
+    });
+    jaEntrou = true;
+  }
+
+  function mostra() {
+    if (rotulo) rotulo.classList.add('is-dentro');
+    par.querySelectorAll('.sobre__linha').forEach(function (l) { l.classList.add('is-dentro'); });
+  }
+
+  function noCampo() {
+    var r = par.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    return r.top < vh * 0.88 && r.bottom > vh * 0.06;
+  }
+  function monta() {
+    divide();
+    if (reduz || jaEntrou) { mostra(); return; }
+    var agendado = false;
+    function olha() {
+      agendado = false;
+      if (!noCampo()) return;
+      window.removeEventListener('scroll', pede);
+      window.removeEventListener('resize', pede);
+      anima();
+    }
+    function pede() { if (!agendado) { agendado = true; requestAnimationFrame(olha); } }
+    window.addEventListener('scroll', pede, { passive: true });
+    window.addEventListener('resize', pede);
+    pede();
+    /* rede de segurança: nada fica invisível se o gatilho falhar */
+    setTimeout(function () { if (!jaEntrou) { anima(); } }, 6000);
+  }
+
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(monta);
+  else window.addEventListener('load', monta);
+
+  var t;
+  window.addEventListener('resize', function () {
+    clearTimeout(t);
+    t = setTimeout(function () {
+      var largura = par.clientWidth;
+      if (largura === monta._w) return;
+      monta._w = largura;
+      divide();
+      if (jaEntrou || reduz) mostra();
+      else monta();
+    }, 220);
+  });
+})();
+
+/* ---------- as fichas dos vinhos: abrem por cima da página ---------- */
+['tie', 'tiepreto'].forEach(function (nome) {
+  var abre  = document.getElementById('abre-' + nome);
+  var ficha = document.getElementById('ficha-' + nome);
+  var fecha = document.getElementById('fecha-' + nome);
+  if (!abre || !ficha) return;
+  function mostra(sim) {
+    ficha.hidden = !sim;
+    abre.setAttribute('aria-expanded', sim ? 'true' : 'false');
+    document.body.style.overflow = sim ? 'hidden' : '';
+    if (sim && fecha) fecha.focus();
+  }
+  abre.addEventListener('click', function (e) { e.preventDefault(); mostra(true); });
+  ficha.addEventListener('click', function (e) { if (e.target === ficha) mostra(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !ficha.hidden) { mostra(false); abre.focus(); }
+  });
+  if (fecha) fecha.addEventListener('click', function () { mostra(false); abre.focus(); });
+});
+
+/* ---------- a serra do rodapé: desenha ao descer, depois vira corda ----------
+   Duas fases. Na primeira, a rolagem preenche o traço (stroke-dashoffset).
+   Ao completar, os pontos de cada linha ganham física de corda: o cursor bate,
+   a onda corre pela linha, reflete nas pontas presas e volta. */
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var cena = document.getElementById('serra-cena');
+  var svg  = document.getElementById('serra-svg');
+  if (!cena || !svg) return;
+
+  var tracos = [].slice.call(svg.querySelectorAll('.serra__traco'));
+  var VBH = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.height) || 96;
+  var reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- fase 1 · o desenho ---- */
+  var pronta = false;
+  function desenha() {
+    var r = cena.getBoundingClientRect();
+    /* de quando a serra assoma no rodapé até um terço acima do fim da tela */
+    var p = (innerHeight - r.top) / (innerHeight * 0.42);
+    p = p < 0 ? 0 : (p > 1 ? 1 : p);
+    tracos.forEach(function (t, i) {
+      var q = (p - i * 0.08) / (1 - i * 0.08);      /* cada linha vem um passo atrás */
+      q = q < 0 ? 0 : (q > 1 ? 1 : q);
+      t.style.strokeDashoffset = 1 - q;
+    });
+    if (p >= 1 && !pronta) { pronta = true; viva(); }
+  }
+
+  if (reduz) { tracos.forEach(function (t) { t.style.strokeDashoffset = 0; }); }
+  else {
+    var pedido = false;
+    addEventListener('scroll', function () {
+      if (pedido || pronta) return;
+      pedido = true;
+      requestAnimationFrame(function () { pedido = false; desenha(); });
+    }, { passive: true });
+    addEventListener('resize', function () { if (!pronta) desenha(); });
+    desenha();
+  }
+
+  /* ---- fase 2 · a corda ---- */
+  function viva() {
+    cena.classList.add('is-viva');
+    if (reduz) return;
+
+    var N = 170, RAIO = 130, TENSAO = 0.30, MOLA = 0.060,
+        ATRITO = 0.955, ARRASTO = 0.72, IMPULSO = 5, TETO = 18;
+
+    var linhas = tracos.map(function (el, i) {
+      var L = el.getTotalLength(), pts = [];
+      for (var k = 0; k <= N; k++) {
+        var p = el.getPointAtLength(L * k / N);
+        pts.push({ bx: p.x, by: p.y, dx: 0, dy: 0, vx: 0, vy: 0 });
+      }
+      el.removeAttribute('pathLength');
+      return { pts: pts, el: el, peso: 1 - i * 0.12,
+               ox: new Float32Array(N + 1), oy: new Float32Array(N + 1) };
+    });
+
+    function tracado(pts) {
+      var s = 'M' + (pts[0].bx + pts[0].dx).toFixed(2) + ' ' + (pts[0].by + pts[0].dy).toFixed(2);
+      for (var i = 1; i < pts.length - 1; i++) {
+        var a = pts[i], b = pts[i + 1];
+        var axx = a.bx + a.dx, ayy = a.by + a.dy;
+        var mx = (axx + b.bx + b.dx) / 2, my = (ayy + b.by + b.dy) / 2;
+        s += ' Q' + axx.toFixed(2) + ' ' + ayy.toFixed(2) + ' ' + mx.toFixed(2) + ' ' + my.toFixed(2);
+      }
+      var u = pts[pts.length - 1];
+      return s + ' L' + (u.bx + u.dx).toFixed(2) + ' ' + (u.by + u.dy).toFixed(2);
+    }
+
+    var px = -9999, py = -9999, ax = 0, ay = 0, dentro = false, raf = 0, vel = 0;
+
+    cena.addEventListener('pointermove', function (ev) {
+      var r = cena.getBoundingClientRect();
+      var x = (ev.clientX - r.left) / r.width * 1200;
+      var y = (ev.clientY - r.top) / r.height * VBH;
+      if (dentro) { ax = x - px; ay = y - py; } else { ax = 0; ay = 0; dentro = true; }
+      px = x; py = y;
+      vel = Math.hypot(ax, ay);
+      if (vel > IMPULSO) { ax *= IMPULSO / vel; ay *= IMPULSO / vel; }
+      toca();
+      liga();
+    });
+    cena.addEventListener('pointerleave', function () { dentro = false; ax = 0; ay = 0; });
+
+    function toca() {
+      linhas.forEach(function (linha) {
+        var pts = linha.pts;
+        for (var i = 0; i < pts.length; i++) {
+          var pt = pts[i];
+          var ex = pt.bx + pt.dx - px, ey = (pt.by + pt.dy - py) * 2.6;
+          var dist = Math.hypot(ex, ey);
+          if (dist > RAIO) continue;
+          var q = 1 - dist / RAIO;
+          var g = q * q * linha.peso * ARRASTO;
+          pt.vx += ax * g; pt.vy += ay * g;
+          if (dist > 0.001) {
+            var e = q * q * linha.peso * 0.10 * (1 + Math.min(vel, IMPULSO) * 0.05);
+            pt.vx += ex / dist * e; pt.vy += ey / dist * e;
+          }
+        }
+      });
+    }
+
+    function passo() {
+      raf = 0;
+      var vivo = false;
+      linhas.forEach(function (linha) {
+        var pts = linha.pts, n = pts.length, i, pt;
+        var ox = linha.ox, oy = linha.oy;
+        for (i = 0; i < n; i++) { ox[i] = pts[i].dx; oy[i] = pts[i].dy; }
+        for (i = 0; i < n; i++) {
+          pt = pts[i];
+          var e = i > 0 ? i - 1 : 0, d2 = i < n - 1 ? i + 1 : n - 1;
+          pt.vx += ((ox[e] + ox[d2]) / 2 - ox[i]) * TENSAO;
+          pt.vy += ((oy[e] + oy[d2]) / 2 - oy[i]) * TENSAO;
+          pt.vx -= pt.dx * MOLA; pt.vy -= pt.dy * MOLA;
+          pt.vx *= ATRITO; pt.vy *= ATRITO;
+          pt.dx += pt.vx; pt.dy += pt.vy;
+          if (pt.dx >  TETO) { pt.dx =  TETO; pt.vx *= -0.3; }
+          else if (pt.dx < -TETO) { pt.dx = -TETO; pt.vx *= -0.3; }
+          if (pt.dy >  TETO) { pt.dy =  TETO; pt.vy *= -0.3; }
+          else if (pt.dy < -TETO) { pt.dy = -TETO; pt.vy *= -0.3; }
+        }
+        pts[0].dx = pts[0].dy = pts[n - 1].dx = pts[n - 1].dy = 0;
+        for (var k = 0; k < n; k += 12) {
+          if (Math.abs(pts[k].dx) + Math.abs(pts[k].dy) + Math.abs(pts[k].vx) + Math.abs(pts[k].vy) > 0.02) { vivo = true; break; }
+        }
+        linha.el.setAttribute('d', tracado(pts));
+      });
+      if (vivo || dentro) liga();
+    }
+    function liga() { if (!raf) raf = requestAnimationFrame(passo); }
+  }
+})();
+</script>
+</body>
+</html>

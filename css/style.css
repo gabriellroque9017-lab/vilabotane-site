@@ -1,0 +1,424 @@
+/* ==========================================================
+   VASSOURAS — LANDING PORTAL
+   Tudo o que é ajustável está no :root abaixo.
+   ========================================================== */
+
+:root{
+  /* --- paleta --- */
+  --tinta:      #12100D;   /* quase-preto */
+  --marfim:     #EFE8D8;
+  --ouro:       #C6A252;
+  --terracota:  #B0461C;   /* só acento de interação */
+
+  /* --- cor de cada rótulo (ajustável) --- */
+  --cor-selo:         var(--marfim);
+  --cor-vinicola:     var(--marfim);
+  --cor-restaurante:  var(--ouro);
+
+  /* --- cortina de saída por porta --- */
+  --saida-vinicola:     #241C0E;
+  --saida-restaurante:  #17120F;
+
+  /* --- tipografia --- */
+  --serif: "Cinzel", "Trajan Pro", "Times New Roman", Georgia, serif;
+
+  /* --- geometria da cena --- */
+  --seam: 50%;             /* posição do filete; o JS anima esta variável */
+  --filete: rgba(239,232,216,.20);
+
+  /* --- ritmo do movimento --- */
+  --dur: .7s;
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+
+/* ---------- reset mínimo ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; }
+html{ background:var(--tinta); }
+body{
+  background:var(--tinta);
+  color:var(--marfim);
+  font-family:var(--serif);
+  overflow:hidden;                 /* cena única, sem rolagem */
+  -webkit-font-smoothing:antialiased;
+}
+img{ display:block; }
+a{ color:var(--marfim); text-decoration:none; }
+a:hover{ color:var(--ouro); }
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* ==========================================================
+   1. LOADER
+   ========================================================== */
+.loader{
+  position:fixed; inset:0; z-index:90;
+  pointer-events:none;
+}
+.loader__folha{
+  position:absolute; left:0; right:0; height:50.2%;
+  background:var(--tinta);
+  will-change:transform;
+}
+.loader__folha--topo{ top:0; }
+.loader__folha--base{ bottom:0; }
+
+.loader.is-done{ display:none; }
+
+/* ==========================================================
+   2. A CENA
+   ========================================================== */
+.portal{
+  position:fixed; inset:0;
+  display:flex;
+  z-index:1;
+}
+
+.porta{
+  position:relative;
+  flex:0 0 50%;
+  min-width:0;
+  overflow:hidden;
+  display:block;
+  outline:none;
+  cursor:pointer;
+}
+
+/* ---------- foto full-bleed ---------- */
+.porta__media{
+  position:absolute; inset:0;
+  display:block;
+  will-change:transform;
+  transform:scale(1.015);
+}
+.porta__media img{
+  width:100%; height:100%;
+  object-fit:cover;
+  object-position:center;
+}
+.porta--vinicola    .porta__media img{ object-position:50% 46%; }
+
+/* a mesma foto, pintada em aquarela: entra quando a marca toma cor.
+   O enquadramento é idêntico ao da foto, então os contornos coincidem —
+   a tinta molha a porta de baixo para cima, como a cor sobe pela marca. */
+.porta__aquarela{
+  position:absolute; inset:0; opacity:0; --nivel:0%;
+  -webkit-mask-image:linear-gradient(to top, #000 var(--nivel), rgba(0,0,0,0) calc(var(--nivel) + 22%));
+          mask-image:linear-gradient(to top, #000 var(--nivel), rgba(0,0,0,0) calc(var(--nivel) + 22%));
+  will-change:opacity;
+}
+.porta--restaurante .porta__media img{ object-position:32% 64%; }
+
+/* ---------- gradiente de legibilidade ---------- */
+.porta__veu{
+  position:absolute; inset:0;
+  background:linear-gradient(to top,
+    rgba(18,16,13,.92) 0%,
+    rgba(18,16,13,.62) 22%,
+    rgba(18,16,13,.12) 52%,
+    rgba(18,16,13,.28) 100%);
+  pointer-events:none;
+}
+/* a uva já é escura: véu mais leve nessa metade */
+.porta--vinicola .porta__veu{
+  background:linear-gradient(to top,
+    rgba(18,16,13,.86) 0%,
+    rgba(18,16,13,.48) 24%,
+    rgba(18,16,13,.04) 55%,
+    rgba(18,16,13,.20) 100%);
+}
+/* escurecimento da metade inativa (animado pelo JS) */
+.porta__sombra{
+  position:absolute; inset:0;
+  background:var(--tinta);
+  opacity:0;
+  pointer-events:none;
+}
+
+/* ---------- marca do pássaro (placeholder) ---------- */
+.marca{
+  position:absolute;
+  left:50%; top:69%;
+  width:clamp(75px,9.35vw,139px);
+  transform:translate(-50%,-50%);
+  display:block;
+  isolation:isolate;               /* o z-index:-1 do disco não vaza do bloco */
+  pointer-events:none;
+  opacity:1;
+  /* leve sombra para o traço se sustentar sobre a uva */
+  filter:drop-shadow(0 1px 5px rgba(18,16,13,.55));
+}
+.marca img{ width:100%; height:auto; display:block; }
+/* o pássaro em aquarela fica sobreposto ao traço, no mesmo enquadramento */
+.marca__cor{
+  position:absolute; left:0; top:0;
+  opacity:0;
+}
+/* o disco em aquarela só entra no clique: em repouso fica só o traço branco */
+.marca img.marca__disco{
+  position:absolute;
+  left:-48.995%; top:-19.58%; width:197.99%; height:auto;
+  opacity:0; pointer-events:none;
+  z-index:-1;                      /* atrás do pássaro e do rótulo */
+}
+.marca__linha,.marca__cor,.marca__disco{ will-change:opacity,filter; }
+
+/* o mouse sobre o PÁSSARO troca o traço pela aquarela com o disco.
+   Só na vinícola: a casa do lago tem os efeitos dela.
+   Precisa de !important: o GSAP deixa a opacidade do traço no atributo style. */
+/* em repouso: só o traço branco. O disco e a aquarela entram no clique. */
+.marca{ pointer-events:auto; }
+#porta-vinicola .marca:hover .marca__disco{ opacity:0 !important; }
+#porta-vinicola .marca:hover .marca__cor{ opacity:0 !important; }
+#porta-vinicola .marca:hover .marca__linha{ opacity:1 !important; }
+.marca__disco,
+#porta-vinicola .marca:not(:hover) .marca__linha{ transition:opacity .45s var(--ease); }
+
+/* durante o voo o hover não manda mais em nada: quem voa é o sprite */
+/* durante o voo o hover não manda mais em nada: quem voa é o sprite.
+   O disco continua no lugar — é o logotipo que fica para trás. */
+.porta.is-voando .marca__cor,
+.porta.is-voando .marca:hover .marca__cor{ opacity:0 !important; }
+.porta.is-voando .marca__linha,
+.porta.is-voando .marca:hover .marca__linha{ opacity:0 !important; }
+.porta.is-voando .marca{ pointer-events:none !important; }
+/* o galho fica para trás quando o pássaro levanta voo */
+.marca__galho{
+  position:absolute; left:0; top:0;
+  opacity:0;
+  transform-origin:22% 82%;
+}
+/* sprite do voo — posicionado em coordenadas de viewport pelo JS */
+/* o voo em aquarela: 50 recortes numa folha 8x7 */
+.voo{
+  position:fixed; left:0; top:0;
+  display:block;
+  width:150px; height:113px;
+  background:url(../img/voo-sheet-aquarela-site.png) 0 0/800% 700% no-repeat;
+  opacity:0;
+  z-index:70;
+  pointer-events:none;
+  transform-origin:50% 50%;
+  will-change:transform,opacity,background-position;
+  filter:drop-shadow(0 3px 12px rgba(18,16,13,.45));
+}
+
+/* --- marca da Casa do Lago em duas camadas: casa parada, água viva --- */
+.filtros{ position:absolute; width:0; height:0; overflow:hidden; }
+/* a marca da casa tem quatro camadas: traço/cor × parte estática/lago */
+.marca--casa{ aspect-ratio:1706/1139; }
+.marca--casa .camada{ position:absolute; left:0; top:0; right:0; bottom:0; }
+.marca--casa .camada img{ position:absolute; left:0; top:0; width:100%; height:auto; }
+.camada--agua{
+  filter:url(#ondulacao);
+  animation:correnteza 7s ease-in-out infinite;
+  /* o lago cresce a partir da própria linha d'água, que fica no lugar */
+  transform-origin:50% 76.2%;
+  will-change:transform,filter;
+}
+
+/* --- a cor sobe pelo lago (--nivel) e depois se abre em raio (--raio) --- */
+/* inherits:true — as máscaras ficam nos filhos e leem a variável do container */
+@property --nivel{ syntax:'<percentage>'; inherits:true; initial-value:0%; }
+@property --raio { syntax:'<percentage>'; inherits:true; initial-value:0%; }
+.camada--agua{ --nivel:0%; }
+.camada--topo{ --raio:0%; }
+
+.marca__cor-agua{
+  -webkit-mask-image:linear-gradient(to top,#000 calc(var(--nivel) - 17%),transparent var(--nivel));
+          mask-image:linear-gradient(to top,#000 calc(var(--nivel) - 17%),transparent var(--nivel));
+}
+.marca__agua{
+  -webkit-mask-image:linear-gradient(to top,transparent calc(var(--nivel) - 17%),#000 var(--nivel));
+          mask-image:linear-gradient(to top,transparent calc(var(--nivel) - 17%),#000 var(--nivel));
+}
+.marca__cor-topo{
+  -webkit-mask-image:radial-gradient(circle at 50% 84%,#000 calc(var(--raio) - 20%),transparent var(--raio));
+          mask-image:radial-gradient(circle at 50% 84%,#000 calc(var(--raio) - 20%),transparent var(--raio));
+}
+.marca__topo{
+  -webkit-mask-image:radial-gradient(circle at 50% 84%,transparent calc(var(--raio) - 20%),#000 var(--raio));
+          mask-image:radial-gradient(circle at 50% 84%,transparent calc(var(--raio) - 20%),#000 var(--raio));
+}
+@keyframes correnteza{
+  0%   { transform:scale(1.12) translate3d(0,0,0) }
+  25%  { transform:scale(1.12) translate3d(1.5%,.5%,0) }
+  50%  { transform:scale(1.12) translate3d(0,-.4%,0) }
+  75%  { transform:scale(1.12) translate3d(-1.3%,.45%,0) }
+  100% { transform:scale(1.12) translate3d(0,0,0) }
+}
+/* traço em 85% do branco anterior; o colorido entra em opacidade cheia */
+.marca__linha{ opacity:.78; }
+/* a casa é um desenho horizontal: pede mais largura e um traço mais discreto */
+.marca--casa{
+  top:69%;
+  width:clamp(136px,17.85vw,272px);
+  filter:drop-shadow(0 2px 9px rgba(18,16,13,.7));
+}
+
+/* ---------- rótulos da base ---------- */
+.porta__rotulo{
+  position:absolute;
+  left:0; right:0; bottom:clamp(3.4vh,6vh,7.5vh);
+  z-index:8;                       /* fica por cima do disco em aquarela */
+  isolation:isolate;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.9vh;
+  padding:0 4vw;
+  text-align:center;
+  pointer-events:none;
+}
+
+.rotulo{
+  display:block;
+  font-size:clamp(1.2rem,1.95vw,2.5rem);
+  font-weight:400;
+  line-height:1.02;
+  letter-spacing:.26em;
+  text-indent:.26em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  color:var(--cor-vinicola);
+}
+.porta--restaurante .rotulo{ color:var(--cor-restaurante); }
+
+/* máscara de entrada das letras (Splitting.js) */
+.rotulo .word{
+  overflow:hidden; display:inline-block;
+  padding:.34em 0 .06em;      /* folga para os acentos de MICROVINÍCOLA e BISTRÔ */
+  margin-top:-.34em;
+}
+.rotulo .char{ display:inline-block; will-change:transform; }
+
+.submarca{
+  display:block;
+  font-size:clamp(.66rem,.92vw,.98rem);
+  font-weight:400;
+  letter-spacing:.30em;
+  text-indent:.30em;
+  color:rgba(239,232,216,.72);
+  opacity:0;
+  transform:translateY(6px);
+}
+.deixa{
+  display:block;
+  font-size:clamp(.6rem,.8vw,.82rem);
+  font-weight:400;
+  letter-spacing:.30em;
+  text-indent:.30em;
+  text-transform:uppercase;
+  color:var(--marfim);
+  opacity:0;
+  transform:translateY(6px);
+}
+
+/* ---------- filete ---------- */
+.filete{
+  position:absolute; top:0; bottom:0;
+  left:var(--seam);
+  width:1px; margin-left:-.5px;
+  background:var(--filete);
+  z-index:5;
+  pointer-events:none;
+}
+
+/* ==========================================================
+   3. SELO SUPERIOR
+   ========================================================== */
+.selo{
+  position:fixed; z-index:6;
+  top:clamp(2.6vh,4.4vh,5.4vh);
+  left:var(--seam);
+  transform:translateX(-50%);
+  margin:0;
+  font-size:clamp(.6rem,1.02vw,.9rem);
+  font-weight:400;
+  letter-spacing:.56em;
+  text-indent:.56em;
+  text-transform:uppercase;
+  color:var(--cor-selo);
+  white-space:nowrap;
+  pointer-events:none;
+  opacity:0;
+}
+.em{ padding:0 .12em; }
+
+/* ==========================================================
+   4. FOCO VISÍVEL (teclado)
+   ========================================================== */
+.porta:focus-visible{ outline:none; }
+.porta:focus-visible::after{
+  content:"";
+  position:absolute; inset:10px;
+  border:1px solid var(--ouro);
+  z-index:7;
+  pointer-events:none;
+}
+
+/* ==========================================================
+   5. CURSOR CUSTOMIZADO (desktop)
+   ========================================================== */
+.cursor{
+  position:fixed; top:0; left:0; z-index:80;
+  width:34px; height:34px; margin:-17px 0 0 -17px;
+  border:1px solid rgba(239,232,216,.55);
+  border-radius:50%;
+  pointer-events:none;
+  opacity:0;
+  will-change:transform;
+}
+body.no-cursor .cursor{ display:none; }
+
+/* ==========================================================
+   6. CORTINA DE SAÍDA
+   ========================================================== */
+.saida{
+  position:fixed; inset:0; z-index:95;
+  background:var(--tinta);
+  transform:scaleY(0);
+  transform-origin:bottom;
+  pointer-events:none;
+}
+
+/* ==========================================================
+   7. MOBILE — dois painéis empilhados
+   ========================================================== */
+@media (max-width:860px), (hover:none){
+  .portal{ flex-direction:column; }
+  .porta{ flex:1 1 50%; }
+  .filete{
+    top:var(--seam); bottom:auto;
+    left:0; right:0;
+    width:auto; height:1px; margin:0;
+  }
+  .selo{
+    left:50%; top:clamp(2.2vh,3.4vh,4vh);
+    letter-spacing:.42em; text-indent:.42em;
+  }
+  .marca{ left:50%; top:66%; width:clamp(61px,18.7vw,102px); }
+  .marca--casa{ top:66%; width:clamp(136px,44.2vw,221px); }
+  .porta__rotulo{ bottom:clamp(3vh,5vh,6vh); gap:1.1vh; }
+  .rotulo{ font-size:clamp(1.1rem,5.2vw,1.9rem); letter-spacing:.22em; text-indent:.22em; }
+  /* sem hover: submarca e deixa ficam sempre visíveis */
+  .submarca{ font-size:.76rem; opacity:1; transform:none; }
+  .deixa{ font-size:.66rem; opacity:1; transform:none; }
+  .cursor{ display:none; }
+}
+
+/* ==========================================================
+   8. MOVIMENTO REDUZIDO
+   ========================================================== */
+@media (prefers-reduced-motion:reduce){
+  .voo{ display:none; }
+  .marca__agua{ animation:none; filter:none; }
+  .loader{ display:none; }
+  .porta__media{ transform:none; }
+  .submarca,.deixa{ transform:none; }
+  .cursor{ display:none; }
+  .rotulo .char{ transform:none !important; }
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vassouras — Rio de Janeiro | Microvinícola Vila Botané &amp; Bistrô Casa do Lago</title>
+<meta name="description" content="Duas experiências em Vassouras, Rio de Janeiro: a Microvinícola Vila Botané e o Bistrô Casa do Lago.">
+<meta name="theme-color" content="#12100D">
+
+<!-- ==========  TIPOGRAFIA  ========== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&display=swap">
+
+<!-- ==========  PRELOAD DAS DUAS FOTOS  ========== -->
+<link rel="preload" as="image" href="./img/uva.webp" fetchpriority="high">
+<link rel="prefetch" as="image" href="./img/uva-aquarela.webp">
+<link rel="preload" as="image" href="./img/casa.webp" fetchpriority="high">
+<link rel="prefetch" as="image" href="./img/casa-aquarela.webp">
+<link rel="prefetch" as="image" href="./img/passaro-aquarela.png">
+<link rel="prefetch" href="./index.html">
+<link rel="prefetch" href="https://gabriellroque9017-lab.github.io/casadolago-site/">
+<link rel="preload" as="image" href="./img/voo-sheet-aquarela-site.png">
+<link rel="prefetch" as="image" href="./img/galho-aquarela.png">
+<link rel="prefetch" as="image" href="./img/casa-cor-topo-recorte.png">
+<link rel="prefetch" as="image" href="./img/casa-cor-agua-recorte.png">
+
+<link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body class="is-loading">
+
+<h1 class="sr-only">Vassouras, Rio de Janeiro — Microvinícola Vila Botané e Bistrô Casa do Lago</h1>
+
+<!-- ==========================================================
+     1. LOADER / CORTINA DE ENTRADA
+     ========================================================== -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__folha loader__folha--topo"></div>
+  <div class="loader__folha loader__folha--base"></div>
+</div>
+
+
+<!-- ==========================================================
+     2. A CENA — DUAS METADES
+     ========================================================== -->
+<main class="portal" id="portal">
+
+  <!-- ---------- 2a. METADE ESQUERDA · MICROVINÍCOLA ---------- -->
+  <a class="porta porta--vinicola"
+     id="porta-vinicola"
+     href="./index.html"
+     data-porta="vinicola"
+     aria-label="Entrar na Microvinícola Vila Botané">
+
+    <span class="porta__media" aria-hidden="true">
+      <img src="./img/uva.webp" alt="" width="1400" height="2100" decoding="async">
+      <img class="porta__aquarela" src="./img/uva-aquarela.webp" alt="" width="1400" height="2100" decoding="async">
+    </span>
+    <span class="porta__veu" aria-hidden="true"></span>
+    <span class="porta__sombra" aria-hidden="true"></span>
+
+    <!-- MARCA GRÁFICA DO PÁSSARO · contorno branco, fundo transparente -->
+    <span class="marca" id="marca-passaro" aria-hidden="true">
+      <img class="marca__linha" src="./img/passaro-linha.png" alt="" width="660" height="939" decoding="async">
+      <img class="marca__disco" src="./img/logo-disco.png" alt="" width="833" height="833" decoding="async">
+      <img class="marca__cor" src="./img/passaro-aquarela-so-ave.png" alt="" width="660" height="939" decoding="async">
+      <img class="marca__galho" src="./img/galho-aquarela.png" alt="" width="660" height="939" decoding="async">
+    </span>
+
+    <span class="porta__rotulo">
+      <span class="submarca">Vila Botané</span>
+      <span class="rotulo" data-splitting>MICROVINÍCOLA</span>
+      <span class="deixa">Entrar</span>
+    </span>
+  </a>
+
+  <!-- ---------- 2b. METADE DIREITA · BISTRÔ ---------- -->
+  <a class="porta porta--restaurante"
+     id="porta-restaurante"
+     href="https://gabriellroque9017-lab.github.io/casadolago-site/"
+     data-porta="restaurante"
+     aria-label="Entrar no Bistrô Casa do Lago">
+
+    <span class="porta__media" aria-hidden="true">
+      <img src="./img/casa.webp" alt="" width="1600" height="2400" decoding="async">
+      <img class="porta__aquarela" src="./img/casa-aquarela.webp" alt="" width="1600" height="2400" decoding="async">
+    </span>
+    <span class="porta__veu" aria-hidden="true"></span>
+    <span class="porta__sombra" aria-hidden="true"></span>
+
+    <!-- MARCA GRÁFICA DA CASA DO LAGO · contorno branco, fundo transparente -->
+    <span class="marca marca--casa" id="marca-casa" aria-hidden="true">
+      <span class="camada camada--topo">
+        <img class="marca__linha marca__topo" src="./img/casa-marca-topo.png" alt="" width="1706" height="1139" decoding="async">
+        <img class="marca__cor-topo" src="./img/casa-cor-topo-recorte.png" alt="" width="1706" height="1139" decoding="async">
+      </span>
+      <span class="camada camada--agua">
+        <img class="marca__linha marca__agua" src="./img/casa-marca-agua.png" alt="" width="1706" height="1139" decoding="async">
+        <img class="marca__cor-agua" src="./img/casa-cor-agua-recorte.png" alt="" width="1706" height="1139" decoding="async">
+      </span>
+    </span>
+
+    <span class="porta__rotulo">
+      <span class="submarca">Casa do Lago</span>
+      <span class="rotulo" data-splitting>BISTRÔ</span>
+      <span class="deixa">Entrar</span>
+    </span>
+  </a>
+
+  <!-- ---------- 2c. FILETE SEPARADOR ---------- -->
+  <span class="filete" id="filete" aria-hidden="true"></span>
+</main>
+
+
+<!-- ==========================================================
+     3. SELO SUPERIOR (sobre o filete)
+     ========================================================== -->
+<p class="selo" id="selo">VASSOURAS <span class="em">—</span> RIO DE JANEIRO</p>
+
+
+<!-- ==========================================================
+     3b. FILTRO DE ONDULAÇÃO DA ÁGUA (marca da Casa do Lago)
+     ========================================================== -->
+<svg class="filtros" aria-hidden="true" focusable="false" width="0" height="0">
+  <filter id="ondulacao" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.020 0.050" numOctaves="2" seed="7" result="ruido">
+      <animate attributeName="baseFrequency" dur="8s" repeatCount="indefinite"
+               values="0.020 0.050; 0.034 0.036; 0.016 0.062; 0.020 0.050"/>
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="ruido" xChannelSelector="R" yChannelSelector="G" result="onda">
+      <animate attributeName="scale" dur="5.5s" repeatCount="indefinite" values="6; 10.5; 4.5; 6"/>
+    </feDisplacementMap>
+  </filter>
+  <!-- borda de aquarela: turbulência estática, só desmancha o limite da cor -->
+  <filter id="aquarela" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.045 0.06" numOctaves="3" seed="11" result="papel"/>
+    <feDisplacementMap in="SourceGraphic" in2="papel" xChannelSelector="R" yChannelSelector="G" scale="3.2"/>
+  </filter>
+</svg>
+
+
+<!-- ==========================================================
+     3c. O PÁSSARO EM VOO (sprite solto, sem o galho)
+     ========================================================== -->
+<span class="voo" id="voo" aria-hidden="true"></span>
+
+
+<!-- ==========================================================
+     4. CURSOR CUSTOMIZADO (apenas desktop)
+     ========================================================== -->
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+
+
+<!-- ==========================================================
+     5. CORTINA DE SAÍDA (clique)
+     ========================================================== -->
+<div class="saida" id="saida" aria-hidden="true"></div>
+
+
+<!-- ==========================================================
+     6. SCRIPTS
+     ========================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/splitting@1.0.6/dist/splitting.min.js"></script>
+<script src="./js/main.js"></script>
+</body>
+</html>
