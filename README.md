@@ -38,8 +38,9 @@ a Casa do Lago (busque por `github.io` nas páginas).
   ajustados quadro a quadro: parecem arbitrários porque são.
 - Sem framework e sem build: GSAP e Splitting entram por CDN.
 - As fotos das garrafas na seção "Nossos vinhos" são `img/garrafa-tie.webp` e
-  `img/garrafa-tiepreto.jpg`. A moldura é 4:5 e recorta pelo centro: se trocar,
-  use uma foto em pé com a garrafa inteira no meio.
+  `img/garrafa-tiepreto.webp`, o par de fotos de cima, entre folhas de videira.
+  A moldura é 4:5 e recorta pelo centro: se trocar, use uma foto em pé com a
+  garrafa inteira no meio.
 
 Este site é gerado a partir do pacote de design pelo script
 `ferramentas/montar-sites.mjs`, um nível acima desta pasta.
