@@ -37,8 +37,9 @@ a Casa do Lago (busque por `github.io` nas páginas).
 - Os tempos do voo do pássaro (duração, espera, curva, escala, balanço) foram
   ajustados quadro a quadro: parecem arbitrários porque são.
 - Sem framework e sem build: GSAP e Splitting entram por CDN.
-- As duas garrafas da seção "Nossos vinhos" ainda estão sem foto no pacote de
-  design; o lugar delas fica vazio até chegarem as imagens.
+- As fotos das garrafas na seção "Nossos vinhos" são `img/garrafa-tie.webp` e
+  `img/garrafa-tiepreto.jpg`. A moldura é 4:5 e recorta pelo centro: se trocar,
+  use uma foto em pé com a garrafa inteira no meio.
 
 Este site é gerado a partir do pacote de design pelo script
 `ferramentas/montar-sites.mjs`, um nível acima desta pasta.
