@@ -37,6 +37,13 @@ a Casa do Lago (busque por `github.io` nas páginas).
 - Os tempos do voo do pássaro (duração, espera, curva, escala, balanço) foram
   ajustados quadro a quadro: parecem arbitrários porque são.
 - Sem framework e sem build: GSAP e Splitting entram por CDN.
+- **Pagamento da reserva dos vinhos.** Cada ficha tem "Pagar pelo Pix", que abre
+  um painel com o QR e o código copia-e-cola. O código é um Pix estático do
+  Banco Central, com o valor embutido e a chave da vinícola (o CNPJ), montado
+  por `ferramentas/pix-brcode.mjs` e gravado nos botões e em `img/pix-*.svg`.
+  Nada é processado aqui: o site não fala com banco nenhum. A confirmação é
+  manual, pelo comprovante no WhatsApp. Para mudar o preço, é preciso gerar o
+  código de novo (o valor faz parte dele e do QR).
 - Na seção "Na taça", a rolagem leva a janela do topo do vídeo até o pé da
   taça. Os últimos 6% do quadro nunca aparecem: é onde fica a marca d'água do
   gerador do vídeo. Em janela estreita e alta o vídeo cresce para encher o
