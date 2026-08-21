@@ -6,6 +6,9 @@ backend:
   name: github
   repo: gabriellroque9017-lab/vilabotane-site
   branch: main
+  # só o token: o botão "Entrar com GitHub" depende de um servidor de OAuth
+  # que não temos, e cai num endereço da Netlify que saiu do ar.
+  auth_methods: [token]
 
 # onde as fotos enviadas ficam guardadas. O painel exige caminho absoluto aqui;
 # o site normaliza para relativo ao aplicar, porque vive numa subpasta.
