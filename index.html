@@ -1929,12 +1929,15 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   'use strict';
   var reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fino     = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  /* no celular a página já começa pronta: sem preloader e sem o pouso do pássaro,
+     que é uma abertura de tela grande e no telefone só atrasa a leitura */
+  var celular  = window.matchMedia('(max-width: 760px)').matches;
 
   /* ---------- preloader: só na primeira visita ---------- */
   var pre = document.getElementById('pre');
   var jaVeio;
   try { jaVeio = localStorage.getItem('vb-visitado'); } catch (e) { jaVeio = '1'; }
-  if (jaVeio || reduzido) {
+  if (jaVeio || reduzido || celular) {
     pre.classList.add('is-fim');
   } else {
     setTimeout(function () { pre.classList.add('is-fim'); }, 1750);
@@ -2008,7 +2011,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       marca.classList.add('is-pousado');
       revelaFoto(false);
     }
-    if (!marca || !ave || reduzido) { assenta(); return; }
+    if (!marca || !ave || reduzido || celular) { assenta(); return; }
 
     /* os 71 recortes do vídeo, quadros 37 a 107, tocados uma única vez, na ordem,
        do primeiro ao último — sem laço nenhum. Do 87 em diante são os quadros 21 a 1
