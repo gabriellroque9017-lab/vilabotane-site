@@ -429,12 +429,31 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 
 @media (max-width:768px){
   .scrub{ height:130vh; }
-  .scrub__atos{ left:24px; right:24px; width:auto; }
-  .scrub__atos--dir{ text-align:left; }
+  /* em pé não há dois lados: o título sobe para o topo e o eco desce para o
+     canto de baixo, à direita. Entre um e outro fica o vídeo, livre. */
+  .scrub__atos{
+    left:24px; right:24px; width:auto;
+    top:clamp(84px,12svh,120px); transform:none;
+  }
+  .scrub__atos .ato{ position:relative; top:auto; transform:none; }
+  .scrub__atos .ato > *{ text-shadow:0 1px 3px rgba(12,10,8,.8), 0 0 18px rgba(12,10,8,.55); }
+  .ato h2{ font-size:clamp(26px,7vw,38px); margin-top:12px; }
+  .ato__apoio{ margin-top:14px; font-size:15px; max-width:26ch; }
+  .scrub__atos--dir{
+    left:auto; right:24px; top:auto; bottom:clamp(76px,11svh,104px);
+    width:min(26ch,74vw); text-align:right;
+  }
   .ato__eco{ white-space:normal; }
-  .scrub__atos--dir .ato::before{ left:-24px; right:-24px; }
-  .ato h2{ font-size:clamp(26px,7vw,38px); }
-  .scrub__veu{ background:linear-gradient(90deg, var(--tinta) 0%, rgba(18,16,14,.82) 34%, rgba(18,16,14,.62) 100%); }
+  .scrub__atos--dir .ato::before{ left:-30%; right:-24px; }
+  /* o quadro fica na cor dele: em vez de escurecer o vídeo inteiro, só as
+     duas faixas onde mora texto ganham sombra, e o meio passa limpo */
+  .scrub__veu{
+    background:linear-gradient(180deg,
+      rgba(18,16,14,.7) 0%, rgba(18,16,14,.26) 17%, rgba(18,16,14,0) 32%,
+      rgba(18,16,14,0) 60%, rgba(18,16,14,.3) 80%, rgba(18,16,14,.66) 100%);
+  }
+  .scrub__tela,
+  .scrub__poster{ filter:contrast(1.06) brightness(1.04); }
   .medidor{ left:24px; }
 }
 
@@ -724,8 +743,24 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   left:50%; width:auto; height:calc(100% / 0.94);
   transform:translate(-50%, var(--sobe,0px));
 }
+/* no celular a seção vale o tamanho do vídeo: ele entra no fluxo, inteiro,
+   e o texto vem logo abaixo. Sem palco preso, sem rolagem morta. */
 @media (max-width:760px){
-  .taca__video video{ left:0; width:100%; }
+  .taca{ height:auto; }
+  .taca__palco{ position:static; height:auto; display:block; }
+  /* a janela mostra o vídeo menos a última faixa — é lá que fica a marca
+     do gerador. 828x1108 menos 6% de altura dá 828x1042. */
+  .taca__video{ position:relative; inset:auto; width:100%; aspect-ratio:828/1042; }
+  .taca__video video,
+  .taca__video video.cobre{
+    position:absolute; left:0; top:0;
+    width:100%; height:auto; transform:none;
+  }
+  .taca__veu{
+    background:linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 22%,
+      rgba(0,0,0,.34) 50%, #000 74%);
+  }
+  .taca__texto{ margin-top:-46px; padding-bottom:clamp(44px,8vh,72px); }
 }
 .taca__grao{
   position:absolute; inset:0; z-index:1; pointer-events:none;
@@ -1121,7 +1156,16 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .ave-tie .ave-cor{ position:absolute; left:0; top:0; opacity:0; transition:opacity .6s var(--ease); pointer-events:none; }
 .ave-tie.is-viva{ cursor:crosshair; }
 .ave-tie.is-viva:hover .ave-cor{ opacity:1; }
-@media (max-width:860px){ .aves{ display:none; } }
+/* no celular a fileira dá lugar à coluna: cada ave desce para junto do seu
+   vinho, e é o trilho que passa a segurá-las (ver o script mais abaixo). */
+@media (max-width:760px){
+  .aves{ display:none; }
+  .trilho > .ave-tie{ width:min(100%,320px); margin:0 auto; }
+}
+/* sem mouse não há hover: a cor entra sozinha, no fim do traço */
+@media (hover:none){
+  .ave-tie.is-cheia .ave-cor{ opacity:1; }
+}
 
 .garrafa{ width:100%; }
 .garrafa__foto{ aspect-ratio:4/5; margin-bottom:0; }
@@ -2550,8 +2594,16 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 
     /* Mede uma vez por tamanho de janela, não a cada quadro: ler altura obriga
        o navegador a recalcular o desenho, e isso no meio da rolagem engasga. */
+    var estreito = window.matchMedia('(max-width:760px)');
     function mede() {
       vid.classList.remove('cobre');         /* mede o vídeo no tamanho natural */
+      if (estreito.matches) {                /* no celular o vídeo é do tamanho
+                                                dele e a seção acompanha: nada
+                                                a passear, nada a deslocar */
+        passeio.cobre = true; passeio.anda = 0;
+        vid.style.setProperty('--sobe', '0px');
+        return;
+      }
       passeio.anda = vid.offsetHeight * (1 - MARCA) - palco.offsetHeight;
       passeio.cobre = passeio.anda <= 0;
       if (passeio.cobre) {
@@ -3213,6 +3265,34 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
    da esquerda para a direita, e depois o desenho a lápis vem do outro lado
    apagando o primeiro. A segunda figura está espelhada por CSS, então o mesmo
    corte aparece invertido e ela nasce no sentido contrário. */
+/* No celular a fileira das aves não cabe lado a lado. Em vez de sumir com
+   elas, cada uma desce para dentro do trilho, logo antes da sua garrafa: o
+   traço do tiê-sangue, o Tiê, o traço do tiê-preto, o Tiê Preto. Em tela
+   larga voltam para a fileira de cima. São os mesmos elementos, só mudam de
+   lugar — o desenho continua sendo o mesmo script. */
+(function () {
+  var fila = document.querySelector('.aves');
+  var trilho = document.getElementById('trilho');
+  if (!fila || !trilho) return;
+  var figs = [].slice.call(fila.querySelectorAll('.ave-tie'));
+  var garrafas = [].slice.call(trilho.querySelectorAll('.garrafa'));
+  if (!figs.length || figs.length !== garrafas.length) return;
+
+  var estreito = window.matchMedia('(max-width:760px)');
+  var naColuna = null;
+  function arruma() {
+    if (estreito.matches === naColuna) return;
+    naColuna = estreito.matches;
+    figs.forEach(function (fig, i) {
+      if (naColuna) trilho.insertBefore(fig, garrafas[i]);
+      else fila.appendChild(fig);
+    });
+  }
+  arruma();
+  if (estreito.addEventListener) estreito.addEventListener('change', arruma);
+  else if (estreito.addListener) estreito.addListener(arruma);
+})();
+
 (function () {
   var figuras = [].slice.call(document.querySelectorAll('.ave-tie'));
   if (!figuras.length) return;
@@ -3232,6 +3312,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   }
 
   var pedido = 0, CORTE = 0.55;
+  var semHover = window.matchMedia('(hover:none)').matches;
   function desenha() {
     pedido = 0;
     aves.forEach(function (o) {
@@ -3249,6 +3330,8 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
         if (o.b) o.b.style.clipPath = 'inset(0 0 0 ' + ((1 - y) * 100).toFixed(2) + '%)';
         o.fig.classList.add('is-viva');
       }
+      /* no toque a cor é o terceiro tempo do desenho, não um hover */
+      if (semHover) o.fig.classList.toggle('is-cheia', p > 0.94);
     });
   }
   function agenda() { if (!pedido) pedido = requestAnimationFrame(desenha); }
