@@ -938,34 +938,6 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .pix__campo input::placeholder{ color:rgba(18,16,14,.35); font-size:15px; }
 .pix__campo input:focus{ outline:none; border-bottom-color:var(--mata); }
 
-/* ---------- a carta da reserva ----------
-   Um papel dentro do painel: a ave em traço, o vinho, o nome de quem
-   reservou e a chave. Feita para ser guardada, impressa ou fotografada. */
-.carta__folha{
-  position:relative; width:100%; display:grid; justify-items:center; gap:7px;
-  padding:30px 26px 26px; background:#F6F2E7;
-  border:1px solid rgba(18,16,14,.18); outline:1px solid rgba(18,16,14,.10); outline-offset:5px;
-}
-.carta__ave{ width:96px; height:auto; margin-bottom:4px; filter:invert(1); opacity:.62; }
-.carta__abre{ font-family:var(--serifa); font-style:italic; font-size:19px; color:rgba(18,16,14,.68); margin:0; }
-.carta__vinho{ font-family:var(--serifa); font-size:26px; line-height:1.2; margin:0; color:var(--tinta); text-wrap:balance; }
-.carta__nome{ font-family:var(--serifa); font-style:italic; font-size:18px; margin:0; color:var(--mata); min-height:1px; }
-.carta__fio{ display:block; width:52px; height:1px; background:rgba(18,16,14,.25); margin:10px 0 4px; }
-.carta__chave{
-  font-family:var(--grot); font-size:22px; letter-spacing:.22em; text-indent:.22em;
-  margin:0; color:var(--tinta);
-}
-.carta__data{ font-family:var(--grot); font-size:11px; letter-spacing:.2em; text-indent:.2em; text-transform:uppercase; color:rgba(18,16,14,.5); margin:2px 0 0; }
-.carta__pe{ font-size:14px; line-height:1.55; color:rgba(18,16,14,.6); margin:10px 0 0; max-width:30ch; text-align:center; }
-
-/* impressão: a carta é clonada para fora do painel, como filha do body, e
-   só ela vai ao papel. Assim não sobra página em branco do resto da página. */
-.carta-impressa{ display:none; }
-@media print{
-  body{ background:#FFF; }
-  body > *:not(.carta-impressa){ display:none !important; }
-  .carta-impressa{ display:grid !important; width:min(340px,100%); margin:24px auto; }
-}
 @media (prefers-reduced-motion:reduce){ .pix__x, .pix__copia{ transition:none; } }
 /* nesta arte o ✕ vive sobre a fotografia, à esquerda */
 .ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x{
@@ -1803,29 +1775,10 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
             <span class="rotulo">Seu nome</span>
             <input type="text" id="pix-nome" autocomplete="name" placeholder="para a garrafa ficar em seu nome">
           </label>
-          <button class="pix__copia" type="button" id="pix-feito">Paguei, quero minha carta</button>
+          <a class="pix__copia" id="pix-feito" href="#" target="_blank" rel="noopener">Paguei, enviar o comprovante</a>
         </div>
 
-        <!-- passo 3: a carta da reserva -->
-        <div class="pix__etapa carta" data-passo="carta" hidden>
-          <div class="carta__folha" id="carta">
-            <img class="carta__ave" src="./img/passaro-linha.png" alt="" aria-hidden="true" decoding="async">
-            <p class="rotulo">Carta de reserva</p>
-            <p class="carta__abre">Guardamos uma garrafa</p>
-            <p class="carta__vinho" id="carta-vinho">Tiê, Cabernet Franc 2025</p>
-            <p class="carta__nome" id="carta-nome"></p>
-            <span class="carta__fio" aria-hidden="true"></span>
-            <p class="rotulo">Sua chave</p>
-            <p class="carta__chave" id="carta-chave">VB-000000</p>
-            <p class="carta__data" id="carta-data"></p>
-            <p class="carta__pe">Diga esta chave ao chegar. A garrafa espera por você na
-              encosta, em Vassouras.</p>
-          </div>
-          <p class="pix__passo">Mande a chave para nós: é assim que a reserva entra na nossa
-            lista. Confirmamos quando o Pix cair.</p>
-          <a class="pix__copia" id="carta-zap" href="#" target="_blank" rel="noopener">Enviar a chave no WhatsApp</a>
-          <button class="pix__copia pix__copia--fino" type="button" id="carta-imprime">Salvar ou imprimir</button>
-        </div>
+
       </div>
     </div>
 
@@ -3165,11 +3118,10 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   if (fecha) fecha.addEventListener('click', function () { mostra(false); abre.focus(); });
 });
 
-/* ---------- a reserva dos vinhos: escolha, Pix e carta ----------
-   Três passos num painel só. Nada sai desta página: o código do Pix já vem
-   pronto no botão que abriu o painel, e a chave da carta é sorteada aqui no
-   navegador. A chave não prova pagamento nenhum: ela serve para a casa achar
-   a reserva na lista e para quem reservou ter o que guardar. */
+/* ---------- a reserva dos vinhos: escolha e Pix ----------
+   Dois passos num painel só. Nada sai desta página: o código do Pix já vem
+   pronto no botão que abriu o painel. Quem paga manda o comprovante no
+   WhatsApp, e é a casa que confirma a reserva olhando o extrato. */
 (function () {
   var painel = document.getElementById('reserva');
   if (!painel) return;
@@ -3191,20 +3143,6 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     document.body.style.overflow = sim ? 'hidden' : '';
     if (sim) fecha.focus();
     else if (quemAbriu) quemAbriu.focus();
-  }
-
-  /* letras sem I, O, 0 e 1: ninguém erra ao ditar por telefone */
-  var ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  function sorteia(prefixo) {
-    var bytes = new Uint8Array(5);
-    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
-    else for (var b = 0; b < 5; b++) bytes[b] = Math.floor(Math.random() * 256);
-    var corpo = '';
-    for (var i = 0; i < 5; i++) corpo += ALFABETO[bytes[i] % ALFABETO.length];
-    /* um dígito de conferência: pega chave digitada errada, não é segurança */
-    var soma = 0;
-    for (var j = 0; j < corpo.length; j++) soma += ALFABETO.indexOf(corpo[j]) * (j + 2);
-    return prefixo + '-' + corpo + '-' + ALFABETO[soma % ALFABETO.length];
   }
 
   /* passo 1 */
@@ -3258,36 +3196,15 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     } else { seleciona(); }
   });
 
-  /* passo 3: a carta */
+  /* o comprovante segue para o WhatsApp com o que a casa precisa saber */
   document.getElementById('pix-feito').addEventListener('click', function () {
-    var chave = sorteia(atual.prefixo);
     var quem = (nome.value || '').trim();
-    document.getElementById('carta-vinho').textContent = atual.vinho;
-    document.getElementById('carta-nome').textContent = quem ? 'para ' + quem : '';
-    document.getElementById('carta-chave').textContent = chave;
-    document.getElementById('carta-data').textContent = new Date().toLocaleDateString('pt-BR', {
-      day: '2-digit', month: 'long', year: 'numeric',
-    });
     var recado = 'Olá! Acabei de pagar a reserva pelo Pix.'
       + '\nVinho: ' + atual.vinho
       + '\nValor: ' + atual.valor
-      + (quem ? '\nNome: ' + quem : '')
-      + '\nChave da carta: ' + chave;
-    document.getElementById('carta-zap').href =
-      'https://api.whatsapp.com/send/?phone=5524999936927&text=' + encodeURIComponent(recado) + '&type=phone_number&app_absent=0';
-    passo('carta');
-  });
-
-  document.getElementById('carta-imprime').addEventListener('click', function () {
-    var copia = document.getElementById('carta').cloneNode(true);
-    copia.removeAttribute('id');
-    copia.classList.add('carta-impressa');
-    document.body.appendChild(copia);
-    var limpou = false;
-    function limpa() { if (limpou) return; limpou = true; copia.remove(); window.removeEventListener('afterprint', limpa); }
-    window.addEventListener('afterprint', limpa);
-    window.print();
-    setTimeout(limpa, 3000);            /* rede de segurança onde afterprint não vem */
+      + (quem ? '\nNome: ' + quem : '');
+    this.href = 'https://api.whatsapp.com/send/?phone=5524999936927&text='
+      + encodeURIComponent(recado) + '&type=phone_number&app_absent=0';
   });
 
   fecha.addEventListener('click', function () { mostra(false); });
