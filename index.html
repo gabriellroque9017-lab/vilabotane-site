@@ -1200,7 +1200,18 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .rodape__meio{ justify-self:center; }
 .rodape__redes{ justify-self:center; }
 .rodape__rede{ display:flex; align-items:center; gap:12px; }
-@media (max-width:860px){ .rodape__grade{ grid-template-columns:1fr; } }
+@media (max-width:860px){
+  /* empilhado, o lema desce para debaixo do endereço e tudo se alinha pelo
+     centro, como o bloco do meio já fazia */
+  .rodape__grade{ grid-template-columns:1fr; justify-items:center; text-align:center; row-gap:clamp(30px,6vw,44px); }
+  .rodape__grade > div{ justify-self:center; }
+  .rodape__meio{ order:1; }
+  .rodape__grade > div:first-child{ order:2; }
+  .rodape__redes{ order:3; }
+  .rodape__grade .rotulo[aria-hidden=true]{ display:none; }   /* o espaçador das colunas */
+  .rodape__lema{ margin-top:0 !important; }
+  .rodape__rede{ justify-content:center; }
+}
 /* o filete cresce mesmo quando o mouse está só no glifo do Instagram */
 /* o rótulo das redes usa a mesma caixa de linha do texto ao lado (18px × 1.8) */
 .rodape__rede .elo{ line-height:32.4px; }
@@ -3298,7 +3309,8 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 
   var tracos = [].slice.call(svg.querySelectorAll('.serra__traco'));
   var VBH = (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.height) || 96;
-  var reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reduz = matchMedia('(prefers-reduced-motion: reduce)').matches
+           || matchMedia('(max-width: 760px)').matches;   /* no celular a serra já nasce desenhada */
 
   /* ---- fase 1 · o desenho ---- */
   var pronta = false;
