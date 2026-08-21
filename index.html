@@ -1282,6 +1282,15 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   text-transform:none; opacity:.62;
 }
 .rodape__direitos a{ color:inherit; }
+/* o acesso ao Modo Edição: discreto, no pé de tudo, para quem sabe que existe */
+.rodape__entrar{
+  margin:18px auto 0; text-align:center;
+  font-family:var(--grot); font-size:10px; letter-spacing:.24em; text-indent:.24em;
+  text-transform:uppercase; opacity:.34; transition:opacity .5s var(--ease);
+}
+.rodape__entrar a{ color:inherit; text-decoration:none; border-bottom:1px solid transparent; }
+.rodape__entrar:hover{ opacity:.85; }
+.rodape__entrar a:hover{ border-bottom-color:currentColor; }
 .rodape__autor{
   color:inherit; text-decoration:none;
   border-bottom:1px solid transparent;
@@ -1972,6 +1981,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     Website desenvolvido por <a class="rodape__autor" href="https://www.linkedin.com/in/gabriel-hossana-lopes-roque-18111b246/" target="_blank" rel="noopener noreferrer">Gabriel Hossana</a></p>
   <p class="rodape__direitos">© 2026 Microvinícola Vila Botané. Todos os direitos reservados. Textos, fotografias,
     ilustrações, identidade visual e código são obra protegida.</p>
+  <p class="rodape__entrar"><a href="./admin/" rel="nofollow" title="Modo Edição, para a equipe da casa">Entrar</a></p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
