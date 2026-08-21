@@ -924,6 +924,48 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .pix__conta{ font-family:var(--grot); font-size:12px; color:rgba(18,16,14,.6); margin:0; }
 .pix__passo{ font-size:15px; line-height:1.55; color:rgba(18,16,14,.78); margin:6px 0 0; max-width:34ch; }
 .pix__elo{ color:var(--mata); text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+.pix__etapa{ display:grid; justify-items:center; gap:10px; }
+.pix__etapa[hidden]{ display:none; }
+.pix__copia--fino{ border-color:transparent; text-decoration:none; }
+.pix__copia--fino:hover, .pix__copia--fino:focus-visible{ background:none; border-color:rgba(18,16,14,.4); color:var(--tinta); }
+.pix__campo{ display:grid; gap:6px; width:100%; margin-top:6px; }
+.pix__campo .rotulo{ color:rgba(18,16,14,.55); }
+.pix__campo input{
+  font-family:var(--serifa); font-size:17px; color:var(--tinta);
+  background:none; border:0; border-bottom:1px solid rgba(18,16,14,.3);
+  padding:8px 2px; text-align:center; width:100%;
+}
+.pix__campo input::placeholder{ color:rgba(18,16,14,.35); font-size:15px; }
+.pix__campo input:focus{ outline:none; border-bottom-color:var(--mata); }
+
+/* ---------- a carta da reserva ----------
+   Um papel dentro do painel: a ave em traço, o vinho, o nome de quem
+   reservou e a chave. Feita para ser guardada, impressa ou fotografada. */
+.carta__folha{
+  position:relative; width:100%; display:grid; justify-items:center; gap:7px;
+  padding:30px 26px 26px; background:#F6F2E7;
+  border:1px solid rgba(18,16,14,.18); outline:1px solid rgba(18,16,14,.10); outline-offset:5px;
+}
+.carta__ave{ width:96px; height:auto; margin-bottom:4px; filter:invert(1); opacity:.62; }
+.carta__abre{ font-family:var(--serifa); font-style:italic; font-size:19px; color:rgba(18,16,14,.68); margin:0; }
+.carta__vinho{ font-family:var(--serifa); font-size:26px; line-height:1.2; margin:0; color:var(--tinta); text-wrap:balance; }
+.carta__nome{ font-family:var(--serifa); font-style:italic; font-size:18px; margin:0; color:var(--mata); min-height:1px; }
+.carta__fio{ display:block; width:52px; height:1px; background:rgba(18,16,14,.25); margin:10px 0 4px; }
+.carta__chave{
+  font-family:var(--grot); font-size:22px; letter-spacing:.22em; text-indent:.22em;
+  margin:0; color:var(--tinta);
+}
+.carta__data{ font-family:var(--grot); font-size:11px; letter-spacing:.2em; text-indent:.2em; text-transform:uppercase; color:rgba(18,16,14,.5); margin:2px 0 0; }
+.carta__pe{ font-size:14px; line-height:1.55; color:rgba(18,16,14,.6); margin:10px 0 0; max-width:30ch; text-align:center; }
+
+/* impressão: a carta é clonada para fora do painel, como filha do body, e
+   só ela vai ao papel. Assim não sobra página em branco do resto da página. */
+.carta-impressa{ display:none; }
+@media print{
+  body{ background:#FFF; }
+  body > *:not(.carta-impressa){ display:none !important; }
+  .carta-impressa{ display:grid !important; width:min(340px,100%); margin:24px auto; }
+}
 @media (prefers-reduced-motion:reduce){ .pix__x, .pix__copia{ transition:none; } }
 /* nesta arte o ✕ vive sobre a fotografia, à esquerda */
 .ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x{
@@ -1675,13 +1717,11 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
             <span class="preco num">R$ 280</span>
             <span class="rotulo">por garrafa</span>
           </span>
-          <span class="ficha-vinho__acoes-uva">
-            <button class="ficha-vinho__botao-uva" type="button" data-pix
-                    data-vinho="Tiê, Cabernet Franc 2025" data-valor="R$ 280"
-                    data-qr="./img/pix-tie.svg"
-                    data-codigo="00020126360014br.gov.bcb.pix0114650180310001155204000053039865406280.005802BR5911VILA BOTANE6009VASSOURAS62070503TIE6304AD1F">Pagar pelo Pix</button>
-            <a class="ficha-vinho__botao-uva ficha-vinho__botao-uva--fino" id="reserva-tie" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20o%20Ti%C3%AA%20Cabernet%20Franc%202025.&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">Falar antes</a>
-          </span>
+          <button class="ficha-vinho__botao-uva" type="button" id="reserva-tie" data-pix
+                  data-vinho="Tiê, Cabernet Franc 2025" data-valor="R$ 280"
+                  data-qr="./img/pix-tie.svg" data-prefixo="TIE"
+                  data-zap="https://api.whatsapp.com/send/?phone=5524999936927&amp;text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20o%20Ti%C3%AA%20Cabernet%20Franc%202025.&amp;type=phone_number&amp;app_absent=0"
+                  data-codigo="00020126360014br.gov.bcb.pix0114650180310001155204000053039865406280.005802BR5911VILA BOTANE6009VASSOURAS62070503TIE6304AD1F">Reservar</button>
         </div>
       </div>
     </div>
@@ -1711,13 +1751,11 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
             <span class="preco num">R$ 340</span>
             <span class="rotulo">por garrafa</span>
           </span>
-          <span class="ficha-vinho__acoes-uva">
-            <button class="ficha-vinho__botao-uva" type="button" data-pix
-                    data-vinho="Tiê Preto, Cabernet Franc 2025" data-valor="R$ 340"
-                    data-qr="./img/pix-tiepreto.svg"
-                    data-codigo="00020126360014br.gov.bcb.pix0114650180310001155204000053039865406340.005802BR5911VILA BOTANE6009VASSOURAS62120508TIEPRETO63048D9D">Pagar pelo Pix</button>
-            <a class="ficha-vinho__botao-uva ficha-vinho__botao-uva--fino" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20o%20Ti%C3%AA%20Preto%20Cabernet%20Franc%202025.&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">Falar antes</a>
-          </span>
+          <button class="ficha-vinho__botao-uva" type="button" data-pix
+                  data-vinho="Tiê Preto, Cabernet Franc 2025" data-valor="R$ 340"
+                  data-qr="./img/pix-tiepreto.svg" data-prefixo="TIEPRETO"
+                  data-zap="https://api.whatsapp.com/send/?phone=5524999936927&amp;text=Ol%C3%A1%2C%20gostaria%20de%20reservar%20o%20Ti%C3%AA%20Preto%20Cabernet%20Franc%202025.&amp;type=phone_number&amp;app_absent=0"
+                  data-codigo="00020126360014br.gov.bcb.pix0114650180310001155204000053039865406340.005802BR5911VILA BOTANE6009VASSOURAS62120508TIEPRETO63048D9D">Reservar</button>
         </div>
       </div>
     </div>
@@ -1728,19 +1766,55 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
          valor e um identificador do vinho, para o extrato dizer
          qual garrafa saiu.
          ========================================================== -->
-    <div class="pix" id="pix" role="dialog" aria-modal="true" aria-labelledby="pix-titulo" hidden>
+    <div class="pix" id="reserva" role="dialog" aria-modal="true" aria-labelledby="pix-titulo" hidden>
       <div class="pix__caixa">
         <button class="pix__x" type="button" id="pix-fecha" aria-label="Fechar">✕</button>
-        <p class="rotulo">Reserva pelo Pix</p>
-        <h3 id="pix-titulo">Tiê</h3>
-        <p class="pix__valor num" id="pix-valor">R$ 280</p>
-        <img class="pix__qr" id="pix-qr" src="" alt="Código QR do Pix para pagar a reserva" width="180" height="180" decoding="async">
-        <button class="pix__copia" type="button" id="pix-copia">Copiar o código</button>
-        <p class="pix__conta">Vila Botané Hotel Vinícola e Restaurante</p>
-        <p class="pix__passo">A garrafa fica reservada em seu nome e é retirada aqui na vinícola.
-          Depois de pagar, mande o comprovante no
-          <a class="pix__elo" id="pix-zap" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">nosso WhatsApp</a>
-          que confirmamos a reserva.</p>
+
+        <!-- passo 1: por onde seguir -->
+        <div class="pix__etapa" data-passo="escolha">
+          <p class="rotulo">Reserva</p>
+          <h3 id="pix-titulo">Tiê</h3>
+          <p class="pix__valor num" id="pix-valor">R$ 280</p>
+          <p class="pix__passo">A garrafa fica reservada em seu nome e é retirada aqui na vinícola.</p>
+          <button class="pix__copia" type="button" id="vai-pix">Pagar agora pelo Pix</button>
+          <a class="pix__copia pix__copia--fino" id="vai-zap" href="#" target="_blank" rel="noopener">Conversar no WhatsApp</a>
+        </div>
+
+        <!-- passo 2: o Pix -->
+        <div class="pix__etapa" data-passo="pix" hidden>
+          <p class="rotulo">Reserva pelo Pix</p>
+          <h3 id="pix-vinho">Tiê</h3>
+          <p class="pix__valor num" id="pix-valor2">R$ 280</p>
+          <img class="pix__qr" id="pix-qr" src="" alt="Código QR do Pix para pagar a reserva" width="180" height="180" decoding="async">
+          <button class="pix__copia" type="button" id="pix-copia">Copiar o código</button>
+          <p class="pix__conta">Vila Botané Hotel Vinícola e Restaurante</p>
+          <label class="pix__campo">
+            <span class="rotulo">Seu nome</span>
+            <input type="text" id="pix-nome" autocomplete="name" placeholder="para a garrafa ficar em seu nome">
+          </label>
+          <button class="pix__copia" type="button" id="pix-feito">Paguei, quero minha carta</button>
+        </div>
+
+        <!-- passo 3: a carta da reserva -->
+        <div class="pix__etapa carta" data-passo="carta" hidden>
+          <div class="carta__folha" id="carta">
+            <img class="carta__ave" src="./img/passaro-linha.png" alt="" aria-hidden="true" decoding="async">
+            <p class="rotulo">Carta de reserva</p>
+            <p class="carta__abre">Guardamos uma garrafa</p>
+            <p class="carta__vinho" id="carta-vinho">Tiê, Cabernet Franc 2025</p>
+            <p class="carta__nome" id="carta-nome"></p>
+            <span class="carta__fio" aria-hidden="true"></span>
+            <p class="rotulo">Sua chave</p>
+            <p class="carta__chave" id="carta-chave">VB-000000</p>
+            <p class="carta__data" id="carta-data"></p>
+            <p class="carta__pe">Diga esta chave ao chegar. A garrafa espera por você na
+              encosta, em Vassouras.</p>
+          </div>
+          <p class="pix__passo">Mande a chave para nós: é assim que a reserva entra na nossa
+            lista. Confirmamos quando o Pix cair.</p>
+          <a class="pix__copia" id="carta-zap" href="#" target="_blank" rel="noopener">Enviar a chave no WhatsApp</a>
+          <button class="pix__copia pix__copia--fino" type="button" id="carta-imprime">Salvar ou imprimir</button>
+        </div>
       </div>
     </div>
 
@@ -3077,37 +3151,75 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   if (fecha) fecha.addEventListener('click', function () { mostra(false); abre.focus(); });
 });
 
-/* ---------- o Pix da reserva ----------
-   Um painel só, preenchido pelo botão que o abriu. O código do Pix vem pronto
-   no próprio botão: nada é calculado aqui, nada sai da página. */
+/* ---------- a reserva dos vinhos: escolha, Pix e carta ----------
+   Três passos num painel só. Nada sai desta página: o código do Pix já vem
+   pronto no botão que abriu o painel, e a chave da carta é sorteada aqui no
+   navegador. A chave não prova pagamento nenhum: ela serve para a casa achar
+   a reserva na lista e para quem reservou ter o que guardar. */
 (function () {
-  var painel = document.getElementById('pix');
+  var painel = document.getElementById('reserva');
   if (!painel) return;
-  var titulo = document.getElementById('pix-titulo');
-  var valor  = document.getElementById('pix-valor');
-  var qr     = document.getElementById('pix-qr');
-  var copia  = document.getElementById('pix-copia');
-  var fecha  = document.getElementById('pix-fecha');
-  var codigo = '';
+  var etapas = {};
+  painel.querySelectorAll('[data-passo]').forEach(function (e) { etapas[e.dataset.passo] = e; });
+
+  var fecha = document.getElementById('pix-fecha');
+  var copia = document.getElementById('pix-copia');
+  var nome  = document.getElementById('pix-nome');
+  var atual = {};
   var quemAbriu = null;
 
+  function passo(qual) {
+    Object.keys(etapas).forEach(function (k) { etapas[k].hidden = k !== qual; });
+    painel.scrollTop = 0;
+  }
   function mostra(sim) {
     painel.hidden = !sim;
     document.body.style.overflow = sim ? 'hidden' : '';
-    if (sim) { copia.classList.remove('is-feito'); copia.textContent = 'Copiar o código'; fecha.focus(); }
+    if (sim) fecha.focus();
     else if (quemAbriu) quemAbriu.focus();
   }
 
+  /* letras sem I, O, 0 e 1: ninguém erra ao ditar por telefone */
+  var ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function sorteia(prefixo) {
+    var bytes = new Uint8Array(5);
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
+    else for (var b = 0; b < 5; b++) bytes[b] = Math.floor(Math.random() * 256);
+    var corpo = '';
+    for (var i = 0; i < 5; i++) corpo += ALFABETO[bytes[i] % ALFABETO.length];
+    /* um dígito de conferência: pega chave digitada errada, não é segurança */
+    var soma = 0;
+    for (var j = 0; j < corpo.length; j++) soma += ALFABETO.indexOf(corpo[j]) * (j + 2);
+    return prefixo + '-' + corpo + '-' + ALFABETO[soma % ALFABETO.length];
+  }
+
+  /* passo 1 */
   document.querySelectorAll('[data-pix]').forEach(function (bt) {
     bt.addEventListener('click', function () {
       quemAbriu = bt;
-      titulo.textContent = bt.dataset.vinho || '';
-      valor.textContent = bt.dataset.valor || '';
-      qr.src = bt.dataset.qr || '';
-      qr.alt = 'Código QR do Pix de ' + (bt.dataset.valor || '') + ' para a Vila Botané';
-      codigo = bt.dataset.codigo || '';
+      atual = {
+        vinho: bt.dataset.vinho || '', valor: bt.dataset.valor || '',
+        qr: bt.dataset.qr || '', codigo: bt.dataset.codigo || '',
+        prefixo: bt.dataset.prefixo || 'VB', zap: bt.dataset.zap || '#',
+      };
+      document.getElementById('pix-titulo').textContent = atual.vinho;
+      document.getElementById('pix-valor').textContent = atual.valor;
+      document.getElementById('vai-zap').href = atual.zap;
+      passo('escolha');
       mostra(true);
     });
+  });
+
+  /* passo 2 */
+  document.getElementById('vai-pix').addEventListener('click', function () {
+    document.getElementById('pix-vinho').textContent = atual.vinho;
+    document.getElementById('pix-valor2').textContent = atual.valor;
+    var qr = document.getElementById('pix-qr');
+    qr.src = atual.qr;
+    qr.alt = 'Código QR do Pix de ' + atual.valor + ' para a Vila Botané';
+    copia.classList.remove('is-feito');
+    copia.textContent = 'Copiar o código';
+    passo('pix');
   });
 
   copia.addEventListener('click', function () {
@@ -3115,14 +3227,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       copia.textContent = ok ? 'Código copiado' : 'Copie o código abaixo';
       copia.classList.toggle('is-feito', ok);
     }
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(codigo).then(function () { avisa(true); }, function () { seleciona(); });
-    } else { seleciona(); }
-
-    /* sem área de transferência: mostra o código selecionado para copiar à mão */
     function seleciona() {
       var campo = document.createElement('input');
-      campo.value = codigo;
+      campo.value = atual.codigo;
       campo.setAttribute('readonly', '');
       campo.style.cssText = 'width:100%;font:12px monospace;text-align:center;margin-top:8px;border:1px solid rgba(18,16,14,.2);padding:8px;background:#FFF';
       copia.insertAdjacentElement('afterend', campo);
@@ -3132,6 +3239,41 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       avisa(deu);
       if (deu) setTimeout(function () { campo.remove(); }, 400);
     }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(atual.codigo).then(function () { avisa(true); }, seleciona);
+    } else { seleciona(); }
+  });
+
+  /* passo 3: a carta */
+  document.getElementById('pix-feito').addEventListener('click', function () {
+    var chave = sorteia(atual.prefixo);
+    var quem = (nome.value || '').trim();
+    document.getElementById('carta-vinho').textContent = atual.vinho;
+    document.getElementById('carta-nome').textContent = quem ? 'para ' + quem : '';
+    document.getElementById('carta-chave').textContent = chave;
+    document.getElementById('carta-data').textContent = new Date().toLocaleDateString('pt-BR', {
+      day: '2-digit', month: 'long', year: 'numeric',
+    });
+    var recado = 'Olá! Acabei de pagar a reserva pelo Pix.'
+      + '\nVinho: ' + atual.vinho
+      + '\nValor: ' + atual.valor
+      + (quem ? '\nNome: ' + quem : '')
+      + '\nChave da carta: ' + chave;
+    document.getElementById('carta-zap').href =
+      'https://api.whatsapp.com/send/?phone=5524999936927&text=' + encodeURIComponent(recado) + '&type=phone_number&app_absent=0';
+    passo('carta');
+  });
+
+  document.getElementById('carta-imprime').addEventListener('click', function () {
+    var copia = document.getElementById('carta').cloneNode(true);
+    copia.removeAttribute('id');
+    copia.classList.add('carta-impressa');
+    document.body.appendChild(copia);
+    var limpou = false;
+    function limpa() { if (limpou) return; limpou = true; copia.remove(); window.removeEventListener('afterprint', limpa); }
+    window.addEventListener('afterprint', limpa);
+    window.print();
+    setTimeout(limpa, 3000);            /* rede de segurança onde afterprint não vem */
   });
 
   fecha.addEventListener('click', function () { mostra(false); });
