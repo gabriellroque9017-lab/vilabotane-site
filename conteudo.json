@@ -1,12 +1,28 @@
 {
   "site": "vilabotane",
   "campos": {
-    "vinhos.titulo": "Dois rótulos, uma encosta",
-    "tie.resumo": "Cabernet Franc 2025, doze meses em ânfora de grès. Lote único.",
-    "tiepreto.resumo": "Cabernet Franc 2025, oito meses em carvalho francês. Lote único.",
-    "contato.endereco": "Rua Luiz Francisco de Souza, 555<br>Ponte Funda, Vassouras/RJ",
-    "contato.lema": "Microvinícola de pesquisa em terroir tropical<br>Mata Atlântica • Vale do Café • Brasil<br>Vinhos de mínima intervenção e lotes únicos",
-    "tie.preco": "R$ 280",
-    "tiepreto.preco": "R$ 340"
+    "vinhos": {
+      "titulo": "Dois rótulos, uma encosta"
+    },
+    "tie": {
+      "resumo": "Cabernet Franc 2025, doze meses em ânfora de grès. Lote único.",
+      "preco": "R$ 280"
+    },
+    "tiepreto": {
+      "resumo": "Cabernet Franc 2025, oito meses em carvalho francês. Lote único.",
+      "preco": "R$ 340"
+    },
+    "contato": {
+      "endereco": "Rua Luiz Francisco de Souza, 555<br>Ponte Funda, Vassouras/RJ",
+      "lema": "Microvinícola de pesquisa em terroir tropical<br>Mata Atlântica • Vale do Café • Brasil<br>Vinhos de mínima intervenção e lotes únicos"
+    }
+  },
+  "imagens": {
+    "tie": {
+      "foto": "./img/garrafa-tie.webp"
+    },
+    "tiepreto": {
+      "foto": "./img/garrafa-tiepreto.webp"
+    }
   }
 }

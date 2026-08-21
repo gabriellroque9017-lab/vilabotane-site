@@ -4,6 +4,9 @@
 User-agent: *
 Allow: /
 
+# a área de edição não é para buscador
+Disallow: /admin/
+
 # Rastreadores de coleta para treinamento de modelos: não autorizados.
 # A recusa vale para o site inteiro, textos, imagens, vídeos e código.
 User-agent: GPTBot

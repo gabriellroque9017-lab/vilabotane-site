@@ -1,0 +1,75 @@
+# Modo Edição · Vila Botané
+# Gerado por ferramentas/monta-painel.mjs a partir de conteudo/esquema.json.
+# Não edite à mão: acrescente o campo no extrator e rode o gerador de novo.
+
+backend:
+  name: github
+  repo: gabriellroque9017-lab/vilabotane-site
+  branch: main
+
+# onde as fotos enviadas ficam guardadas. O painel exige caminho absoluto aqui;
+# o site normaliza para relativo ao aplicar, porque vive numa subpasta.
+media_folder: img/enviadas
+public_folder: /img/enviadas
+
+locale: pt
+
+collections:
+  - name: conteudo
+    label: "Conteúdo do site"
+    files:
+      - name: textos
+        label: "Textos, preços e fotos"
+        file: conteudo.json
+        description: "O que você mudar aqui aparece no site em cerca de um minuto."
+        fields:
+          - { label: Site, name: site, widget: hidden }
+          - label: "Textos e preços"
+            name: campos
+            widget: object
+            collapsed: false
+            fields:
+              - label: "Nossos vinhos"
+                name: vinhos
+                widget: object
+                collapsed: false
+                fields:
+                  - { label: "Título da seção", name: titulo, widget: string, required: false }
+              - label: "Tiê"
+                name: tie
+                widget: object
+                collapsed: false
+                fields:
+                  - { label: "Resumo no cartão", name: resumo, widget: string, required: false }
+                  - { label: "Preço por garrafa", name: preco, widget: string, required: false }
+              - label: "Tiê Preto"
+                name: tiepreto
+                widget: object
+                collapsed: false
+                fields:
+                  - { label: "Resumo no cartão", name: resumo, widget: string, required: false }
+                  - { label: "Preço por garrafa", name: preco, widget: string, required: false }
+              - label: "Contato"
+                name: contato
+                widget: object
+                collapsed: false
+                fields:
+                  - { label: "Endereço", name: endereco, widget: text, required: false }
+                  - { label: "Lema do rodapé", name: lema, widget: text, required: false }
+          - label: "Fotos"
+            name: imagens
+            widget: object
+            collapsed: false
+            fields:
+              - label: "Tiê"
+                name: tie
+                widget: object
+                collapsed: false
+                fields:
+                  - { label: "Foto da garrafa", name: foto, widget: image, required: false }
+              - label: "Tiê Preto"
+                name: tiepreto
+                widget: object
+                collapsed: false
+                fields:
+                  - { label: "Foto da garrafa", name: foto, widget: image, required: false }
