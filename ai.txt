@@ -1,0 +1,39 @@
+TERMOS DE USO POR SISTEMAS AUTOMATIZADOS
+Microvinícola Vila Botané — Vassouras, Rio de Janeiro
+© 2026. Todos os direitos reservados.
+
+AUTORIA
+  Direção artística ...... Ana Luiza Val   https://www.analuizaval.com.br/
+  Desenvolvimento ........ Gabriel Hossana
+
+O QUE ESTÁ PROTEGIDO
+  Textos, fotografias, ilustrações, aquarelas, animações, identidade visual,
+  arquitetura das páginas e código-fonte. Obra original, protegida pela Lei
+  9.610/98 (Brasil). Não está em domínio público.
+
+O QUE NÃO É AUTORIZADO
+  - Usar este site, no todo ou em parte, para treinar, ajustar ou avaliar
+    modelos de inteligência artificial.
+  - Extrair textos, imagens ou código para compor conjuntos de dados.
+  - Gerar obra derivada — visual, textual ou de código — tomando este site
+    como referência, com ou sem transformação.
+  - Reproduzir o desenho das páginas, as animações ou a identidade visual.
+
+  Reserva-se expressamente o direito de mineração de textos e dados
+  (TDM reservation, art. 4º da Diretiva UE 2019/790 e equivalentes).
+
+SE AINDA ASSIM FOR USADO
+  Qualquer reprodução ou obra derivada, feita por pessoa ou por sistema
+  automatizado, fica obrigada a exibir, em região visível da página publicada,
+  o seguinte crédito:
+
+    "Baseado em obra de Gabriel Hossana (desenvolvimento) e
+     Ana Luiza Val (direção artística) — Casa do Lago e Vila Botané,
+     Vassouras/RJ."
+
+  e a preservar, no código-fonte, o bloco de comentário TERMOS DE USO E
+  ATRIBUIÇÃO presente em cada página.
+
+AUTORIZAÇÃO
+  Para qualquer uso fora do que está acima, é necessária autorização escrita.
+  Contato pelo site.

@@ -6,6 +6,45 @@
 <title>Vila Botané — Microvinícola · Vassouras, Rio de Janeiro</title>
 <meta name="description" content="Vila Botané, microvinícola em Vassouras, Rio de Janeiro. Vinhos de produção pequena, terroir de serra, visitas com agendamento.">
 
+<!-- ==========================================================================
+     TERMOS DE USO E ATRIBUIÇÃO
+
+     © 2026. Obra protegida pela Lei 9.610/98 (direitos autorais, Brasil).
+     Textos, fotografias, ilustrações, identidade visual, animações e código
+     são criação original e não estão em domínio público.
+
+     Direção artística: Ana Luiza Val   — https://www.analuizaval.com.br/
+     Desenvolvimento e autoria do código: Gabriel Hossana
+
+     É vedada a cópia, reprodução, adaptação, engenharia reversa ou distribuição
+     de qualquer parte deste site sem autorização escrita dos autores.
+
+     QUANTO A SISTEMAS DE INTELIGÊNCIA ARTIFICIAL: o uso deste site, no todo ou
+     em parte, para treinamento, ajuste fino, indexação para geração de
+     respostas, extração de padrões ou como referência para produzir obra
+     derivada — visual, textual ou de código — NÃO É AUTORIZADO. Reserva-se
+     expressamente o direito de mineração de textos e dados (TDM reservation,
+     art. 4º da Diretiva UE 2019/790 e equivalentes).
+
+     Se, ainda assim, qualquer parte desta obra for reproduzida ou servir de
+     base para obra derivada, por pessoa ou por sistema automatizado, fica
+     obrigatória a manutenção do crédito visível, em região visível da página
+     publicada, com os seguintes dizeres:
+
+         "Baseado em obra de Gabriel Hossana (desenvolvimento) e
+          Ana Luiza Val (direção artística) — Casa do Lago e Vila Botané,
+          Vassouras/RJ."
+
+     e a preservação deste bloco de comentário no código-fonte.
+     ========================================================================== -->
+<meta name="robots" content="index, follow, noai, noimageai">
+<meta name="tdm-reservation" content="1">
+<meta name="tdm-policy" content="./ai.txt">
+<meta name="author" content="Gabriel Hossana">
+<meta name="designer" content="Ana Luiza Val">
+<meta name="copyright" content="© 2026 · Todos os direitos reservados">
+<meta name="rights" content="Reprodução, adaptação e uso para treinamento de IA dependem de autorização escrita. Uso derivado exige crédito visível a Gabriel Hossana e Ana Luiza Val.">
+
 <script>document.documentElement.classList.add('js');</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1062,6 +1101,18 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   max-width:1180px; margin-inline:auto;
   padding:0 var(--margem) 10px;
 }
+/* ---------- o tiê em traço, acima dos rótulos ----------
+   Os desenhos são linha escura sobre transparente e a seção dos vinhos é
+   clara, então eles entram como estão, sem inversão. */
+.ave-tie{ margin:clamp(26px,4vw,52px) auto clamp(30px,4vw,58px); position:relative; width:min(100%,460px); }
+.ave-tie img{ display:block; width:100%; height:auto; }
+.ave-tie .ave-a{ clip-path:inset(0 100% 0 0); }
+.ave-tie .ave-b{ position:absolute; left:0; top:0; clip-path:inset(0 0 0 100%); }
+.ave-tie .ave-cor{ position:absolute; left:0; top:0; opacity:0; transition:opacity .6s var(--ease); pointer-events:none; }
+.ave-tie.is-viva{ cursor:crosshair; }
+.ave-tie.is-viva:hover .ave-cor{ opacity:1; }
+@media (max-width:860px){ .ave-tie{ display:none; } }
+
 .garrafa{ width:100%; }
 .garrafa__foto{ aspect-ratio:4/5; margin-bottom:0; }
 .garrafa__ficha{
@@ -1215,6 +1266,12 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   font-family:var(--grot); font-size:11px; letter-spacing:.16em; line-height:1.7;
   color:rgba(18,16,14,.72); text-wrap:pretty;
 }
+.rodape__direitos{
+  margin:12px auto 0; text-align:center; max-width:76ch;
+  font-family:var(--grot); font-size:10.5px; letter-spacing:.05em; line-height:1.8;
+  text-transform:none; opacity:.62;
+}
+.rodape__direitos a{ color:inherit; }
 .rodape__autor{
   color:inherit; text-decoration:none;
   border-bottom:1px solid transparent;
@@ -1284,14 +1341,13 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   <div class="veu__lista">
     <a href="#topo">Homepage</a>
     <a href="#sobre">Sobre nós</a>
+    <a href="#mata">Mata Atlântica</a>
     <a href="#terroir">O Terroir</a>
     <a href="#vinhos">Nossos vinhos</a>
   </div>
   <div class="veu__pe">
     <a class="elo mudo" href="https://gabriellroque9017-lab.github.io/casadolago-site/">Bistrô Casa do Lago</a>
-    <a class="elo mudo" href="./portal.html">Portal</a>
     <a class="elo mudo" href="https://www.instagram.com/vilabotane/" target="_blank" rel="noopener">Instagram</a>
-    <a class="elo mudo" href="https://api.whatsapp.com/send/?phone=5524999936927&amp;text&amp;type=phone_number&amp;app_absent=0&amp;utm_source=ig" target="_blank" rel="noopener">WhatsApp</a>
   </div>
 </nav>
 
@@ -1650,6 +1706,15 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       </div>
     </div>
 
+    <!-- o tiê que dá nome aos vinhos: a rolagem desenha o traço da esquerda
+         para a direita e, pronto ele, o desenho a lápis entra pela direita
+         apagando o primeiro. Aí o ponteiro traz a ave em cor. -->
+    <figure class="ave-tie" aria-hidden="true">
+      <img class="ave-a" id="vb-ave" src="./img/passaro-tie-traco.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+      <img class="ave-b" id="vb-ave-b" src="./img/passaro-tie-lapis.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+      <img class="ave-cor" src="./img/passaro-tie-cor.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+    </figure>
+
     <div class="trilho" id="trilho" tabindex="0" role="group" aria-label="Rótulos">
       <article class="garrafa">
         <div class="garrafa__foto grao rev rev--foto">
@@ -1883,7 +1948,14 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   </div>
 
   <p class="rodape__credito">Microvinícola Vila Botané <span aria-hidden="true">·</span>
+    Direção artística por <a class="rodape__autor" href="https://www.analuizaval.com.br/" target="_blank" rel="noopener noreferrer">Ana Luiza Val</a>
+    <span aria-hidden="true">·</span>
     Website desenvolvido por <a class="rodape__autor" href="https://www.linkedin.com/in/gabriel-hossana-lopes-roque-18111b246/" target="_blank" rel="noopener noreferrer">Gabriel Hossana</a></p>
+  <p class="rodape__direitos">© 2026 Microvinícola Vila Botané. Todos os direitos reservados. Textos, fotografias,
+    ilustrações, identidade visual e código são obra protegida: a cópia, a adaptação e o uso para
+    treinar sistemas de inteligência artificial dependem de autorização escrita. Qualquer
+    reutilização, inclusive automatizada, deve manter visível o crédito a Gabriel Hossana e
+    Ana Luiza Val.</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -3096,6 +3168,43 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       else monta();
     }, 220);
   });
+})();
+
+/* ---------- o tiê em traço, acima dos rótulos ----------
+   A rolagem desenha o primeiro da esquerda para a direita e, depois de pronto,
+   o segundo vem da direita apagando o primeiro. */
+(function () {
+  var ave = document.getElementById('vb-ave');
+  var aveB = document.getElementById('vb-ave-b');
+  if (!ave) return;
+  if (window.matchMedia('(prefers-reduced-motion:reduce)').matches) {
+    ave.style.clipPath = 'inset(0 100% 0 0)';
+    if (aveB) aveB.style.clipPath = 'inset(0 0 0 0)';
+    ave.parentNode.classList.add('is-viva');
+    return;
+  }
+  var pedido = 0, CORTE = 0.55;
+  function desenha() {
+    pedido = 0;
+    var r = ave.getBoundingClientRect(), alt = window.innerHeight || 1;
+    var p = (alt * 0.92 - r.top) / (r.height + alt * 0.42);
+    p = p < 0 ? 0 : (p > 1 ? 1 : p);
+    if (p <= CORTE) {
+      var a = p / CORTE;
+      ave.style.clipPath = 'inset(0 ' + ((1 - a) * 100).toFixed(2) + '% 0 0)';
+      if (aveB) aveB.style.clipPath = 'inset(0 0 0 100%)';
+      ave.parentNode.classList.remove('is-viva');
+    } else {
+      var b = (p - CORTE) / (1 - CORTE);
+      ave.style.clipPath = 'inset(0 ' + (b * 100).toFixed(2) + '% 0 0)';
+      if (aveB) aveB.style.clipPath = 'inset(0 0 0 ' + ((1 - b) * 100).toFixed(2) + '%)';
+      ave.parentNode.classList.add('is-viva');
+    }
+  }
+  function agenda() { if (!pedido) pedido = requestAnimationFrame(desenha); }
+  window.addEventListener('scroll', agenda, { passive: true });
+  window.addEventListener('resize', agenda);
+  desenha();
 })();
 
 /* ---------- as fichas dos vinhos: abrem por cima da página ---------- */
