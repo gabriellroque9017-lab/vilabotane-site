@@ -1445,10 +1445,10 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       <!-- TROCAR AQUI o caminho dos vídeos.
            Quando houver o encode mobile (854x480), descomente o primeiro <source>:
            ele precisa vir ANTES do desktop para o navegador escolher primeiro. -->
-      <video class="scrub__fonte" id="scrub-video" muted loop autoplay playsinline preload="auto"
-             poster="./img/tie-poster.jpg" tabindex="-1" aria-hidden="true">
-        <source src="./img/tie-scrub.mp4" type="video/mp4">
-      </video>
+      <!-- sem <source>: quem carrega o arquivo é o fetch lá embaixo, que mostra o
+           quanto já veio. Com os dois, o navegador baixava o vídeo duas vezes. -->
+      <video class="scrub__fonte" id="scrub-video" muted loop autoplay playsinline preload="none"
+             poster="./img/tie-poster.jpg" tabindex="-1" aria-hidden="true"></video>
 
       <canvas class="scrub__tela" id="scrub-tela" width="1916" height="1080" aria-hidden="true"></canvas>
       <img class="scrub__poster" src="./img/tie-poster.jpg" alt="Garrafa do Tiê no vinhedo, ao sol da tarde" width="1916" height="1080" decoding="async">
@@ -1881,8 +1881,8 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 <section class="soleira" aria-labelledby="soleira-nome">
   <a class="soleira__vao" href="https://gabriellroque9017-lab.github.io/casadolago-site/">
     <span class="soleira__marca" aria-hidden="true">
-      <img class="traco" src="./img/casa-marca-topo.png" alt="" width="1706" height="1139" loading="lazy" decoding="async">
-      <img class="traco" src="./img/casa-marca-agua.png" alt="" width="1706" height="1139" loading="lazy" decoding="async">
+      <img class="traco" src="./img/casa-marca-topo.webp" alt="" width="1706" height="1139" loading="lazy" decoding="async">
+      <img class="traco" src="./img/casa-marca-agua.webp" alt="" width="1706" height="1139" loading="lazy" decoding="async">
       <img class="cor" src="./img/casa-logo-cheia.png" alt="" width="1706" height="1139" loading="lazy" decoding="async">
     </span>
     <span class="soleira__parede"></span>
@@ -1952,10 +1952,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     <span aria-hidden="true">·</span>
     Website desenvolvido por <a class="rodape__autor" href="https://www.linkedin.com/in/gabriel-hossana-lopes-roque-18111b246/" target="_blank" rel="noopener noreferrer">Gabriel Hossana</a></p>
   <p class="rodape__direitos">© 2026 Microvinícola Vila Botané. Todos os direitos reservados. Textos, fotografias,
-    ilustrações, identidade visual e código são obra protegida: a cópia, a adaptação e o uso para
-    treinar sistemas de inteligência artificial dependem de autorização escrita. Qualquer
-    reutilização, inclusive automatizada, deve manter visível o crédito a Gabriel Hossana e
-    Ana Luiza Val.</p>
+    ilustrações, identidade visual e código são obra protegida.</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -3010,7 +3007,10 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     acorda();
   }
 
-  (function baixa() {
+  /* o arquivo do Tiê tem alguns megabytes e a seção dele fica lá embaixo. Ele
+     só começa a vir quando a seção se aproxima: assim a capa não divide a rede
+     com um vídeo que ninguém está vendo ainda. */
+  function baixa() {
     medidor(0, 'Carregando');
     fetch(FONTE).then(function (r) {
       if (!r.ok) throw new Error(r.status);
@@ -3031,7 +3031,16 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       video.addEventListener('loadedmetadata', comMetadata, { once: true });
       video.load();
     })['catch'](estatico);
-  })();
+  }
+
+  if ('IntersectionObserver' in window) {
+    var olho = new IntersectionObserver(function (itens) {
+      if (!itens.some(function (i) { return i.isIntersecting; })) return;
+      olho.disconnect();
+      baixa();
+    }, { rootMargin: '600px 0px' });
+    olho.observe(secao);
+  } else { baixa(); }
 })();
 </script>
 <script>
