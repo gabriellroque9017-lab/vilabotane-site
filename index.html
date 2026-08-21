@@ -1104,12 +1104,15 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 /* ---------- o tiê em traço, acima dos rótulos ----------
    Os desenhos são linha escura sobre transparente e a seção dos vinhos é
    clara, então eles entram como estão, sem inversão. */
+/* a mesma grade do trilho, para cada ave ficar sobre a sua garrafa:
+   o tiê-sangue à esquerda, o tiê-preto à direita, os dois na mesma altura */
 .aves{
-  display:flex; justify-content:center; align-items:flex-end;
-  gap:clamp(10px,2.4vw,40px);
-  margin:clamp(26px,4vw,52px) auto clamp(30px,4vw,58px);
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:end;
+  gap:clamp(18px,2.6vw,44px);
+  max-width:1180px; margin-inline:auto;
+  padding:clamp(26px,4vw,52px) var(--margem) clamp(24px,3.4vw,44px);
 }
-.ave-tie{ position:relative; margin:0; width:min(46%,400px); }
+.ave-tie{ position:relative; margin:0; width:min(100%,380px); justify-self:center; }
 /* o segundo é o mesmo desenho virado: nasce da direita para a esquerda */
 .ave-tie--espelho{ transform:scaleX(-1); }
 .ave-tie img{ display:block; width:100%; height:auto; }
@@ -1724,8 +1727,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
         <img class="ave-cor" src="./img/passaro-tie-cor.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
       </figure>
       <figure class="ave-tie ave-tie--espelho" aria-hidden="true">
-        <img class="ave-a" src="./img/passaro-tie-traco.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
-        <img class="ave-b" src="./img/passaro-tie-lapis.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+        <img class="ave-a" src="./img/passaro-tiepreto-traco.webp" alt="" width="1200" height="872" loading="lazy" decoding="async">
+        <img class="ave-b" src="./img/passaro-tiepreto-lapis.webp" alt="" width="1200" height="872" loading="lazy" decoding="async">
+        <img class="ave-cor" src="./img/passaro-tiepreto-cor.webp" alt="" width="1200" height="872" loading="lazy" decoding="async">
       </figure>
     </div>
 
