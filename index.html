@@ -1104,14 +1104,21 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 /* ---------- o tiê em traço, acima dos rótulos ----------
    Os desenhos são linha escura sobre transparente e a seção dos vinhos é
    clara, então eles entram como estão, sem inversão. */
-.ave-tie{ margin:clamp(26px,4vw,52px) auto clamp(30px,4vw,58px); position:relative; width:min(100%,460px); }
+.aves{
+  display:flex; justify-content:center; align-items:flex-end;
+  gap:clamp(10px,2.4vw,40px);
+  margin:clamp(26px,4vw,52px) auto clamp(30px,4vw,58px);
+}
+.ave-tie{ position:relative; margin:0; width:min(46%,400px); }
+/* o segundo é o mesmo desenho virado: nasce da direita para a esquerda */
+.ave-tie--espelho{ transform:scaleX(-1); }
 .ave-tie img{ display:block; width:100%; height:auto; }
 .ave-tie .ave-a{ clip-path:inset(0 100% 0 0); }
 .ave-tie .ave-b{ position:absolute; left:0; top:0; clip-path:inset(0 0 0 100%); }
 .ave-tie .ave-cor{ position:absolute; left:0; top:0; opacity:0; transition:opacity .6s var(--ease); pointer-events:none; }
 .ave-tie.is-viva{ cursor:crosshair; }
 .ave-tie.is-viva:hover .ave-cor{ opacity:1; }
-@media (max-width:860px){ .ave-tie{ display:none; } }
+@media (max-width:860px){ .aves{ display:none; } }
 
 .garrafa{ width:100%; }
 .garrafa__foto{ aspect-ratio:4/5; margin-bottom:0; }
@@ -1706,14 +1713,22 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       </div>
     </div>
 
-    <!-- o tiê que dá nome aos vinhos: a rolagem desenha o traço da esquerda
-         para a direita e, pronto ele, o desenho a lápis entra pela direita
-         apagando o primeiro. Aí o ponteiro traz a ave em cor. -->
-    <figure class="ave-tie" aria-hidden="true">
-      <img class="ave-a" id="vb-ave" src="./img/passaro-tie-traco.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
-      <img class="ave-b" id="vb-ave-b" src="./img/passaro-tie-lapis.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
-      <img class="ave-cor" src="./img/passaro-tie-cor.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
-    </figure>
+    <!-- os dois pássaros que dão nome aos vinhos, um de frente para o outro.
+         A rolagem desenha o traço e o desenho a lápis entra por cima apagando
+         o primeiro. O da direita é o mesmo desenho espelhado, e por isso nasce
+         no sentido contrário: o espelho inverte também o corte que revela. -->
+    <div class="aves">
+      <figure class="ave-tie" aria-hidden="true">
+        <img class="ave-a" src="./img/passaro-tie-traco.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+        <img class="ave-b" src="./img/passaro-tie-lapis.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+        <img class="ave-cor" src="./img/passaro-tie-cor.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+      </figure>
+      <figure class="ave-tie ave-tie--espelho" aria-hidden="true">
+        <img class="ave-a" src="./img/passaro-tie-traco.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+        <img class="ave-b" src="./img/passaro-tie-lapis.webp" alt="" width="1400" height="1017" loading="lazy" decoding="async">
+      </figure>
+    </div>
+
 
     <div class="trilho" id="trilho" tabindex="0" role="group" aria-label="Rótulos">
       <article class="garrafa">
@@ -3179,43 +3194,54 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   });
 })();
 
-/* ---------- o tiê em traço, acima dos rótulos ----------
-   A rolagem desenha o primeiro da esquerda para a direita e, depois de pronto,
-   o segundo vem da direita apagando o primeiro. */
+/* ---------- os dois tiês em traço, acima dos rótulos ----------
+   Cada figura desenha o próprio traço conforme a rolagem: primeiro o contorno,
+   da esquerda para a direita, e depois o desenho a lápis vem do outro lado
+   apagando o primeiro. A segunda figura está espelhada por CSS, então o mesmo
+   corte aparece invertido e ela nasce no sentido contrário. */
 (function () {
-  var ave = document.getElementById('vb-ave');
-  var aveB = document.getElementById('vb-ave-b');
-  if (!ave) return;
-  if (window.matchMedia('(prefers-reduced-motion:reduce)').matches) {
-    ave.style.clipPath = 'inset(0 100% 0 0)';
-    if (aveB) aveB.style.clipPath = 'inset(0 0 0 0)';
-    ave.parentNode.classList.add('is-viva');
+  var figuras = [].slice.call(document.querySelectorAll('.ave-tie'));
+  if (!figuras.length) return;
+  var parado = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  var aves = figuras.map(function (fig) {
+    return { fig: fig, a: fig.querySelector('.ave-a'), b: fig.querySelector('.ave-b') };
+  }).filter(function (o) { return o.a; });
+
+  if (parado) {
+    aves.forEach(function (o) {
+      o.a.style.clipPath = 'inset(0 100% 0 0)';
+      if (o.b) o.b.style.clipPath = 'inset(0 0 0 0)';
+      o.fig.classList.add('is-viva');
+    });
     return;
   }
+
   var pedido = 0, CORTE = 0.55;
   function desenha() {
     pedido = 0;
-    var r = ave.getBoundingClientRect(), alt = window.innerHeight || 1;
-    var p = (alt * 0.92 - r.top) / (r.height + alt * 0.42);
-    p = p < 0 ? 0 : (p > 1 ? 1 : p);
-    if (p <= CORTE) {
-      var a = p / CORTE;
-      ave.style.clipPath = 'inset(0 ' + ((1 - a) * 100).toFixed(2) + '% 0 0)';
-      if (aveB) aveB.style.clipPath = 'inset(0 0 0 100%)';
-      ave.parentNode.classList.remove('is-viva');
-    } else {
-      var b = (p - CORTE) / (1 - CORTE);
-      ave.style.clipPath = 'inset(0 ' + (b * 100).toFixed(2) + '% 0 0)';
-      if (aveB) aveB.style.clipPath = 'inset(0 0 0 ' + ((1 - b) * 100).toFixed(2) + '%)';
-      ave.parentNode.classList.add('is-viva');
-    }
+    aves.forEach(function (o) {
+      var r = o.a.getBoundingClientRect(), alt = window.innerHeight || 1;
+      var p = (alt * 0.92 - r.top) / (r.height + alt * 0.42);
+      p = p < 0 ? 0 : (p > 1 ? 1 : p);
+      if (p <= CORTE) {
+        var x = p / CORTE;
+        o.a.style.clipPath = 'inset(0 ' + ((1 - x) * 100).toFixed(2) + '% 0 0)';
+        if (o.b) o.b.style.clipPath = 'inset(0 0 0 100%)';
+        o.fig.classList.remove('is-viva');
+      } else {
+        var y = (p - CORTE) / (1 - CORTE);
+        o.a.style.clipPath = 'inset(0 ' + (y * 100).toFixed(2) + '% 0 0)';
+        if (o.b) o.b.style.clipPath = 'inset(0 0 0 ' + ((1 - y) * 100).toFixed(2) + '%)';
+        o.fig.classList.add('is-viva');
+      }
+    });
   }
   function agenda() { if (!pedido) pedido = requestAnimationFrame(desenha); }
   window.addEventListener('scroll', agenda, { passive: true });
   window.addEventListener('resize', agenda);
   desenha();
 })();
-
 /* ---------- as fichas dos vinhos: abrem por cima da página ---------- */
 ['tie', 'tiepreto'].forEach(function (nome) {
   var abre  = document.getElementById('abre-' + nome);
