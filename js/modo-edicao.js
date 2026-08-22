@@ -456,62 +456,119 @@
   ];
   var removidos = [];          /* ids de pratos que saem da carta */
   var novos = [];              /* receitas acrescentadas nesta sessão */
+  var chefFora = [];           /* ids de menus do chef que saem */
+  var chefNovos = [];          /* menus do chef acrescentados */
+
+  /* Duas espécies de cartão moram na mesma grade e obedecem ao mesmo filtro.
+     O que muda entre elas é o atributo que as identifica, a lista onde as
+     decisões são guardadas e o formulário que as cria. O resto — o botão de
+     excluir, o tijolo de acrescentar, o desfazer antes de salvar — é igual,
+     e por isso é escrito uma vez só. */
+  var ESPECIES = {
+    prato: {
+      atributo: 'data-prato-id', seletor: '.cartao[data-prato-id]:not(.cartao--chef)',
+      rotulo: 'Novo prato', cats: ['entradas', 'principais', 'doces'],
+      pergunta: 'prato', guardados: 'pratosNovos',
+      sessao: function () { return novos; }, poeSessao: function (v) { novos = v; },
+      saem: function () { return removidos; },
+      formulario: function () { formularioDePrato(); },
+    },
+    chef: {
+      atributo: 'data-chef-id', seletor: '.cartao--chef[data-chef-id]',
+      rotulo: 'Novo menu do chef', cats: ['chef'],
+      pergunta: 'menu do chef', guardados: 'chefNovos',
+      sessao: function () { return chefNovos; }, poeSessao: function (v) { chefNovos = v; },
+      saem: function () { return chefFora; },
+      formulario: function () { formularioDeChef(); },
+    },
+  };
 
   function grade() { return document.querySelector('.pratos'); }
 
   function abreCarta() {
     var g = grade();
     if (!g) return;
-    var cartoes = g.querySelectorAll('.cartao[data-prato-id]:not(.cartao--chef)');
-    for (var i = 0; i < cartoes.length; i++) {
-      if (cartoes[i].querySelector('.me-excluir')) continue;
-      poeExcluir(cartoes[i]);
+    for (var chave in ESPECIES) {
+      if (!Object.prototype.hasOwnProperty.call(ESPECIES, chave)) continue;
+      var e = ESPECIES[chave];
+      var cartoes = g.querySelectorAll(e.seletor);
+      for (var i = 0; i < cartoes.length; i++) {
+        if (cartoes[i].querySelector('.me-excluir')) continue;
+        poeExcluir(cartoes[i], e);
+      }
+      if (!g.querySelector('.me-novo[data-especie="' + chave + '"]')) poeNovo(g, chave, e);
     }
-    if (!g.querySelector('.me-novo')) poeNovo(g);
+    arrumaTijolos();
   }
 
-  function poeExcluir(cartao) {
+  function poeExcluir(cartao, especie) {
     var bt = document.createElement('button');
     bt.type = 'button';
     bt.className = 'me-excluir me-fora';
     bt.textContent = 'Excluir';
-    bt.title = 'Tirar este prato da carta';
+    bt.title = 'Tirar este ' + especie.pergunta + ' da carta';
     if (getComputedStyle(cartao).position === 'static') cartao.classList.add('me-relativo');
     cartao.appendChild(bt);
     bt.addEventListener('click', function (e) {
       e.preventDefault(); e.stopPropagation();
-      var id = cartao.getAttribute('data-prato-id');
-      var nome = (cartao.querySelector('h3') || {}).textContent || 'este prato';
-      if (!confirm('Tirar “' + nome.trim() + '” da carta?\n\nEle some do site quando você salvar. Para voltar atrás depois, é preciso me chamar.')) return;
+      var id = cartao.getAttribute(especie.atributo);
+      var nome = (cartao.querySelector('h3') || {}).textContent || 'este ' + especie.pergunta;
+      if (!confirm('Tirar “' + nome.trim() + '” da carta?\n\nSome do site quando você salvar. Para voltar atrás depois, é preciso me chamar.')) return;
       /* se foi acrescentado aqui, some sem deixar recado */
       var eraNovo = false;
-      novos = novos.filter(function (p) { if (p.id === id) { eraNovo = true; return false; } return true; });
-      var guardados = (conteudo.pratosNovos || []).filter(function (p) { return p.id === id; }).length > 0;
+      especie.poeSessao(especie.sessao().filter(function (p) {
+        if (p.id === id) { eraNovo = true; return false; }
+        return true;
+      }));
+      var guardados = (conteudo[especie.guardados] || []).filter(function (p) { return p.id === id; }).length > 0;
       if (guardados) {
-        conteudo.pratosNovos = (conteudo.pratosNovos || []).filter(function (p) { return p.id !== id; });
+        conteudo[especie.guardados] = (conteudo[especie.guardados] || []).filter(function (p) { return p.id !== id; });
         eraNovo = true;
       }
-      if (!eraNovo && removidos.indexOf(id) === -1) removidos.push(id);
+      var saem = especie.saem();
+      if (!eraNovo && saem.indexOf(id) === -1) saem.push(id);
       cartao.remove();
       pinta();
     });
   }
 
-  function poeNovo(g) {
+  function poeNovo(g, chave, especie) {
     var tijolo = document.createElement('button');
     tijolo.type = 'button';
     tijolo.className = 'me-novo me-fora';
-    tijolo.innerHTML = '<span class="me-novo__mais" aria-hidden="true">+</span><span>Novo prato</span>';
+    tijolo.setAttribute('data-especie', chave);
+    tijolo.innerHTML = '<span class="me-novo__mais" aria-hidden="true">+</span><span>' + especie.rotulo + '</span>';
     g.appendChild(tijolo);
-    tijolo.addEventListener('click', function (e) { e.preventDefault(); formularioDePrato(); });
+    tijolo.addEventListener('click', function (e) { e.preventDefault(); especie.formulario(); });
+  }
+
+  /* cada tijolo só aparece na aba a que ele pertence: não faz sentido
+     oferecer "novo prato" enquanto se olha o menu do chef */
+  function arrumaTijolos() {
+    var cat = catChave();
+    var tijolos = document.querySelectorAll('.me-novo[data-especie]');
+    for (var i = 0; i < tijolos.length; i++) {
+      var e = ESPECIES[tijolos[i].getAttribute('data-especie')];
+      tijolos[i].hidden = !e || e.cats.indexOf(cat) === -1;
+    }
+  }
+
+  function catChave() {
+    var apertado = document.querySelector('.filtros button[aria-pressed="true"]');
+    return apertado ? apertado.getAttribute('data-cat') : 'entradas';
   }
 
   function catAtual() {
-    var apertado = document.querySelector('.filtros button[aria-pressed="true"]');
-    var chave = apertado ? apertado.getAttribute('data-cat') : 'entradas';
+    var chave = catChave();
     for (var i = 0; i < CATEGORIAS.length; i++) if (CATEGORIAS[i].chave === chave) return CATEGORIAS[i];
     return CATEGORIAS[0];
   }
+
+  document.addEventListener('click', function (e) {
+    if (!e.target || !e.target.closest) return;
+    if (e.target.closest('.filtros button')) setTimeout(arrumaTijolos, 0);
+  });
+  document.addEventListener('carta:mudou', arrumaTijolos);
 
   function formularioDePrato() {
     var atual = catAtual();
@@ -584,6 +641,120 @@
       .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'prato';
   }
 
+  /* ------------------------------------------------------------------
+     o menu do chef
+
+     Um menu do chef não é um prato: é uma sequência. Tem nome, um numeral
+     romano na lombada, uma apresentação, as etapas em ordem e um punhado
+     de fotografias que passam sozinhas enquanto se lê. O formulário pede
+     isso e nada mais — o "quatro etapas" que aparece no cartão sai da
+     contagem das próprias etapas, para nunca discordar delas.
+     ------------------------------------------------------------------ */
+  var POREXTENSO = ['nenhuma', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis',
+                    'sete', 'oito', 'nove', 'dez', 'onze', 'doze'];
+  var ROMANOS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+
+  function proximoRomano() {
+    var quantos = document.querySelectorAll('.pratos .cartao--chef').length + 1;
+    return ROMANOS[quantos] || String(quantos);
+  }
+
+  function formularioDeChef() {
+    var fundo = document.createElement('div');
+    fundo.className = 'me-porta me-fora';
+    fundo.innerHTML =
+      '<form class="me-porta__carta me-porta__carta--larga">' +
+        '<p class="me-porta__olho">Carta</p>' +
+        '<h2>Novo menu do chef</h2>' +
+        '<label class="me-campo"><span>Nome do menu</span><input name="titulo" required maxlength="80" placeholder="Fogo lento"></label>' +
+        '<label class="me-campo"><span>Numeral <em>na lombada do cartão</em></span>' +
+          '<input name="numeral" maxlength="8" value="' + proximoRomano() + '"></label>' +
+        '<label class="me-campo"><span>Resumo <em>a linha que aparece no cartão</em></span>' +
+          '<textarea name="resumo" rows="2" maxlength="300"></textarea></label>' +
+        '<label class="me-campo"><span>Apresentação <em>o texto de abertura da sequência</em></span>' +
+          '<textarea name="linha" rows="4" maxlength="700"></textarea></label>' +
+        '<label class="me-campo"><span>Etapas <em>uma por linha, no formato Nome ~ descrição</em></span>' +
+          '<textarea name="etapas" rows="6" maxlength="2000" placeholder="Burrata ~ Tomate assado, rúcula selvagem e pesto de manjericão."></textarea></label>' +
+        '<label class="me-campo"><span>Harmonização <em>opcional</em></span><input name="harmonia" maxlength="200"></label>' +
+        '<label class="me-campo"><span>Rodapé <em>opcional</em></span><input name="pe" maxlength="200"></label>' +
+        '<label class="me-campo"><span>Fotografias <em>uma por etapa, na ordem</em></span>' +
+          '<input name="fotos" type="file" accept="image/*" multiple></label>' +
+        '<div class="me-porta__pe">' +
+          '<button class="me-bt me-bt--forte" type="submit">Pôr na carta</button>' +
+          '<button class="me-bt me-bt--fino" type="button" data-fecha>Cancelar</button>' +
+        '</div>' +
+      '</form>';
+    document.body.appendChild(fundo);
+    var form = fundo.querySelector('form');
+    form.querySelector('[name=titulo]').focus();
+    fundo.querySelector('[data-fecha]').addEventListener('click', function () { fundo.remove(); });
+    fundo.addEventListener('click', function (e) { if (e.target === fundo) fundo.remove(); });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = function (n) { return (form.querySelector('[name=' + n + ']').value || '').trim(); };
+      var titulo = v('titulo');
+      if (!titulo) return;
+
+      var etapas = v('etapas').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean);
+      var quantas = etapas.length;
+      var numeral = v('numeral') || proximoRomano();
+
+      var escolhidas = form.querySelector('[name=fotos]').files || [];
+      var pesadas = [].filter.call(escolhidas, function (f) { return f.size > LIMITE_MB * 1048576; });
+      if (pesadas.length) {
+        fala('Há ' + pesadas.length + (pesadas.length === 1 ? ' fotografia acima' : ' fotografias acima') +
+             ' de ' + LIMITE_MB + ' MB. Comprima antes.', true);
+        return;
+      }
+
+      var menu = {
+        id: 'chef-' + chapa(titulo) + '-' + Date.now().toString(36),
+        titulo: titulo,
+        ordem: 'Menu do chef ' + numeral,
+        numeral: numeral,
+        etapasNum: (POREXTENSO[quantas] || quantas) + (quantas === 1 ? ' etapa' : ' etapas'),
+        resumo: v('resumo'),
+        linha: v('linha'),
+        etapas: etapas.join('|'),
+        harmonia: v('harmonia'),
+        pe: v('pe'),
+        fotos: ''
+      };
+
+      var caminhos = [], locais = [];
+      [].forEach.call(escolhidas, function (arq, i) {
+        var destino = PASTA_ENVIADAS + '/' + nomeLimpo(arq.name);
+        var url = URL.createObjectURL(arq);
+        caminhos.push('./' + destino);
+        locais.push(url);
+        arquivos.push({ caminho: 'chef:' + menu.id + ':' + i, nome: destino.split('/').pop(), arquivo: arq, url: url });
+      });
+      menu.fotos = caminhos.join('|');
+      menu.fotosLocais = locais.join('|');
+
+      chefNovos.push(menu);
+      poeChefNaGrade(menu);
+      fundo.remove();
+      pinta();
+      fala('“' + titulo + '” entrou na carta. Salve para publicar.');
+    });
+  }
+
+  function poeChefNaGrade(m) {
+    var g = grade();
+    if (!g || !window.__montaChef) return;
+    var cartao = window.__montaChef(g, m, m.fotosLocais || '');
+    if (!cartao) return;
+    var tijolo = g.querySelector('.me-novo');
+    if (tijolo) g.insertBefore(cartao, tijolo); else g.appendChild(cartao);
+    poeExcluir(cartao, ESPECIES.chef);
+    var botao = document.querySelector('.filtros button[data-cat="chef"]');
+    if (botao && botao.getAttribute('aria-pressed') !== 'true') botao.click();
+    else try { document.dispatchEvent(new CustomEvent('carta:mudou')); } catch (e) {}
+    cartao.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
   /* desenha o cartão na página, do mesmo molde dos que já estão lá */
   function poeNaGrade(p) {
     var g = grade();
@@ -616,7 +787,8 @@
      ================================================================== */
   function temMudanca() {
     return Object.keys(mudancas).length > 0 || arquivos.length > 0 ||
-           novos.length > 0 || removidos.length > 0 || apagados.length > 0;
+           novos.length > 0 || removidos.length > 0 || apagados.length > 0 ||
+           chefNovos.length > 0 || chefFora.length > 0;
   }
 
   /* o que está por salvar, dito em português */
@@ -624,12 +796,16 @@
     var partes = [];
     var t = Object.keys(mudancas).length;
     /* a fotografia de um prato novo já é contada no prato */
-    var m = arquivos.filter(function (a) { return a.caminho.indexOf('prato:') !== 0; }).length;
+    var m = arquivos.filter(function (a) {
+      return a.caminho.indexOf('prato:') !== 0 && a.caminho.indexOf('chef:') !== 0;
+    }).length;
     if (t) partes.push(t + (t === 1 ? ' texto' : ' textos'));
     if (m) partes.push(m + (m === 1 ? ' arquivo' : ' arquivos'));
     if (apagados.length) partes.push(apagados.length + (apagados.length === 1 ? ' vídeo excluído' : ' vídeos excluídos'));
     if (novos.length) partes.push(novos.length + (novos.length === 1 ? ' prato novo' : ' pratos novos'));
     if (removidos.length) partes.push(removidos.length + (removidos.length === 1 ? ' prato retirado' : ' pratos retirados'));
+    if (chefNovos.length) partes.push(chefNovos.length + (chefNovos.length === 1 ? ' menu do chef novo' : ' menus do chef novos'));
+    if (chefFora.length) partes.push(chefFora.length + (chefFora.length === 1 ? ' menu do chef retirado' : ' menus do chef retirados'));
     return partes;
   }
 
@@ -700,7 +876,7 @@
         enviados.forEach(function (a) {
           /* a fotografia de um prato novo não é um trecho da página: é um
              campo da receita, e viaja com ela */
-          if (a.caminho.indexOf('prato:') === 0) return;
+          if (a.caminho.indexOf('prato:') === 0 || a.caminho.indexOf('chef:') === 0) return;
           conteudo.pagina[chave][a.caminho] = { src: a.destino };
         });
         apagados.forEach(function (c) { conteudo.pagina[chave][c] = { removido: true }; });
@@ -709,6 +885,7 @@
       })
       .then(function () {
         mudancas = {}; arquivos = []; novos = []; removidos = []; apagados = [];
+        chefNovos = []; chefFora = [];
         document.querySelectorAll('.me-apagada').forEach(function (e) { e.classList.remove('me-apagada'); });
         document.querySelectorAll('.me-trocada').forEach(function (e) { e.classList.remove('me-trocada'); });
         pinta();
@@ -724,26 +901,34 @@
      e quem entra. Um prato retirado fica retirado mesmo que o site seja
      montado de novo — o HTML continua com ele, e o recado continua valendo. */
   function guardaCarta() {
-    if (!novos.length && !removidos.length) return;
-    if (removidos.length) {
-      var fora = (conteudo.pratosRemovidos || []).slice();
-      removidos.forEach(function (id) { if (fora.indexOf(id) === -1) fora.push(id); });
-      conteudo.pratosRemovidos = fora;
+    anota(removidos, novos, 'pratosRemovidos', 'pratosNovos', ['fotoLocal'], 'foto');
+    anota(chefFora, chefNovos, 'chefRemovidos', 'chefNovos', ['fotosLocais'], null);
+  }
+
+  function anota(saem, entram, chaveFora, chaveDentro, descarta, campoFoto) {
+    if (!saem.length && !entram.length) return;
+    if (saem.length) {
+      var fora = (conteudo[chaveFora] || []).slice();
+      saem.forEach(function (id) { if (fora.indexOf(id) === -1) fora.push(id); });
+      conteudo[chaveFora] = fora;
     }
-    if (novos.length) {
-      var dentro = (conteudo.pratosNovos || []).slice();
-      novos.forEach(function (p) {
+    if (entram.length) {
+      var dentro = (conteudo[chaveDentro] || []).slice();
+      entram.forEach(function (p) {
         var limpo = {};
-        Object.keys(p).forEach(function (k) { if (k !== 'fotoLocal') limpo[k] = p[k]; });
-        if (limpo.foto) limpo.foto = './' + limpo.foto.replace(/^\.\//, '');
+        Object.keys(p).forEach(function (k) {
+          if (descarta.indexOf(k) !== -1) return;          /* prévia local não vai para o repositório */
+          limpo[k] = p[k];
+        });
+        if (campoFoto && limpo[campoFoto]) limpo[campoFoto] = './' + String(limpo[campoFoto]).replace(/^\.\//, '');
         dentro.push(limpo);
       });
-      conteudo.pratosNovos = dentro;
+      conteudo[chaveDentro] = dentro;
     }
     /* quem entrou e saiu na mesma sessão não precisa de recado nenhum */
-    if (conteudo.pratosRemovidos && conteudo.pratosNovos) {
-      var ids = conteudo.pratosNovos.map(function (p) { return p.id; });
-      conteudo.pratosRemovidos = conteudo.pratosRemovidos.filter(function (id) { return ids.indexOf(id) === -1; });
+    if (conteudo[chaveFora] && conteudo[chaveDentro]) {
+      var ids = conteudo[chaveDentro].map(function (p) { return p.id; });
+      conteudo[chaveFora] = conteudo[chaveFora].filter(function (id) { return ids.indexOf(id) === -1; });
     }
   }
 
@@ -875,6 +1060,7 @@
       '  padding:24px; background:rgba(18,16,14,.92); }',
       '.me-porta__carta{ position:relative; width:min(400px,100%); padding:38px 34px 34px; border-radius:3px;',
       '  background:#F2EDE0; color:#3A3A28; font-family:"Jost","Helvetica Neue",Arial,sans-serif; }',
+      '.me-porta__olho{ margin:0 0 10px; font-size:10px; letter-spacing:.3em; text-transform:uppercase; opacity:.55; }',
       '.me-porta__carta h2{ margin:0 34px 0 0; font:300 27px/1.25 "Cormorant Garamond",Georgia,serif; }',
       '.me-porta__x{ position:absolute; top:14px; right:14px; width:34px; height:34px;',
       '  display:grid; place-items:center; border:0; border-radius:50%; background:none;',

@@ -294,24 +294,92 @@
     if (!grade) return;
     var mexeu = false;
 
-    var fora = dados.pratosRemovidos || [];
-    for (var i = 0; i < fora.length; i++) {
-      var velho = grade.querySelector('.cartao[data-prato-id="' + String(fora[i]).replace(/"/g, '') + '"]');
-      if (velho) { velho.remove(); mexeu = true; }
-    }
-
-    var dentro = dados.pratosNovos || [];
-    for (var j = 0; j < dentro.length; j++) {
-      var p = dentro[j];
-      if (!p || !p.id) continue;
-      if (grade.querySelector('.cartao[data-prato-id="' + String(p.id).replace(/"/g, '') + '"]')) continue;
-      var cartao = montaCartao(grade, p);
-      if (cartao) { grade.appendChild(cartao); mexeu = true; }
-    }
+    mexeu = tira(grade, 'data-prato-id', dados.pratosRemovidos) || mexeu;
+    mexeu = tira(grade, 'data-chef-id', dados.chefRemovidos) || mexeu;
+    mexeu = poe(grade, 'data-prato-id', dados.pratosNovos, montaCartao) || mexeu;
+    mexeu = poe(grade, 'data-chef-id', dados.chefNovos, montaChef) || mexeu;
 
     if (mexeu) {
       try { document.dispatchEvent(new CustomEvent('carta:mudou')); } catch (e) {}
     }
+  }
+
+  function tira(grade, atributo, lista) {
+    var mexeu = false;
+    var fora = lista || [];
+    for (var i = 0; i < fora.length; i++) {
+      var velho = grade.querySelector('[' + atributo + '="' + String(fora[i]).replace(/"/g, '') + '"]');
+      if (velho) { velho.remove(); mexeu = true; }
+    }
+    return mexeu;
+  }
+
+  function poe(grade, atributo, lista, monta) {
+    var mexeu = false;
+    var dentro = lista || [];
+    for (var j = 0; j < dentro.length; j++) {
+      var p = dentro[j];
+      if (!p || !p.id) continue;
+      if (grade.querySelector('[' + atributo + '="' + String(p.id).replace(/"/g, '') + '"]')) continue;
+      var cartao = monta(grade, p);
+      if (cartao) { grade.appendChild(cartao); mexeu = true; }
+    }
+    return mexeu;
+  }
+
+  /* ------------------------------------------------------------------
+     Um menu do chef é uma sequência, não um prato: o cartão traz a lombada
+     com o numeral, o nome e o resumo, e todo o resto — a apresentação, as
+     etapas, a harmonização, as fotografias que passam — vive nos atributos
+     que o painel lê ao abrir. Também aqui o molde é um que já está na
+     página, para que o novo abra e se comporte como os outros.
+     ------------------------------------------------------------------ */
+  function montaChef(grade, m, fotosLocais) {
+    var molde = grade.querySelector('.cartao--chef[data-chef-id]');
+    if (!molde) return null;
+    var novo = molde.cloneNode(true);
+    prepara(novo);
+    novo.setAttribute('data-chef-id', m.id);
+    novo.setAttribute('data-cat', 'chef');
+
+    var pares = { titulo: 'titulo', ordem: 'ordem', etapasNum: 'etapas-num',
+                  linha: 'linha', etapas: 'etapas', harmonia: 'harmonia', pe: 'pe' };
+    for (var k in pares) {
+      if (!Object.prototype.hasOwnProperty.call(pares, k)) continue;
+      novo.setAttribute('data-' + pares[k], typeof m[k] === 'string' ? m[k] : '');
+    }
+    var fotos = fotosLocais || m.fotos || '';
+    novo.setAttribute('data-fotos', fotos);
+
+    var lombada = novo.querySelector('.rotulo');
+    if (lombada) {
+      lombada.innerHTML = 'Menu do chef <span aria-hidden="true">·</span> ' +
+        (m.numeral || String(m.ordem || '').replace(/^Menu do chef\s*/i, '') || '');
+    }
+    var titulo = novo.querySelector('h3');
+    if (titulo) titulo.textContent = m.titulo || '';
+    var resumo = novo.querySelector('.cartao--chef__vao p:last-of-type');
+    if (resumo && resumo !== lombada) resumo.textContent = m.resumo || '';
+    return novo;
+  }
+  window.__montaChef = montaChef;
+
+  /* o que todo clone precisa esquecer antes de entrar na página */
+  function prepara(novo) {
+    novo.classList.add('is-vis', 'is-dentro');
+    novo.removeAttribute('style');
+    novo.hidden = false;
+    var sujos = novo.querySelectorAll('[data-me],[data-me-midia],.me-troca,.me-excluir');
+    for (var i = 0; i < sujos.length; i++) {
+      var s = sujos[i];
+      if (s.classList.contains('me-troca') || s.classList.contains('me-excluir')) { s.remove(); continue; }
+      s.removeAttribute('data-me'); s.removeAttribute('data-me-midia');
+    }
+    novo.removeAttribute('data-me'); novo.removeAttribute('data-me-midia');
+    novo.classList.remove('me-relativo', 'me-trocada', 'me-apagada');
+    limpaMarcas(novo);
+    var netos = novo.querySelectorAll('*');
+    for (var n = 0; n < netos.length; n++) limpaMarcas(netos[n]);
   }
 
   function limpaMarcas(el) {
@@ -330,24 +398,7 @@
     /* O clone não herda nada do editor. E nasce já revelado: a entrada por
        rolagem é para quem estava na página desde o começo — um prato que
        acaba de chegar não pode ficar invisível esperando a vez dele. */
-    novo.classList.add('is-vis', 'is-dentro');
-    novo.removeAttribute('style');
-    var sujos = novo.querySelectorAll('[data-me],[data-me-midia],.me-troca,.me-excluir');
-    for (var i = 0; i < sujos.length; i++) {
-      var s = sujos[i];
-      if (s.classList.contains('me-troca') || s.classList.contains('me-excluir')) { s.remove(); continue; }
-      s.removeAttribute('data-me'); s.removeAttribute('data-me-midia');
-    }
-    novo.removeAttribute('data-me'); novo.removeAttribute('data-me-midia');
-    novo.classList.remove('me-relativo', 'me-trocada');
-
-    /* Um atributo `data-ligado…` quer dizer "o JS já ligou os eventos deste
-       elemento". A cópia não tem evento nenhum: se ela chegasse com a marca,
-       passaria por ligada e ficaria muda para sempre. */
-    limpaMarcas(novo);
-    var netos = novo.querySelectorAll('*');
-    for (var n = 0; n < netos.length; n++) limpaMarcas(netos[n]);
-
+    prepara(novo);
     novo.setAttribute('data-prato-id', p.id);
     var pares = { cat: 'cat', catNome: 'cat-nome', nome: 'nome', subtitulo: 'sub',
                   notas: 'notas', quantidade: 'qtd', preco: 'preco', descricao: 'desc' };
