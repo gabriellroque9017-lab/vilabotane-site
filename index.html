@@ -1388,7 +1388,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 
 
 <!-- cursor contextual -->
-<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__texto" id="cursor-texto"></span></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__texto" id="cursor-texto" data-nao-editar></span></div>
 
 
 <!-- ==========================================================
@@ -1537,7 +1537,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 
       <div class="medidor" aria-hidden="true">
         <span class="medidor__pista"><span class="medidor__barra" id="scrub-barra"></span></span>
-        <span class="rotulo num" id="scrub-conta">Carregando</span>
+        <span class="rotulo num" id="scrub-conta" data-nao-editar>Carregando</span>
       </div>
     </div>
   </section>
@@ -1727,7 +1727,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       <div class="ficha__grade">
         <div class="ficha__linha rev">
           <p class="rotulo">Altitude</p>
-          <p class="ficha__valor num"><span data-conta="520">520</span><small>M</small></p>
+          <p class="ficha__valor num"><span data-conta="520" data-nao-editar>520</span><small>M</small></p>
           <p class="rotulo ficha__nota">Acima do mar</p>
         </div>
         <div class="ficha__linha rev">
@@ -1742,7 +1742,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
         </div>
         <div class="ficha__linha rev">
           <p class="rotulo">Pluviosidade</p>
-          <p class="ficha__valor num"><span data-conta="1590">1590</span><small>MM</small></p>
+          <p class="ficha__valor num"><span data-conta="1590" data-nao-editar>1590</span><small>MM</small></p>
           <p class="rotulo ficha__nota">Média anual</p>
         </div>
         <div class="ficha__linha rev">
@@ -1893,8 +1893,8 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
         <!-- passo 1: por onde seguir -->
         <div class="pix__etapa" data-passo="escolha">
           <p class="rotulo">Reserva</p>
-          <h3 id="pix-titulo">Tiê</h3>
-          <p class="pix__valor num" id="pix-valor">R$ 280</p>
+          <h3 id="pix-titulo" data-nao-editar>Tiê</h3>
+          <p class="pix__valor num" id="pix-valor" data-nao-editar>R$ 280</p>
           <p class="pix__passo">A garrafa fica reservada em seu nome e é retirada aqui na vinícola.</p>
           <button class="pix__copia" type="button" id="vai-pix">Pagar agora pelo Pix</button>
           <a class="pix__copia pix__copia--fino" id="vai-zap" href="#" target="_blank" rel="noopener">Conversar no WhatsApp</a>
@@ -1903,10 +1903,10 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
         <!-- passo 2: o Pix -->
         <div class="pix__etapa" data-passo="pix" hidden>
           <p class="rotulo">Reserva pelo Pix</p>
-          <h3 id="pix-vinho">Tiê</h3>
-          <p class="pix__valor num" id="pix-valor2">R$ 280</p>
+          <h3 id="pix-vinho" data-nao-editar>Tiê</h3>
+          <p class="pix__valor num" id="pix-valor2" data-nao-editar>R$ 280</p>
           <img class="pix__qr" id="pix-qr" src="" alt="Código QR do Pix para pagar a reserva" width="180" height="180" decoding="async">
-          <button class="pix__copia" type="button" id="pix-copia">Copiar o código</button>
+          <button class="pix__copia" type="button" id="pix-copia" data-nao-editar>Copiar o código</button>
           <p class="pix__conta">Vila Botané Hotel Vinícola e Restaurante</p>
           <label class="pix__campo">
             <span class="rotulo">Seu nome</span>
@@ -3155,6 +3155,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   var reduz = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var original = par.innerHTML;
   var jaEntrou = false;
+  var editando = false;          /* o Modo Edição desliga a divisão em linhas */
 
   function divide() {
     par.innerHTML = original;
@@ -3225,6 +3226,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     return r.top < vh * 0.88 && r.bottom > vh * 0.06;
   }
   function monta() {
+    if (editando) return;              /* editando, o parágrafo fica inteiro */
     divide();
     if (reduz || jaEntrou) { mostra(); return; }
     var agendado = false;
@@ -3249,6 +3251,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   var t;
   window.addEventListener('resize', function () {
     clearTimeout(t);
+    if (editando) return;
     t = setTimeout(function () {
       var largura = par.clientWidth;
       if (largura === monta._w) return;
@@ -3257,6 +3260,29 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       if (jaEntrou || reduz) mostra();
       else monta();
     }, 220);
+  });
+
+  /* ---------- convivência com o Modo Edição ----------
+     Aqui o parágrafo é picado em spans, uma por linha, para deslizar. Isso é
+     desenho, não texto: quem for editar precisa ver a frase inteira, do jeito
+     que ela é escrita. Ao ligar a edição o parágrafo volta ao original e fica
+     assim; quando o conteúdo novo é aplicado, ele é redividido. */
+  document.addEventListener('modo-edicao:ligado', function () {
+    editando = true;
+    par.innerHTML = original;
+    par.classList.add('is-dentro');
+    par.querySelectorAll('.sobre__linha').forEach(function (l) { l.classList.add('is-dentro'); });
+    if (rotulo) rotulo.classList.add('is-dentro');
+  });
+  document.addEventListener('conteudo:aplicado', function () {
+    if (editando) return;
+    /* As linhas ainda de pé querem dizer que o conteudo.json não tinha nada
+       para este parágrafo. Redividir aqui seria tomar o texto já picado por
+       original, e a divisão nunca mais soltaria. */
+    if (par.querySelector('.sobre__linha')) return;
+    original = par.innerHTML;
+    divide();
+    mostra();
   });
 })();
 
@@ -3595,5 +3621,6 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 })();
 </script>
 <script src="./js/conteudo.js" defer></script>
+<script src="./js/modo-edicao.js" defer></script>
 </body>
 </html>
