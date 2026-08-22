@@ -144,9 +144,10 @@
     return baixaConteudo().then(function () {
       abreTextos();
       abreMidia();
+      abreCarta();
       montaBarra();
       /* o que chega depois — fichas que abrem, listas que o JS monta */
-      var relogio = setInterval(function () { abreTextos(); abreMidia(); }, 1200);
+      var relogio = setInterval(function () { abreTextos(); abreMidia(); abreCarta(); }, 1200);
       window.addEventListener('beforeunload', function (e) {
         if (!temMudanca()) return;
         e.preventDefault(); e.returnValue = '';
@@ -322,6 +323,168 @@
     });
   }
 
+  /* ==================================================================
+     a carta: acrescentar e tirar pratos
+
+     Os pratos vivem no HTML, e o conteudo.json é a camada por cima. Tirar
+     um prato é deixar um recado dizendo que ele não vai mais à mesa;
+     acrescentar é guardar a receita inteira nesse recado. Assim a carta
+     muda sem que ninguém precise abrir o código, e a montagem do site não
+     desfaz o que foi decidido aqui.
+     ================================================================== */
+  var CATEGORIAS = [
+    { chave: 'entradas',    nome: 'Entrada' },
+    { chave: 'principais',  nome: 'Principal' },
+    { chave: 'doces',       nome: 'Sobremesa' },
+  ];
+  var removidos = [];          /* ids de pratos que saem da carta */
+  var novos = [];              /* receitas acrescentadas nesta sessão */
+
+  function grade() { return document.querySelector('.pratos'); }
+
+  function abreCarta() {
+    var g = grade();
+    if (!g) return;
+    var cartoes = g.querySelectorAll('.cartao[data-prato-id]:not(.cartao--chef)');
+    for (var i = 0; i < cartoes.length; i++) {
+      if (cartoes[i].querySelector('.me-excluir')) continue;
+      poeExcluir(cartoes[i]);
+    }
+    if (!g.querySelector('.me-novo')) poeNovo(g);
+  }
+
+  function poeExcluir(cartao) {
+    var bt = document.createElement('button');
+    bt.type = 'button';
+    bt.className = 'me-excluir me-fora';
+    bt.textContent = 'Excluir';
+    bt.title = 'Tirar este prato da carta';
+    if (getComputedStyle(cartao).position === 'static') cartao.classList.add('me-relativo');
+    cartao.appendChild(bt);
+    bt.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      var id = cartao.getAttribute('data-prato-id');
+      var nome = (cartao.querySelector('h3') || {}).textContent || 'este prato';
+      if (!confirm('Tirar “' + nome.trim() + '” da carta?\n\nEle some do site quando você salvar. Para voltar atrás depois, é preciso me chamar.')) return;
+      /* se foi acrescentado aqui, some sem deixar recado */
+      var eraNovo = false;
+      novos = novos.filter(function (p) { if (p.id === id) { eraNovo = true; return false; } return true; });
+      var guardados = (conteudo.pratosNovos || []).filter(function (p) { return p.id === id; }).length > 0;
+      if (guardados) {
+        conteudo.pratosNovos = (conteudo.pratosNovos || []).filter(function (p) { return p.id !== id; });
+        eraNovo = true;
+      }
+      if (!eraNovo && removidos.indexOf(id) === -1) removidos.push(id);
+      cartao.remove();
+      pinta();
+    });
+  }
+
+  function poeNovo(g) {
+    var tijolo = document.createElement('button');
+    tijolo.type = 'button';
+    tijolo.className = 'me-novo me-fora';
+    tijolo.innerHTML = '<span class="me-novo__mais" aria-hidden="true">+</span><span>Novo prato</span>';
+    g.appendChild(tijolo);
+    tijolo.addEventListener('click', function (e) { e.preventDefault(); formularioDePrato(); });
+  }
+
+  function catAtual() {
+    var apertado = document.querySelector('.filtros button[aria-pressed="true"]');
+    var chave = apertado ? apertado.getAttribute('data-cat') : 'entradas';
+    for (var i = 0; i < CATEGORIAS.length; i++) if (CATEGORIAS[i].chave === chave) return CATEGORIAS[i];
+    return CATEGORIAS[0];
+  }
+
+  function formularioDePrato() {
+    var atual = catAtual();
+    var fundo = document.createElement('div');
+    fundo.className = 'me-porta me-fora';
+    fundo.innerHTML =
+      '<form class="me-porta__carta me-porta__carta--larga">' +
+        '<p class="me-porta__olho">Carta</p>' +
+        '<h2>Novo prato</h2>' +
+        '<label class="me-campo"><span>Nome</span><input name="nome" required maxlength="90"></label>' +
+        '<label class="me-campo"><span>Categoria</span><select name="cat">' +
+          CATEGORIAS.map(function (c) {
+            return '<option value="' + c.chave + '"' + (c.chave === atual.chave ? ' selected' : '') + '>' + c.nome + '</option>';
+          }).join('') +
+        '</select></label>' +
+        '<label class="me-campo"><span>Subtítulo <em>opcional</em></span><input name="sub" maxlength="60" placeholder="2 unidades"></label>' +
+        '<label class="me-campo"><span>Descrição</span><textarea name="desc" rows="4" maxlength="600"></textarea></label>' +
+        '<label class="me-campo"><span>Notas <em>uma por linha</em></span><textarea name="notas" rows="3" maxlength="300"></textarea></label>' +
+        '<div class="me-campo me-campo--par">' +
+          '<label><span>Preço <em>opcional</em></span><input name="preco" maxlength="20" placeholder="R$ 48"></label>' +
+          '<label><span>Quantidade <em>opcional</em></span><input name="qtd" maxlength="20"></label>' +
+        '</div>' +
+        '<label class="me-campo"><span>Fotografia</span><input name="foto" type="file" accept="image/*"></label>' +
+        '<div class="me-porta__pe">' +
+          '<button class="me-bt me-bt--forte" type="submit">Pôr na carta</button>' +
+          '<button class="me-bt me-bt--fino" type="button" data-fecha>Cancelar</button>' +
+        '</div>' +
+      '</form>';
+    document.body.appendChild(fundo);
+    var form = fundo.querySelector('form');
+    form.querySelector('[name=nome]').focus();
+    fundo.querySelector('[data-fecha]').addEventListener('click', function () { fundo.remove(); });
+    fundo.addEventListener('click', function (e) { if (e.target === fundo) fundo.remove(); });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = function (n) { return (form.querySelector('[name=' + n + ']').value || '').trim(); };
+      var nome = v('nome');
+      if (!nome) return;
+      var arq = form.querySelector('[name=foto]').files[0] || null;
+      if (arq && arq.size > LIMITE_MB * 1048576) {
+        fala('A fotografia tem ' + (arq.size / 1048576).toFixed(1) + ' MB. O limite é ' + LIMITE_MB + ' MB.', true);
+        return;
+      }
+      var cat = v('cat');
+      var catNome = (CATEGORIAS.filter(function (c) { return c.chave === cat; })[0] || CATEGORIAS[0]).nome;
+      var prato = {
+        id: 'prato-' + chapa(nome) + '-' + Date.now().toString(36),
+        cat: cat, catNome: catNome, nome: nome,
+        subtitulo: v('sub'), descricao: v('desc'),
+        notas: v('notas').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean).join('|'),
+        preco: v('preco'), quantidade: v('qtd'),
+        foto: ''
+      };
+      if (arq) {
+        prato.foto = PASTA_ENVIADAS + '/' + nomeLimpo(arq.name);
+        arquivos.push({ caminho: 'prato:' + prato.id, nome: prato.foto.split('/').pop(), arquivo: arq, url: URL.createObjectURL(arq) });
+        prato.fotoLocal = arquivos[arquivos.length - 1].url;
+      }
+      novos.push(prato);
+      poeNaGrade(prato);
+      fundo.remove();
+      pinta();
+      fala('“' + nome + '” entrou na carta. Salve para publicar.');
+    });
+  }
+
+  function chapa(t) {
+    return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'prato';
+  }
+
+  /* desenha o cartão na página, do mesmo molde dos que já estão lá */
+  function poeNaGrade(p) {
+    var g = grade();
+    if (!g || !window.__montaCartao) return;
+    var cartao = window.__montaCartao(g, p, p.fotoLocal || '');
+    if (!cartao) return;
+    var tijolo = g.querySelector('.me-novo');
+    if (tijolo) g.insertBefore(cartao, tijolo); else g.appendChild(cartao);
+    poeExcluir(cartao);
+    abreMidia();
+    /* leva a carta para a categoria do prato que acabou de entrar: seria
+       estranho pôr uma sobremesa na carta e continuar olhando as entradas */
+    var botao = document.querySelector('.filtros button[data-cat="' + p.cat + '"]');
+    if (botao && botao.getAttribute('aria-pressed') !== 'true') botao.click();
+    else try { document.dispatchEvent(new CustomEvent('carta:mudou')); } catch (e) {}
+    cartao.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
   function nomeLimpo(nome) {
     var ponto = nome.lastIndexOf('.');
     var corpo = (ponto === -1 ? nome : nome.slice(0, ponto));
@@ -334,7 +497,23 @@
   /* ==================================================================
      a barra
      ================================================================== */
-  function temMudanca() { return Object.keys(mudancas).length > 0 || arquivos.length > 0; }
+  function temMudanca() {
+    return Object.keys(mudancas).length > 0 || arquivos.length > 0 ||
+           novos.length > 0 || removidos.length > 0;
+  }
+
+  /* o que está por salvar, dito em português */
+  function inventario() {
+    var partes = [];
+    var t = Object.keys(mudancas).length;
+    /* a fotografia de um prato novo já é contada no prato */
+    var m = arquivos.filter(function (a) { return a.caminho.indexOf('prato:') !== 0; }).length;
+    if (t) partes.push(t + (t === 1 ? ' texto' : ' textos'));
+    if (m) partes.push(m + (m === 1 ? ' arquivo' : ' arquivos'));
+    if (novos.length) partes.push(novos.length + (novos.length === 1 ? ' prato novo' : ' pratos novos'));
+    if (removidos.length) partes.push(removidos.length + (removidos.length === 1 ? ' prato retirado' : ' pratos retirados'));
+    return partes;
+  }
 
   function montaBarra() {
     barra = document.createElement('div');
@@ -369,12 +548,13 @@
   function pinta() {
     var conta = document.getElementById('me-conta');
     if (!conta) return;
-    var t = Object.keys(mudancas).length, m = arquivos.length;
-    if (!t && !m) { conta.textContent = 'Clique em qualquer texto para escrever'; barra.classList.remove('is-suja'); return; }
-    var partes = [];
-    if (t) partes.push(t + (t === 1 ? ' texto' : ' textos'));
-    if (m) partes.push(m + (m === 1 ? ' arquivo' : ' arquivos'));
-    conta.textContent = partes.join(' e ') + ' por salvar';
+    var partes = inventario();
+    if (!partes.length) {
+      conta.textContent = 'Clique em qualquer texto para escrever';
+      barra.classList.remove('is-suja');
+      return;
+    }
+    conta.textContent = partes.join(', ') + ' por salvar';
     barra.classList.add('is-suja');
   }
 
@@ -399,11 +579,17 @@
         conteudo.pagina = conteudo.pagina || {};
         conteudo.pagina[chave] = conteudo.pagina[chave] || {};
         Object.keys(mudancas).forEach(function (c) { conteudo.pagina[chave][c] = mudancas[c]; });
-        enviados.forEach(function (a) { conteudo.pagina[chave][a.caminho] = { src: a.destino }; });
+        enviados.forEach(function (a) {
+          /* a fotografia de um prato novo não é um trecho da página: é um
+             campo da receita, e viaja com ela */
+          if (a.caminho.indexOf('prato:') === 0) return;
+          conteudo.pagina[chave][a.caminho] = { src: a.destino };
+        });
+        guardaCarta();
         return gravaConteudo();
       })
       .then(function () {
-        mudancas = {}; arquivos = [];
+        mudancas = {}; arquivos = []; novos = []; removidos = [];
         document.querySelectorAll('.me-trocada').forEach(function (e) { e.classList.remove('me-trocada'); });
         pinta();
         fala('Salvo. O site publica a mudança em cerca de um minuto.');
@@ -412,6 +598,33 @@
         fala('Não deu para salvar: ' + e.message, true);
       })
       .then(function () { bt.disabled = false; bt.textContent = 'Salvar'; });
+  }
+
+  /* as decisões sobre a carta viram dois recados no conteudo.json: quem sai
+     e quem entra. Um prato retirado fica retirado mesmo que o site seja
+     montado de novo — o HTML continua com ele, e o recado continua valendo. */
+  function guardaCarta() {
+    if (!novos.length && !removidos.length) return;
+    if (removidos.length) {
+      var fora = (conteudo.pratosRemovidos || []).slice();
+      removidos.forEach(function (id) { if (fora.indexOf(id) === -1) fora.push(id); });
+      conteudo.pratosRemovidos = fora;
+    }
+    if (novos.length) {
+      var dentro = (conteudo.pratosNovos || []).slice();
+      novos.forEach(function (p) {
+        var limpo = {};
+        Object.keys(p).forEach(function (k) { if (k !== 'fotoLocal') limpo[k] = p[k]; });
+        if (limpo.foto) limpo.foto = './' + limpo.foto.replace(/^\.\//, '');
+        dentro.push(limpo);
+      });
+      conteudo.pratosNovos = dentro;
+    }
+    /* quem entrou e saiu na mesma sessão não precisa de recado nenhum */
+    if (conteudo.pratosRemovidos && conteudo.pratosNovos) {
+      var ids = conteudo.pratosNovos.map(function (p) { return p.id; });
+      conteudo.pratosRemovidos = conteudo.pratosRemovidos.filter(function (id) { return ids.indexOf(id) === -1; });
+    }
   }
 
   function enviaArquivos() {
@@ -469,10 +682,7 @@
   }
 
   function resumo() {
-    var t = Object.keys(mudancas).length, m = arquivos.length, partes = [];
-    if (t) partes.push(t + (t === 1 ? ' texto' : ' textos'));
-    if (m) partes.push(m + (m === 1 ? ' arquivo' : ' arquivos'));
-    return partes.join(' e ') + ' em ' + pagina();
+    return inventario().join(', ') + ' em ' + pagina();
   }
 
   function paraBase64(texto) {
@@ -552,6 +762,33 @@
       '.me-porta__elo{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#5C7E7D; text-decoration:none; }',
       '.me-porta__sai{ display:inline-block; margin-top:22px; font-size:11px; letter-spacing:.16em;',
       '  text-transform:uppercase; color:#3A3A28; opacity:.5; text-decoration:none; }',
+      /* ---- a carta: tirar e pôr pratos ---- */
+      '.me-excluir{ position:absolute; z-index:62; top:10px; right:10px;',
+      '  padding:7px 13px; border:0; border-radius:2px; background:rgba(140,59,46,.92); color:#fff;',
+      '  font:400 9px/1 "Jost","Helvetica Neue",Arial,sans-serif; letter-spacing:.2em; text-transform:uppercase;',
+      '  cursor:pointer; opacity:0; transition:opacity .25s; }',
+      '.me-editando .cartao:hover > .me-excluir, .me-excluir:focus{ opacity:1; }',
+      '.me-novo{ display:grid; place-content:center; gap:10px; min-height:220px; padding:26px;',
+      '  border:1px dashed rgba(92,126,125,.55); border-radius:2px; background:rgba(92,126,125,.05);',
+      '  color:#5C7E7D; font:400 11px/1 "Jost","Helvetica Neue",Arial,sans-serif;',
+      '  letter-spacing:.24em; text-transform:uppercase; cursor:pointer; justify-items:center;',
+      '  transition:background .3s, border-color .3s; }',
+      '.me-novo:hover{ background:rgba(92,126,125,.12); border-color:#5C7E7D; }',
+      '.me-novo__mais{ font-size:26px; letter-spacing:0; line-height:1; }',
+      '.me-porta__carta--larga{ width:min(560px,100%); max-height:88vh; overflow:auto; }',
+      '.me-campo{ display:block; margin-top:16px; }',
+      '.me-campo > span{ display:block; margin-bottom:7px; font-size:10px; letter-spacing:.2em;',
+      '  text-transform:uppercase; opacity:.72; }',
+      '.me-campo > span em{ font-style:normal; opacity:.6; letter-spacing:.1em; }',
+      '.me-campo input, .me-campo textarea, .me-campo select{',
+      '  width:100%; padding:11px 13px; border:1px solid #CFC8B2; border-radius:2px; background:#fff;',
+      '  font:400 13px/1.6 "Jost",Arial,sans-serif; color:#3A3A28; }',
+      '.me-campo textarea{ resize:vertical; }',
+      '.me-campo input:focus, .me-campo textarea:focus, .me-campo select:focus{ outline:1px solid #5C7E7D; border-color:#5C7E7D; }',
+      '.me-campo--par{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }',
+      '.me-campo--par span{ display:block; margin-bottom:7px; font-size:10px; letter-spacing:.2em;',
+      '  text-transform:uppercase; opacity:.72; }',
+      '.me-campo--par span em{ font-style:normal; opacity:.6; letter-spacing:.1em; }',
       '@media (max-width:620px){',
       '  .me-barra{ left:12px; right:12px; bottom:12px; transform:none; max-width:none; padding:12px 14px; gap:10px; }',
       '  .me-barra__conta{ order:3; width:100%; text-align:center; font-size:11px; }',

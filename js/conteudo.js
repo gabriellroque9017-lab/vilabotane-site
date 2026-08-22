@@ -73,6 +73,53 @@
   }
   window.__caminhoDe = caminhoDe;
 
+  /* ------------------------------------------------------------------
+     A assinatura não é conteúdo.
+
+     O crédito de desenvolvimento fica fora do editor por `data-nao-editar`
+     no HTML. Isto aqui é a segunda tranca, para o caso de alguém mexer no
+     conteudo.json direto no repositório: guardamos o parágrafo como ele
+     nasceu e, depois de aplicar qualquer coisa, conferimos se ele continua
+     de pé. Se não estiver, volta.
+
+     A cópia sai do próprio HTML, não de um texto escrito aqui: assim ela
+     acompanha o que cada página diz, sem uma segunda versão para manter.
+     ------------------------------------------------------------------ */
+  var ASSINA = /desenvolvido por/i;
+  var CREDITO = (function () {
+    var todos = document.querySelectorAll('.rodape__credito, .rodape__direitos');
+    for (var i = 0; i < todos.length; i++) {
+      if (ASSINA.test(todos[i].textContent || '')) {
+        return { classe: todos[i].className, html: todos[i].outerHTML,
+                 pai: todos[i].parentNode, depois: todos[i].nextSibling };
+      }
+    }
+    return null;
+  })();
+
+  function creditoDePe() {
+    var todos = document.querySelectorAll('.rodape__credito, .rodape__direitos');
+    for (var i = 0; i < todos.length; i++) {
+      if (ASSINA.test(todos[i].textContent || '')) return todos[i];
+    }
+    return null;
+  }
+
+  function garanteCredito() {
+    if (!CREDITO || creditoDePe()) return;
+    var molde = document.createElement('div');
+    molde.innerHTML = CREDITO.html;
+    var novo = molde.firstElementChild;
+    if (!novo) return;
+    /* o parágrafo ainda existe, mas foi esvaziado: troca-se o miolo */
+    var mesmo = document.querySelector('.' + String(CREDITO.classe).split(' ')[0]);
+    if (mesmo) { mesmo.parentNode.replaceChild(novo, mesmo); return; }
+    /* sumiu de vez: volta ao lugar de onde saiu */
+    if (!CREDITO.pai || !CREDITO.pai.parentNode) return;
+    var depois = (CREDITO.depois && CREDITO.depois.parentNode === CREDITO.pai) ? CREDITO.depois : null;
+    CREDITO.pai.insertBefore(novo, depois);
+  }
+
   /* Que página é esta. O editor grava por aqui e o aplicador procura por
      aqui — é a mesma conta, e por isso mora num lugar só. A raiz do site é
      index.html mesmo quando o endereço não diz. */
@@ -162,6 +209,9 @@
       }
     }
 
+    cuidaDaCarta(dados);
+    garanteCredito();
+
     /* quem depende do texto para se desenhar refaz as contas agora */
     try {
       document.dispatchEvent(new CustomEvent('conteudo:aplicado'));
@@ -217,6 +267,106 @@
     var um = porCaminho(caminho);
     return um ? [um] : [];
   }
+
+  /* ------------------------------------------------------------------
+     A carta: quem saiu e quem entrou.
+
+     Os 17 pratos vivem no HTML. O conteudo.json guarda apenas as decisões
+     tomadas depois: uma lista de quem foi retirado e as receitas inteiras
+     de quem foi acrescentado. Assim a carta muda sem tocar no código, e o
+     HTML continua sendo o que ele é — o ponto de partida.
+
+     Um prato novo é feito do molde de um que já está lá: mesmas classes,
+     mesma estrutura, mesmo comportamento. Nada de um cartão de segunda
+     categoria que não abre a ficha nem responde ao filtro.
+     ------------------------------------------------------------------ */
+  function cuidaDaCarta(dados) {
+    var grade = document.querySelector('.pratos');
+    if (!grade) return;
+    var mexeu = false;
+
+    var fora = dados.pratosRemovidos || [];
+    for (var i = 0; i < fora.length; i++) {
+      var velho = grade.querySelector('.cartao[data-prato-id="' + String(fora[i]).replace(/"/g, '') + '"]');
+      if (velho) { velho.remove(); mexeu = true; }
+    }
+
+    var dentro = dados.pratosNovos || [];
+    for (var j = 0; j < dentro.length; j++) {
+      var p = dentro[j];
+      if (!p || !p.id) continue;
+      if (grade.querySelector('.cartao[data-prato-id="' + String(p.id).replace(/"/g, '') + '"]')) continue;
+      var cartao = montaCartao(grade, p);
+      if (cartao) { grade.appendChild(cartao); mexeu = true; }
+    }
+
+    if (mexeu) {
+      try { document.dispatchEvent(new CustomEvent('carta:mudou')); } catch (e) {}
+    }
+  }
+
+  function limpaMarcas(el) {
+    if (!el.attributes) return;
+    for (var i = el.attributes.length - 1; i >= 0; i--) {
+      var nome = el.attributes[i].name;
+      if (nome.indexOf('data-ligado') === 0) el.removeAttribute(nome);
+    }
+  }
+
+  function montaCartao(grade, p, fotoLocal) {
+    var molde = grade.querySelector('.cartao[data-prato-id]:not(.cartao--chef)');
+    if (!molde) return null;
+    var novo = molde.cloneNode(true);
+
+    /* O clone não herda nada do editor. E nasce já revelado: a entrada por
+       rolagem é para quem estava na página desde o começo — um prato que
+       acaba de chegar não pode ficar invisível esperando a vez dele. */
+    novo.classList.add('is-vis', 'is-dentro');
+    novo.removeAttribute('style');
+    var sujos = novo.querySelectorAll('[data-me],[data-me-midia],.me-troca,.me-excluir');
+    for (var i = 0; i < sujos.length; i++) {
+      var s = sujos[i];
+      if (s.classList.contains('me-troca') || s.classList.contains('me-excluir')) { s.remove(); continue; }
+      s.removeAttribute('data-me'); s.removeAttribute('data-me-midia');
+    }
+    novo.removeAttribute('data-me'); novo.removeAttribute('data-me-midia');
+    novo.classList.remove('me-relativo', 'me-trocada');
+
+    /* Um atributo `data-ligado…` quer dizer "o JS já ligou os eventos deste
+       elemento". A cópia não tem evento nenhum: se ela chegasse com a marca,
+       passaria por ligada e ficaria muda para sempre. */
+    limpaMarcas(novo);
+    var netos = novo.querySelectorAll('*');
+    for (var n = 0; n < netos.length; n++) limpaMarcas(netos[n]);
+
+    novo.setAttribute('data-prato-id', p.id);
+    var pares = { cat: 'cat', catNome: 'cat-nome', nome: 'nome', subtitulo: 'sub',
+                  notas: 'notas', quantidade: 'qtd', preco: 'preco', descricao: 'desc' };
+    for (var k in pares) {
+      if (!Object.prototype.hasOwnProperty.call(pares, k)) continue;
+      novo.setAttribute('data-' + pares[k], typeof p[k] === 'string' ? p[k] : '');
+    }
+    novo.setAttribute('data-foto', relativo(p.foto) || '');
+
+    var titulo = novo.querySelector('h3');
+    if (titulo) titulo.textContent = p.nome || '';
+
+    var foto = novo.querySelector('img');
+    var endereco = fotoLocal || relativo(p.foto);
+    if (foto) {
+      if (endereco) {
+        foto.setAttribute('src', endereco);
+        foto.setAttribute('alt', p.nome || '');
+        foto.removeAttribute('srcset');
+      } else {
+        /* sem fotografia ainda: o quadro fica, com o creme da casa */
+        foto.removeAttribute('src');
+        foto.setAttribute('alt', '');
+      }
+    }
+    return novo;
+  }
+  window.__montaCartao = montaCartao;
 
   function achaPrato(cartoes, id) {
     for (var i = 0; i < cartoes.length; i++) {
