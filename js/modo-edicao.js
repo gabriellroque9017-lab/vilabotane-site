@@ -212,9 +212,16 @@
   var PROIBIDOS = { SCRIPT:1, STYLE:1, NOSCRIPT:1, SVG:1, PATH:1, IMG:1, VIDEO:1, SOURCE:1,
                     CANVAS:1, INPUT:1, TEXTAREA:1, SELECT:1, OPTION:1, BR:1, HR:1, IFRAME:1 };
 
+  /* Uma quebra de linha não parte o texto em dois textos: ela é o texto.
+     `<br>` está na lista dos que nunca se abrem — não há o que escrever
+     dentro de um — mas como filho ele é bem-vindo, e um parágrafo de três
+     linhas continua sendo um parágrafo. O `<hr>`, esse sim, separa. */
+  var PASSAM = { BR: 1, WBR: 1 };
+
   function ehFolha(el) {
     for (var i = 0; i < el.children.length; i++) {
       var f = el.children[i];
+      if (PASSAM[f.tagName]) continue;
       if (PROIBIDOS[f.tagName]) return false;
       var d = getComputedStyle(f).display;
       if (d.indexOf('inline') === 0 || d === 'none' || d === 'contents') continue;
