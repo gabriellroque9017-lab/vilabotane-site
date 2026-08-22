@@ -204,7 +204,16 @@
       var alvos = porCaminhoTodos(caminho);
       for (var a = 0; a < alvos.length; a++) {
         var alvo = alvos[a];
-        if (valor && typeof valor === 'object' && valor.src) { trocaMidia(alvo, valor.src); continue; }
+        if (valor && typeof valor === 'object') {
+          /* um vídeo tirado sai da página inteiro: parar de tocar não basta,
+             o navegador ainda baixaria o arquivo */
+          if (valor.removido) {
+            if (alvo.tagName === 'VIDEO') { try { alvo.pause(); } catch (e) {} }
+            if (alvo.parentNode) alvo.parentNode.removeChild(alvo);
+            continue;
+          }
+          if (valor.src) { trocaMidia(alvo, valor.src); continue; }
+        }
         if (typeof valor === 'string' && alvo.innerHTML !== valor) alvo.innerHTML = valor;
       }
     }

@@ -33,12 +33,18 @@
   var repo = null, ramo = 'main';
   var mudancas = {};           /* caminho -> texto */
   var arquivos = [];           /* { caminho, nome, arquivo, url } */
+  var apagados = [];           /* caminhos de vídeo que saem da página */
   var conteudo = null;         /* o conteudo.json inteiro, como está no ar */
   var barra = null, aviso = null;
 
+  /* A bandeira vem antes das duas chamadas. Declarada depois, o `var` era
+     içado para cá como undefined, a chamada imediata a punha de pé, e a
+     linha `= false` logo abaixo a derrubava outra vez — o DOMContentLoaded
+     achava o caminho livre e montava uma segunda tela de login por cima da
+     primeira. */
+  var jaComecou = false;
   document.addEventListener('DOMContentLoaded', comeca);
   if (document.readyState !== 'loading') comeca();
-  var jaComecou = false;
 
   function comeca() {
     if (jaComecou) return;
@@ -48,9 +54,10 @@
       .then(function () {
         var token = localStorage.getItem(CHAVE_TOKEN);
         if (!token) return pedeToken();
-        return confere(token).then(function (ok) { return ok ? liga() : pedeToken('O token não abre este repositório. Confira se ele dá acesso a ' + repo + ' com Contents: Read and write.'); });
+        /* a senha guardada deixou de valer — expirou, ou foi revogada */
+        return confere(token).then(function (ok) { return ok ? liga() : pedeToken('Sua sessão expirou. Entre outra vez.'); });
       })
-      .catch(function (e) { pedeToken('Não consegui ler a configuração do painel: ' + e.message); });
+      .catch(function () { pedeToken('Não foi possível entrar agora. Tente de novo em instantes.'); });
   }
 
   /* ------------------------------------------------------------------
@@ -88,50 +95,75 @@
 
   /* ==================================================================
      a porta
+
+     Uma tela de login comum: nome e senha, e nada na tela que conte de onde
+     vem a autorização. Quem trabalha aqui não precisa saber o que é um
+     repositório para trocar a foto de um prato.
+
+     O nome é conferido no navegador e por isso não é uma tranca: qualquer um
+     lê o código desta página. A tranca é a senha, que o GitHub confere do
+     outro lado e sem a qual nada se grava. O nome está aqui para que a porta
+     pareça uma porta.
      ================================================================== */
+  var DONA = 'rachel_porto';
+
   function pedeToken(recado) {
     var fundo = document.createElement('div');
     fundo.className = 'me-porta';
     fundo.innerHTML =
       '<form class="me-porta__carta">' +
-        '<p class="me-porta__olho">Modo Edição</p>' +
-        '<h2>Entrar para editar</h2>' +
-        '<p class="me-porta__prosa">Cole o token de acesso do GitHub. Ele fica só neste navegador ' +
-          'e some quando você sair.</p>' +
-        (recado ? '<p class="me-porta__erro"></p>' : '') +
-        '<input class="me-porta__campo" type="password" autocomplete="off" spellcheck="false" ' +
-          'placeholder="github_pat_…" aria-label="Token de acesso">' +
+        '<button class="me-porta__x" type="button" aria-label="Fechar">✕</button>' +
+        '<h2>Faça login na sua conta.</h2>' +
+        '<p class="me-porta__erro" hidden></p>' +
+        '<label class="me-campo"><span>Login</span>' +
+          '<input name="login" type="text" autocomplete="username" spellcheck="false" autocapitalize="off"></label>' +
+        '<label class="me-campo"><span>Senha</span>' +
+          '<input name="senha" type="password" autocomplete="current-password" spellcheck="false"></label>' +
         '<div class="me-porta__pe">' +
           '<button class="me-bt me-bt--forte" type="submit">Entrar</button>' +
-          '<a class="me-porta__elo" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Criar um token</a>' +
         '</div>' +
-        '<a class="me-porta__sai">Voltar ao site</a>' +
       '</form>';
     document.body.appendChild(fundo);
-    fundo.querySelector('.me-porta__sai').setAttribute('href', location.pathname);
-    if (recado) fundo.querySelector('.me-porta__erro').textContent = recado;
-    var campo = fundo.querySelector('.me-porta__campo');
-    campo.focus();
+
+    var erro = fundo.querySelector('.me-porta__erro');
+    var login = fundo.querySelector('[name=login]');
+    var senha = fundo.querySelector('[name=senha]');
+    if (recado) { erro.textContent = recado; erro.hidden = false; }
+    login.focus();
+
+    function recusa(texto) {
+      erro.textContent = texto || 'Login ou senha incorretos.';
+      erro.hidden = false;
+      login.disabled = senha.disabled = false;
+      senha.value = '';
+      senha.focus();
+    }
+
     fundo.querySelector('form').addEventListener('submit', function (e) {
       e.preventDefault();
-      var t = campo.value.trim();
-      if (!t) return;
-      campo.disabled = true;
-      confere(t).then(function (ok) {
-        if (!ok) {
-          campo.disabled = false; campo.value = '';
-          var er = fundo.querySelector('.me-porta__erro');
-          if (!er) { er = document.createElement('p'); er.className = 'me-porta__erro'; campo.parentNode.insertBefore(er, campo); }
-          er.textContent = 'Esse token não abre ' + repo + '. Confira o acesso ao repositório e a permissão Contents: Read and write.';
-          campo.focus();
-          return;
-        }
+      var nome = (login.value || '').trim().toLowerCase();
+      var chave = (senha.value || '').trim();
+      if (!nome || !chave) return;
+      if (nome !== DONA) { recusa(); return; }
+      login.disabled = senha.disabled = true;
+      erro.hidden = true;
+      confere(chave).then(function (ok) {
+        if (!ok) { recusa(); return; }
         fundo.remove();
         liga();
       });
     });
-    fundo.querySelector('.me-porta__sai').addEventListener('click', function () {
+
+    function sai() {
       sessionStorage.removeItem(LIGADO);
+      localStorage.removeItem(CHAVE_TOKEN);
+      location.href = location.pathname;
+    }
+    fundo.querySelector('.me-porta__x').addEventListener('click', sai);
+    document.addEventListener('keydown', function fecha(e) {
+      if (e.key !== 'Escape' || !fundo.parentNode) return;
+      document.removeEventListener('keydown', fecha);
+      sai();
     });
   }
 
@@ -276,51 +308,136 @@
       var caminho = window.__caminhoDe ? window.__caminhoDe(el) : '';
       if (!enderecavel(el, caminho)) continue;
       el.setAttribute('data-me-midia', caminho);
-      marcaTroca(el, caminho);
     }
   }
 
-  function marcaTroca(el, caminho) {
-    var laco = document.createElement('button');
-    laco.type = 'button';
-    laco.className = 'me-troca me-fora';
-    laco.title = el.tagName === 'VIDEO' ? 'Trocar o vídeo' : 'Trocar a fotografia';
-    laco.innerHTML = '<span>' + (el.tagName === 'VIDEO' ? 'Trocar vídeo' : 'Trocar foto') + '</span>';
+  /* ------------------------------------------------------------------
+     Os controles da mídia flutuam por cima, presos ao corpo da página.
 
-    var pai = el.parentNode;
-    if (!pai) return;
-    if (getComputedStyle(pai).position === 'static') pai.classList.add('me-relativo');
-    pai.appendChild(laco);
+     Antes eles eram enfiados dentro da moldura de cada foto, e a moldura
+     que não fosse posicionada tinha de virar `position:relative` para
+     segurá-los — mexer nisso é mexer no layout de quem mora ali dentro.
+     Um vídeo de fundo não pode sair do lugar porque alguém entrou no modo
+     de edição. Agora nada é inserido na página: o painel é um só, mora no
+     fim do corpo e se coloca sobre o que estiver sob o cursor.
+     ------------------------------------------------------------------ */
+  var painel = null, sobQuem = null, somem = 0;
 
-    laco.addEventListener('click', function (e) {
-      e.preventDefault(); e.stopPropagation();
-      var campo = document.createElement('input');
-      campo.type = 'file';
-      campo.accept = el.tagName === 'VIDEO' ? 'video/mp4,video/*' : 'image/*';
-      campo.addEventListener('change', function () {
-        var arq = campo.files && campo.files[0];
-        if (!arq) return;
-        if (arq.size > LIMITE_MB * 1048576) {
-          fala('Esse arquivo tem ' + (arq.size / 1048576).toFixed(1) + ' MB. O limite aqui é ' +
-               LIMITE_MB + ' MB — acima disso o envio ao GitHub falha. Comprima antes.', true);
-          return;
-        }
-        var url = URL.createObjectURL(arq);
-        if (el.tagName === 'VIDEO') {
-          var f = el.querySelector('source');
-          if (f) f.setAttribute('src', url); else el.setAttribute('src', url);
-          el.load(); var t = el.play(); if (t && t.catch) t.catch(function () {});
-        } else {
-          el.setAttribute('src', url);
-          el.removeAttribute('srcset');
-        }
-        arquivos = arquivos.filter(function (a) { return a.caminho !== caminho; });
-        arquivos.push({ caminho: caminho, nome: nomeLimpo(arq.name), arquivo: arq, url: url });
-        el.classList.add('me-trocada');
-        pinta();
-      });
-      campo.click();
+  function controles() {
+    if (painel) return painel;
+    painel = document.createElement('div');
+    painel.className = 'me-controles me-fora';
+    document.body.appendChild(painel);
+    painel.addEventListener('pointerenter', function () { clearTimeout(somem); });
+    painel.addEventListener('pointerleave', agendaSumico);
+    addEventListener('scroll', function () { if (sobQuem) coloca(sobQuem); }, { passive: true });
+    addEventListener('resize', function () { if (sobQuem) coloca(sobQuem); });
+    return painel;
+  }
+
+  function agendaSumico() {
+    clearTimeout(somem);
+    somem = setTimeout(function () {
+      if (painel) painel.classList.remove('is-viva');
+      sobQuem = null;
+    }, 260);
+  }
+
+  function coloca(el) {
+    var r = el.getBoundingClientRect();
+    var alto = window.innerHeight || 800, largo = window.innerWidth || 1200;
+    var y = Math.min(Math.max(r.top + r.height / 2, 60), alto - 60);
+    var x = Math.min(Math.max(r.left + r.width / 2, 110), largo - 110);
+    painel.style.left = Math.round(x) + 'px';
+    painel.style.top = Math.round(y) + 'px';
+  }
+
+  function mostraControles(el) {
+    clearTimeout(somem);
+    var p = controles();
+    if (sobQuem !== el) {
+      sobQuem = el;
+      p.innerHTML = '';
+      var video = el.tagName === 'VIDEO';
+      var apagado = el.classList.contains('me-apagada');
+      if (!apagado) p.appendChild(botao(video ? 'Trocar vídeo' : 'Trocar foto', function () { escolhe(el); }));
+      if (video) {
+        p.appendChild(botao(apagado ? 'Manter vídeo' : 'Excluir vídeo', function () { apagaVideo(el); }, !apagado));
+      }
+    }
+    coloca(el);
+    p.classList.add('is-viva');
+  }
+
+  function botao(texto, aoClicar, perigo) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'me-bt me-bt--mini' + (perigo ? ' me-bt--perigo' : '');
+    b.textContent = texto;
+    b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); aoClicar(); });
+    return b;
+  }
+
+  /* o painel segue o ponteiro sem que nada precise ser ligado elemento a
+     elemento: quem chega depois já está coberto */
+  document.addEventListener('pointerover', function (e) {
+    if (!document.documentElement.classList.contains('me-editando')) return;
+    var alvo = e.target && e.target.closest ? e.target.closest('[data-me-midia]') : null;
+    if (alvo) { mostraControles(alvo); return; }
+    if (e.target && e.target.closest && e.target.closest('.me-controles')) return;
+    agendaSumico();
+  });
+
+  function escolhe(el) {
+    var caminho = el.getAttribute('data-me-midia');
+    var campo = document.createElement('input');
+    campo.type = 'file';
+    campo.accept = el.tagName === 'VIDEO' ? 'video/mp4,video/*' : 'image/*';
+    campo.addEventListener('change', function () {
+      var arq = campo.files && campo.files[0];
+      if (!arq) return;
+      if (arq.size > LIMITE_MB * 1048576) {
+        fala('Esse arquivo tem ' + (arq.size / 1048576).toFixed(1) + ' MB. O limite aqui é ' +
+             LIMITE_MB + ' MB — acima disso o envio falha. Comprima antes.', true);
+        return;
+      }
+      var url = URL.createObjectURL(arq);
+      if (el.tagName === 'VIDEO') {
+        var f = el.querySelector('source');
+        if (f) f.setAttribute('src', url); else el.setAttribute('src', url);
+        el.load(); var t = el.play(); if (t && t.catch) t.catch(function () {});
+      } else {
+        el.setAttribute('src', url);
+        el.removeAttribute('srcset');
+      }
+      el.classList.remove('me-apagada');
+      apagados = apagados.filter(function (c) { return c !== caminho; });
+      arquivos = arquivos.filter(function (a) { return a.caminho !== caminho; });
+      arquivos.push({ caminho: caminho, nome: nomeLimpo(arq.name), arquivo: arq, url: url });
+      el.classList.add('me-trocada');
+      sobQuem = null;
+      pinta();
     });
+    campo.click();
+  }
+
+  /* Excluir aqui é marcar, não arrancar: enquanto não se salva, dá para
+     voltar atrás no mesmo botão. Quem arranca de verdade é o conteudo.js,
+     na página publicada. */
+  function apagaVideo(el) {
+    var caminho = el.getAttribute('data-me-midia');
+    if (el.classList.contains('me-apagada')) {
+      el.classList.remove('me-apagada');
+      apagados = apagados.filter(function (c) { return c !== caminho; });
+    } else {
+      el.classList.add('me-apagada');
+      el.classList.remove('me-trocada');
+      arquivos = arquivos.filter(function (a) { return a.caminho !== caminho; });
+      if (apagados.indexOf(caminho) === -1) apagados.push(caminho);
+    }
+    sobQuem = null;
+    mostraControles(el);
+    pinta();
   }
 
   /* ==================================================================
@@ -499,7 +616,7 @@
      ================================================================== */
   function temMudanca() {
     return Object.keys(mudancas).length > 0 || arquivos.length > 0 ||
-           novos.length > 0 || removidos.length > 0;
+           novos.length > 0 || removidos.length > 0 || apagados.length > 0;
   }
 
   /* o que está por salvar, dito em português */
@@ -510,6 +627,7 @@
     var m = arquivos.filter(function (a) { return a.caminho.indexOf('prato:') !== 0; }).length;
     if (t) partes.push(t + (t === 1 ? ' texto' : ' textos'));
     if (m) partes.push(m + (m === 1 ? ' arquivo' : ' arquivos'));
+    if (apagados.length) partes.push(apagados.length + (apagados.length === 1 ? ' vídeo excluído' : ' vídeos excluídos'));
     if (novos.length) partes.push(novos.length + (novos.length === 1 ? ' prato novo' : ' pratos novos'));
     if (removidos.length) partes.push(removidos.length + (removidos.length === 1 ? ' prato retirado' : ' pratos retirados'));
     return partes;
@@ -585,11 +703,13 @@
           if (a.caminho.indexOf('prato:') === 0) return;
           conteudo.pagina[chave][a.caminho] = { src: a.destino };
         });
+        apagados.forEach(function (c) { conteudo.pagina[chave][c] = { removido: true }; });
         guardaCarta();
         return gravaConteudo();
       })
       .then(function () {
-        mudancas = {}; arquivos = []; novos = []; removidos = [];
+        mudancas = {}; arquivos = []; novos = []; removidos = []; apagados = [];
+        document.querySelectorAll('.me-apagada').forEach(function (e) { e.classList.remove('me-apagada'); });
         document.querySelectorAll('.me-trocada').forEach(function (e) { e.classList.remove('me-trocada'); });
         pinta();
         fala('Salvo. O site publica a mudança em cerca de um minuto.');
@@ -716,12 +836,18 @@
       '.me-editando [data-me]:hover{ outline-color:rgba(92,126,125,.9); background:rgba(92,126,125,.07); }',
       '.me-editando [data-me]:focus{ outline:1px solid #5C7E7D; background:rgba(92,126,125,.1); }',
       '.me-relativo{ position:relative; }',
-      '.me-troca{ position:absolute; z-index:60; left:50%; top:50%; transform:translate(-50%,-50%);',
-      '  padding:9px 16px; border:0; border-radius:2px; background:rgba(18,16,14,.82); color:#EDE7DA;',
-      '  font:400 10px/1 "Jost","Helvetica Neue",Arial,sans-serif; letter-spacing:.22em; text-transform:uppercase;',
-      '  cursor:pointer; opacity:0; transition:opacity .25s; pointer-events:auto; white-space:nowrap; }',
-      '.me-editando *:hover > .me-troca, .me-troca:focus{ opacity:1; }',
+      /* o painel de mídia mora no corpo da página e nunca dentro da moldura:
+         entrar no modo de edição não pode mover um pixel do que está no ar */
+      '.me-controles{ position:fixed; z-index:2147482000; transform:translate(-50%,-50%);',
+      '  display:flex; gap:7px; padding:7px; border-radius:3px; background:rgba(18,16,14,.9);',
+      '  box-shadow:0 8px 30px rgba(0,0,0,.3); opacity:0; pointer-events:none;',
+      '  transition:opacity .2s; white-space:nowrap; }',
+      '.me-controles.is-viva{ opacity:1; pointer-events:auto; }',
+      '.me-bt--mini{ padding:9px 14px; font-size:10px; letter-spacing:.18em; }',
+      '.me-bt--perigo{ border-color:rgba(196,106,90,.5); color:#E8A99B; }',
+      '.me-bt--perigo:hover{ background:rgba(140,59,46,.55); border-color:#8C3B2E; color:#fff; }',
       '.me-trocada{ outline:2px solid #5C7E7D; outline-offset:2px; }',
+      '.me-apagada{ opacity:.24; filter:grayscale(1); outline:2px dashed #8C3B2E; outline-offset:2px; }',
       '.me-barra{ position:fixed; z-index:2147483000; left:50%; bottom:18px; transform:translateX(-50%);',
       '  display:flex; align-items:center; gap:18px; flex-wrap:wrap; justify-content:center;',
       '  max-width:calc(100vw - 24px); padding:12px 14px 12px 20px; border-radius:3px;',
@@ -747,21 +873,18 @@
       '.me-fala.is-ruim{ background:#8C3B2E; }',
       '.me-porta{ position:fixed; inset:0; z-index:2147483600; display:grid; place-items:center;',
       '  padding:24px; background:rgba(18,16,14,.92); }',
-      '.me-porta__carta{ width:min(430px,100%); padding:34px; border-radius:3px; background:#F2EDE0; color:#3A3A28;',
-      '  font-family:"Jost","Helvetica Neue",Arial,sans-serif; }',
-      '.me-porta__olho{ margin:0; font-size:10px; letter-spacing:.3em; text-transform:uppercase; opacity:.6; }',
-      '.me-porta__carta h2{ margin:12px 0 0; font:300 27px/1.2 "Cormorant Garamond",Georgia,serif; }',
-      '.me-porta__prosa{ margin:12px 0 0; font-size:13px; line-height:1.7; opacity:.8; }',
-      '.me-porta__erro{ margin:16px 0 0; padding:12px 14px; border-radius:2px; background:#F3DDD8;',
+      '.me-porta__carta{ position:relative; width:min(400px,100%); padding:38px 34px 34px; border-radius:3px;',
+      '  background:#F2EDE0; color:#3A3A28; font-family:"Jost","Helvetica Neue",Arial,sans-serif; }',
+      '.me-porta__carta h2{ margin:0 34px 0 0; font:300 27px/1.25 "Cormorant Garamond",Georgia,serif; }',
+      '.me-porta__x{ position:absolute; top:14px; right:14px; width:34px; height:34px;',
+      '  display:grid; place-items:center; border:0; border-radius:50%; background:none;',
+      '  color:#3A3A28; font-size:15px; line-height:1; cursor:pointer; opacity:.45;',
+      '  transition:opacity .25s, background .25s; }',
+      '.me-porta__x:hover, .me-porta__x:focus-visible{ opacity:1; background:rgba(58,58,40,.09); }',
+      '.me-porta__erro{ margin:18px 0 0; padding:12px 14px; border-radius:2px; background:#F3DDD8;',
       '  color:#8C3B2E; font-size:12px; line-height:1.6; }',
-      '.me-porta__campo{ width:100%; margin-top:18px; padding:13px 14px; border:1px solid #CFC8B2; border-radius:2px;',
-      '  background:#fff; font:400 13px/1 "Jost",Arial,sans-serif; color:#3A3A28; }',
-      '.me-porta__campo:focus{ outline:1px solid #5C7E7D; border-color:#5C7E7D; }',
-      '.me-porta__pe{ display:flex; align-items:center; gap:18px; margin-top:20px; }',
+      '.me-porta__pe{ display:flex; align-items:center; gap:18px; margin-top:24px; }',
       '.me-porta__pe .me-bt--forte{ background:#3A3A28; color:#F2EDE0; border-color:#3A3A28; }',
-      '.me-porta__elo{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#5C7E7D; text-decoration:none; }',
-      '.me-porta__sai{ display:inline-block; margin-top:22px; font-size:11px; letter-spacing:.16em;',
-      '  text-transform:uppercase; color:#3A3A28; opacity:.5; text-decoration:none; }',
       /* ---- a carta: tirar e pôr pratos ---- */
       '.me-excluir{ position:absolute; z-index:62; top:10px; right:10px;',
       '  padding:7px 13px; border:0; border-radius:2px; background:rgba(140,59,46,.92); color:#fff;',
