@@ -350,16 +350,21 @@
     }, 260);
   }
 
-  function coloca(el) {
+  /* No meio da moldura, quando o ponteiro caiu na própria mídia. Junto ao
+     alto dela, quando a mídia estava enterrada sob um véu e um texto: ali o
+     texto ocupa o centro, e o painel no meio taparia justamente o que a
+     pessoa talvez queira escrever. */
+  function coloca(el, enterrada) {
     var r = el.getBoundingClientRect();
     var alto = window.innerHeight || 800, largo = window.innerWidth || 1200;
-    var y = Math.min(Math.max(r.top + r.height / 2, 60), alto - 60);
+    var meio = enterrada ? Math.max(r.top, 0) + 46 : r.top + r.height / 2;
+    var y = Math.min(Math.max(meio, 60), alto - 60);
     var x = Math.min(Math.max(r.left + r.width / 2, 110), largo - 110);
     painel.style.left = Math.round(x) + 'px';
     painel.style.top = Math.round(y) + 'px';
   }
 
-  function mostraControles(el) {
+  function mostraControles(el, enterrada) {
     clearTimeout(somem);
     var p = controles();
     if (sobQuem !== el) {
@@ -372,7 +377,7 @@
         p.appendChild(botao(apagado ? 'Manter vídeo' : 'Excluir vídeo', function () { apagaVideo(el); }, !apagado));
       }
     }
-    coloca(el);
+    coloca(el, enterrada);
     p.classList.add('is-viva');
   }
 
@@ -385,13 +390,44 @@
     return b;
   }
 
-  /* o painel segue o ponteiro sem que nada precise ser ligado elemento a
-     elemento: quem chega depois já está coberto */
+  /* O painel segue o ponteiro sem que nada precise ser ligado elemento a
+     elemento: quem chega depois já está coberto.
+
+     Nem toda fotografia recebe o ponteiro, porém. As duas do convite, no pé
+     do cardápio, vivem sob um véu e sob o próprio texto — o ponteiro para
+     quatro camadas antes de chegar nelas, e o painel nunca saberia que há
+     uma foto ali. Quando o alvo direto não é mídia, olhamos a pilha inteira
+     daquele ponto e pegamos a primeira que for. */
+  var ultimaVarredura = 0;
+
+  function midiaSob(x, y) {
+    if (!document.elementsFromPoint) return null;
+    var pilha = document.elementsFromPoint(x, y);
+    for (var i = 0; i < pilha.length; i++) {
+      var e = pilha[i];
+      if (!e || !e.closest) continue;
+      if (e.closest('.me-fora')) continue;          /* o próprio painel não conta */
+      if (e.hasAttribute && e.hasAttribute('data-me-midia')) return e;
+    }
+    return null;
+  }
+
   document.addEventListener('pointerover', function (e) {
     if (!document.documentElement.classList.contains('me-editando')) return;
     var alvo = e.target && e.target.closest ? e.target.closest('[data-me-midia]') : null;
-    if (alvo) { mostraControles(alvo); return; }
+    if (alvo) { mostraControles(alvo, false); return; }
     if (e.target && e.target.closest && e.target.closest('.me-controles')) return;
+
+    /* a varredura da pilha é mais cara que um closest: uma a cada 120 ms basta
+       para a mão humana, e não pesa ao atravessar a página */
+    var agora = (window.performance && performance.now) ? performance.now() : 0;
+    if (agora - ultimaVarredura > 120) {
+      ultimaVarredura = agora;
+      var enterrada = midiaSob(e.clientX, e.clientY);
+      if (enterrada) { mostraControles(enterrada, true); return; }
+    } else if (sobQuem) {
+      return;                                       /* segura o painel entre varreduras */
+    }
     agendaSumico();
   });
 
