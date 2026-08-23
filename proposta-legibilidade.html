@@ -707,6 +707,16 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .legenda--dir{ left:auto; right:3%; text-align:right; text-indent:0; letter-spacing:.28em; }
 .legenda--tique{ left:54%; right:auto; text-align:left; text-indent:0; letter-spacing:.28em; }
 .legenda--marfim{ color:var(--marfim); }
+/* proposta: no terroir, tudo o que não é subtítulo sobe de contraste.
+   Corpo 18px: #A9A194 → #D3CCBE (7,42:1 → 11,89:1) — um degrau abaixo do
+   marfim dos h3, que seguem à frente por tamanho, peso e tom. Rótulos de
+   11px em caixa alta (olho, legendas, números de capítulo, ficha) e as
+   unidades pequenas da ficha vão ao marfim (15,4:1): letra pequena pede
+   MAIS contraste, não menos. Escopo em #terroir para não tocar o resto. */
+#terroir .prosa.mudo{ color:#D3CCBE; }
+#terroir .rotulo,
+#terroir .terroir__rotulo{ color:var(--marfim); }
+#terroir .ficha__valor small{ color:var(--marfim); }
 
 /* ficha técnica */
 .ficha{ margin-top:clamp(56px,8vw,110px); padding:0 var(--margem) 0; }
