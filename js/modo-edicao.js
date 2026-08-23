@@ -916,6 +916,7 @@
                 'style="background:' + c.valor + '"><span>' + c.nome + '</span></button>';
             }).join('') +
           '</div>' +
+          '<p class="me-contraste"></p>' +
         '</div>' +
 
         '<label class="me-campo"><span>Título <em>opcional</em></span>' +
@@ -960,13 +961,34 @@
 
     var form = fundo.querySelector('form');
     var escolhida = fundoEscolhido;
+    var recado = fundo.querySelector('.me-contraste');
+
+    /* O contraste é dito na hora, e não descoberto meses depois. A cor da
+       letra já é deduzida pela conta, então o número aqui quase sempre é
+       bom — mas num fundo de meia altura ele pode ficar apertado, e é
+       exatamente aí que convém saber antes de publicar. */
+    function diContraste() {
+      if (!recado || !window.__corQueLe || !window.__contraste) return;
+      var letra = window.__corQueLe(escolhida);
+      var r = window.__contraste(letra, escolhida);
+      var bom = r >= 4.5, otimo = r >= 7;
+      recado.className = 'me-contraste ' + (bom ? 'is-bom' : 'is-ruim');
+      recado.textContent = otimo
+        ? 'Contraste ' + r.toFixed(1) + ':1 — a leitura fica confortável.'
+        : bom
+          ? 'Contraste ' + r.toFixed(1) + ':1 — passa, mas por pouco. Um fundo mais escuro ou mais claro ajudaria.'
+          : 'Contraste ' + r.toFixed(1) + ':1 — abaixo do mínimo de 4,5. Neste fundo o texto vai ficar difícil de ler.';
+    }
+
     fundo.querySelectorAll('.me-cor').forEach(function (b) {
       b.addEventListener('click', function () {
         escolhida = b.getAttribute('data-cor');
         fundo.querySelectorAll('.me-cor').forEach(function (o) { o.classList.remove('is-posta'); });
         b.classList.add('is-posta');
+        diContraste();
       });
     });
+    diContraste();
     function fecha() { fundo.remove(); }
     fundo.querySelector('[data-fecha]').addEventListener('click', fecha);
     fundo.querySelector('.me-porta__x').addEventListener('click', fecha);
@@ -1047,6 +1069,8 @@
     var id = bloco.getAttribute('data-secao-id');
     var caixa = document.createElement('div');
     caixa.className = 'me-alcas me-fora';
+    caixa.appendChild(botao('↑', function () { moveSecao(bloco, id, -1); }));
+    caixa.appendChild(botao('↓', function () { moveSecao(bloco, id, 1); }));
     caixa.appendChild(botao('Ajustar subseção', function () {
       var reg = achaSecao(id);
       if (reg) formularioDeSecao(reg);
@@ -1054,6 +1078,37 @@
     caixa.appendChild(botao('Excluir subseção', function () { tiraSecao(bloco, id); }, true));
     if (getComputedStyle(bloco).position === 'static') bloco.classList.add('me-relativo');
     bloco.appendChild(caixa);
+  }
+
+  /* Subir e descer uma subseção é trocá-la de âncora: ela passa a vir depois
+     da seção vizinha, na direção pedida. As seções desenhadas do site não se
+     movem — várias são animadas pela rolagem (a taça, o scrub, o terroir
+     grudado), e mudar a ordem delas quebraria essas animações. */
+  function moveSecao(bloco, id, rumo) {
+    var reg = achaSecao(id);
+    if (!reg) return;
+    var irmas = [].slice.call((bloco.parentNode || document).children).filter(function (e) {
+      return e.tagName === 'SECTION' || (e.tagName === 'DIV' && e.id);
+    });
+    var onde = irmas.indexOf(bloco);
+    var vizinha = irmas[onde + (rumo < 0 ? -1 : 1)];
+    if (!vizinha) { fala(rumo < 0 ? 'Já é a primeira.' : 'Já é a última.'); return; }
+
+    if (rumo < 0) {
+      /* sobe: passa a vir depois de quem estava antes da vizinha */
+      var anterior = irmas[onde - 2] || null;
+      bloco.parentNode.insertBefore(bloco, vizinha);
+      reg.depois = anterior && window.__caminhoDe ? window.__caminhoDe(anterior) : '';
+    } else {
+      bloco.parentNode.insertBefore(bloco, vizinha.nextSibling);
+      reg.depois = window.__caminhoDe ? window.__caminhoDe(vizinha) : reg.depois;
+    }
+
+    /* a mudança de lugar é uma mudança por salvar como qualquer outra */
+    secoesNovas = secoesNovas.filter(function (x) { return x.id !== reg.id; });
+    secoesNovas.push(reg);
+    pinta();
+    bloco.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
   function achaSecao(id) {
@@ -1082,6 +1137,142 @@
   function abreSecoes() {
     var todas = document.querySelectorAll('.me-secao[data-secao-id]');
     for (var i = 0; i < todas.length; i++) poeAlcasDaSecao(todas[i]);
+  }
+
+  /* ==================================================================
+     Histórico: quem mudou o quê, e como voltar atrás
+
+     Cada Salvar é um commit assinado pelo token de quem salvou, então o
+     registro já existe — faltava uma janela para lê-lo. Voltar a uma versão
+     não apaga nada: grava por cima o conteúdo daquele dia, como um commit
+     novo. O caminho de volta continua sempre disponível, inclusive o de
+     desfazer o desfazer.
+     ================================================================== */
+  function janelaDeHistorico() {
+    var fundo = document.createElement('div');
+    fundo.className = 'me-porta me-fora';
+    fundo.innerHTML =
+      '<div class="me-porta__carta me-porta__carta--larga">' +
+        '<button class="me-porta__x" type="button" aria-label="Fechar">✕</button>' +
+        '<p class="me-porta__olho">Registro</p>' +
+        '<h2>O que mudou, e quando</h2>' +
+        '<p class="me-nota">Voltar a uma versão não apaga o que veio depois: grava aquele ' +
+          'dia por cima, como uma alteração nova. Dá para voltar outra vez.</p>' +
+        '<div class="me-lista"><p class="me-nota">Buscando…</p></div>' +
+      '</div>';
+    document.body.appendChild(fundo);
+    function fecha() { fundo.remove(); }
+    fundo.querySelector('.me-porta__x').addEventListener('click', fecha);
+    fundo.addEventListener('click', function (e) { if (e.target === fundo) fecha(); });
+
+    var lista = fundo.querySelector('.me-lista');
+    api('/repos/' + repo + '/commits?path=conteudo.json&per_page=20')
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (commits) {
+        if (!commits.length) { lista.innerHTML = '<p class="me-nota">Nada gravado ainda.</p>'; return; }
+        lista.innerHTML = '';
+        commits.forEach(function (c, i) {
+          var quem = (c.author && c.author.login) || (c.commit.author && c.commit.author.name) || 'alguém';
+          var quando = new Date(c.commit.author.date);
+          var oque = String(c.commit.message || '').split('\n')[0].replace(/^Modo Edição:\s*/, '');
+          var linha = document.createElement('div');
+          linha.className = 'me-versao';
+          linha.innerHTML =
+            '<div><b>' + escapa(oque || 'alteração') + '</b>' +
+            '<span>' + escapa(quem) + ' · ' + quando.toLocaleString('pt-BR', {
+              day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            }) + (i === 0 ? ' · <em>é o que está no ar</em>' : '') + '</span></div>';
+          if (i > 0) {
+            var bt = botao('Voltar para esta', function () { voltaPara(c.sha, oque, bt); });
+            linha.appendChild(bt);
+          }
+          lista.appendChild(linha);
+        });
+      })
+      .catch(function () { lista.innerHTML = '<p class="me-nota">Não consegui buscar o registro agora.</p>'; });
+
+    function voltaPara(sha, oque, bt) {
+      if (!confirm('Voltar o site para a versão “' + oque + '”?\n\nO que veio depois não se perde: fica no registro, e dá para voltar de novo.')) return;
+      bt.disabled = true; bt.textContent = 'Voltando…';
+      api('/repos/' + repo + '/contents/conteudo.json?ref=' + sha)
+        .then(function (r) { if (!r.ok) throw new Error('não achei aquela versão'); return r.json(); })
+        .then(function (antiga) {
+          return api('/repos/' + repo + '/contents/conteudo.json?ref=' + ramo)
+            .then(function (r) { return r.ok ? r.json() : {}; })
+            .then(function (atual) {
+              return api('/repos/' + repo + '/contents/conteudo.json', {
+                method: 'PUT',
+                body: JSON.stringify({
+                  message: 'Modo Edição: volta para “' + oque + '”',
+                  content: antiga.content.replace(/\n/g, ''),
+                  sha: atual.sha, branch: ramo
+                })
+              });
+            });
+        })
+        .then(function (r) {
+          if (!r.ok) return r.json().then(function (j) { throw new Error(j.message || 'erro'); });
+          fundo.remove();
+          fala('Voltamos para “' + oque + '”. O site se atualiza em cerca de um minuto.');
+          setTimeout(function () { location.reload(); }, 2500);
+        })
+        .catch(function (e) {
+          bt.disabled = false; bt.textContent = 'Voltar para esta';
+          fala('Não deu para voltar: ' + e.message, true);
+        });
+    }
+  }
+
+  /* ==================================================================
+     Prévia: ver antes de publicar
+     ================================================================== */
+  function salvaPrevia() {
+    if (!temMudanca()) { fala('Não há nada mudado para pôr na prévia.'); return; }
+    var bt = document.getElementById('me-previa');
+    bt.disabled = true; bt.textContent = 'Preparando…';
+    enviaArquivos()
+      .then(function (enviados) {
+        juntaTudo(enviados);
+        return gravaArquivo('conteudo-previa.json', 'Modo Edição: prévia de ' + resumo());
+      })
+      .then(function () {
+        var elo = location.origin + location.pathname + '?previa=1';
+        mostraElo(elo);
+      })
+      .catch(function (e) { fala('Não deu para preparar a prévia: ' + e.message, true); })
+      .then(function () { bt.disabled = false; bt.textContent = 'Prévia'; });
+  }
+
+  function mostraElo(elo) {
+    var fundo = document.createElement('div');
+    fundo.className = 'me-porta me-fora';
+    fundo.innerHTML =
+      '<div class="me-porta__carta">' +
+        '<button class="me-porta__x" type="button" aria-label="Fechar">✕</button>' +
+        '<p class="me-porta__olho">Prévia</p>' +
+        '<h2>Pronta para olhar</h2>' +
+        '<p class="me-nota">Abra este endereço no celular. Ele mostra as suas mudanças sem ' +
+          'publicá-las — quem entrar pelo endereço normal continua vendo o site como está no ar. ' +
+          'Fica pronto em cerca de um minuto.</p>' +
+        '<input class="me-elo" readonly value="' + escapa(elo) + '">' +
+        '<div class="me-porta__pe">' +
+          '<button class="me-bt me-bt--forte" type="button" data-copia>Copiar o endereço</button>' +
+          '<a class="me-bt me-bt--fino" target="_blank" rel="noopener">Abrir agora</a>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(fundo);
+    fundo.querySelector('.me-bt--fino').setAttribute('href', elo);
+    function fecha() { fundo.remove(); }
+    fundo.querySelector('.me-porta__x').addEventListener('click', fecha);
+    fundo.addEventListener('click', function (e) { if (e.target === fundo) fecha(); });
+    var campo = fundo.querySelector('.me-elo');
+    campo.select();
+    fundo.querySelector('[data-copia]').addEventListener('click', function (e) {
+      campo.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (x) {}
+      e.target.textContent = ok ? 'Copiado' : 'Copie do campo acima';
+    });
   }
 
   function nomeLimpo(nome) {
@@ -1142,6 +1333,8 @@
       '<span class="me-barra__conta" id="me-conta">Clique em qualquer texto para escrever</span>' +
       '<span class="me-barra__acoes">' +
         '<button class="me-bt" type="button" id="me-nova">+ Subseção</button>' +
+        '<button class="me-bt" type="button" id="me-previa">Prévia</button>' +
+        '<button class="me-bt" type="button" id="me-historico">Histórico</button>' +
         '<button class="me-bt" type="button" id="me-desfaz">Descartar</button>' +
         '<button class="me-bt me-bt--forte" type="button" id="me-salva">Salvar</button>' +
         '<button class="me-bt me-bt--fino" type="button" id="me-sai">Sair</button>' +
@@ -1153,6 +1346,8 @@
 
     barra.querySelector('#me-salva').addEventListener('click', salva);
     barra.querySelector('#me-nova').addEventListener('click', function () { formularioDeSecao(null); });
+    barra.querySelector('#me-previa').addEventListener('click', salvaPrevia);
+    barra.querySelector('#me-historico').addEventListener('click', janelaDeHistorico);
     barra.querySelector('#me-desfaz').addEventListener('click', function () {
       if (!temMudanca()) return;
       if (!confirm('Descartar tudo o que você mudou nesta página?')) return;
@@ -1196,21 +1391,14 @@
 
     enviaArquivos()
       .then(function (enviados) {
-        var chave = pagina();
-        conteudo.pagina = conteudo.pagina || {};
-        conteudo.pagina[chave] = conteudo.pagina[chave] || {};
-        Object.keys(mudancas).forEach(function (c) { conteudo.pagina[chave][c] = mudancas[c]; });
-        enviados.forEach(function (a) {
-          /* a fotografia de um prato novo não é um trecho da página: é um
-             campo da receita, e viaja com ela */
-          if (a.caminho.indexOf('prato:') === 0 || a.caminho.indexOf('chef:') === 0 ||
-              a.caminho.indexOf('secao:') === 0) return;
-          conteudo.pagina[chave][a.caminho] = { src: a.destino };
-        });
-        apagados.forEach(function (c) { conteudo.pagina[chave][c] = { removido: true }; });
-        guardaCarta();
-        guardaSecoes();
-        return gravaConteudo();
+        juntaTudo(enviados);
+        return gravaArquivo('conteudo.json', 'Modo Edição: ' + resumo());
+      })
+      .then(function () {
+        /* o rascunho acompanha o publicado: uma prévia mais velha que o site
+           mostraria o passado e faria a pessoa duvidar do que salvou */
+        return gravaArquivo('conteudo-previa.json', 'Modo Edição: prévia acompanha o publicado')
+          .catch(function () { /* a prévia é conveniência: não derruba o salvar */ });
       })
       .then(function () {
         mudancas = {}; arquivos = []; novos = []; removidos = []; apagados = [];
@@ -1225,6 +1413,26 @@
         fala('Não deu para salvar: ' + e.message, true);
       })
       .then(function () { bt.disabled = false; bt.textContent = 'Salvar'; });
+  }
+
+  /* Tudo o que foi mexido nesta sessão entra no objeto do conteúdo. É o mesmo
+     passo para salvar e para a prévia: o que muda entre os dois é só o nome
+     do arquivo em que ele acaba. */
+  function juntaTudo(enviados) {
+    var chave = pagina();
+    conteudo.pagina = conteudo.pagina || {};
+    conteudo.pagina[chave] = conteudo.pagina[chave] || {};
+    Object.keys(mudancas).forEach(function (c) { conteudo.pagina[chave][c] = mudancas[c]; });
+    (enviados || []).forEach(function (a) {
+      /* a fotografia de um prato novo não é um trecho da página: é um campo
+         da receita, e viaja com ela */
+      if (a.caminho.indexOf('prato:') === 0 || a.caminho.indexOf('chef:') === 0 ||
+          a.caminho.indexOf('secao:') === 0) return;
+      conteudo.pagina[chave][a.caminho] = { src: a.destino };
+    });
+    apagados.forEach(function (c) { conteudo.pagina[chave][c] = { removido: true }; });
+    guardaCarta();
+    guardaSecoes();
   }
 
   /* as decisões sobre a carta viram dois recados no conteudo.json: quem sai
@@ -1313,24 +1521,22 @@
     });
   }
 
-  function gravaConteudo(segundaTentativa) {
-    return api('/repos/' + repo + '/contents/conteudo.json?ref=' + ramo)
+  /* O mesmo gravador serve ao conteudo.json e ao rascunho da prévia: muda o
+     nome do arquivo e a mensagem do commit, nada mais. */
+  function gravaArquivo(nome, mensagem, segundaTentativa) {
+    return api('/repos/' + repo + '/contents/' + nome + '?ref=' + ramo)
       .then(function (r) { return r.ok ? r.json() : { sha: undefined }; })
       .then(function (atual) {
         var texto = JSON.stringify(conteudo, null, 2) + '\n';
-        var corpo = {
-          message: 'Modo Edição: ' + resumo(),
-          content: paraBase64(texto),
-          branch: ramo
-        };
+        var corpo = { message: mensagem, content: paraBase64(texto), branch: ramo };
         if (atual && atual.sha) corpo.sha = atual.sha;
-        return api('/repos/' + repo + '/contents/conteudo.json', {
+        return api('/repos/' + repo + '/contents/' + nome, {
           method: 'PUT', body: JSON.stringify(corpo)
         });
       })
       .then(function (r) {
         if (r.ok) return true;
-        if (r.status === 409 && !segundaTentativa) return gravaConteudo(true);
+        if (r.status === 409 && !segundaTentativa) return gravaArquivo(nome, mensagem, true);
         return r.json().then(function (j) { throw new Error(j.message || ('erro ' + r.status)); });
       });
   }
@@ -1464,6 +1670,25 @@
       '  opacity:0; transition:opacity .25s; }',
       '.me-editando .me-secao:hover > .me-alcas, .me-alcas:focus-within{ opacity:1; }',
       '.me-editando .me-secao{ outline:1px dashed rgba(92,126,125,.35); outline-offset:-6px; }',
+      /* ---- o aviso de contraste, no formulário ---- */
+      '.me-contraste{ margin:10px 0 0; padding:9px 12px; border-radius:2px;',
+      '  font-size:11.5px; line-height:1.6; }',
+      '.me-contraste.is-bom{ background:#E2EDE4; color:#2F6B3F; }',
+      '.me-contraste.is-ruim{ background:#F7E4E0; color:#A33A28; }',
+      /* ---- o registro de versões ---- */
+      '.me-lista{ margin-top:20px; display:flex; flex-direction:column; }',
+      '.me-versao{ display:flex; align-items:center; gap:14px; padding:13px 0;',
+      '  border-top:1px solid #DCD5C4; }',
+      '.me-versao > div{ flex:1; min-width:0; }',
+      '.me-versao b{ display:block; font-weight:500; font-size:13px; }',
+      '.me-versao span{ display:block; margin-top:3px; font-size:11px; opacity:.62; }',
+      '.me-versao em{ font-style:normal; color:#2F6B3F; }',
+      '.me-versao .me-bt{ flex:none; color:#3A3A28; border-color:#CFC8B2; }',
+      '.me-versao .me-bt:hover{ background:rgba(58,58,40,.08); }',
+      /* ---- o endereço da prévia ---- */
+      '.me-elo{ width:100%; margin-top:16px; padding:12px 13px; border:1px solid #CFC8B2;',
+      '  border-radius:2px; background:#fff; font:400 12px/1.4 "IBM Plex Mono",ui-monospace,monospace;',
+      '  color:#3A3A28; }',
       '@media (max-width:620px){',
       '  .me-barra{ left:12px; right:12px; bottom:12px; transform:none; max-width:none; padding:12px 14px; gap:10px; }',
       '  .me-barra__conta{ order:3; width:100%; text-align:center; font-size:11px; }',

@@ -460,6 +460,26 @@
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   }
 
+  function contraste(a, b) {
+    var x = claridade(a), y = claridade(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+
+  /* A cor do texto não se escolhe: escolhe-se a que enxerga melhor contra o
+     fundo. Um limiar de luminância erra no meio da escala — num verde-liquen
+     ou num areia, tanto o claro quanto o escuro parecem plausíveis e só a
+     conta diz qual dos dois lê. */
+  function corQueLe(fundo) {
+    var raiz = getComputedStyle(document.documentElement);
+    var claro = String(raiz.getPropertyValue('--marfim') || '').trim();
+    var escuro = String(raiz.getPropertyValue('--tinta') || '').trim();
+    if (!/^#/.test(claro) || claridade(claro) < 0.5) claro = '#EDE7DA';
+    if (!/^#/.test(escuro) || claridade(escuro) > 0.5) escuro = '#12100E';
+    return contraste(claro, fundo) >= contraste(escuro, fundo) ? claro : escuro;
+  }
+  window.__corQueLe = corQueLe;
+  window.__contraste = contraste;
+
   function estiloDasSecoes() {
     if (document.getElementById('me-secao-estilo')) return;
     var e = document.createElement('style');
@@ -494,12 +514,7 @@
     estiloDasSecoes();
     var raiz = getComputedStyle(document.documentElement);
     var fundo = reg.fundo || raiz.getPropertyValue('--tinta').trim() || '#F2EDE0';
-    var escuro = claridade(fundo) < 0.35;
-    var cor = (escuro ? raiz.getPropertyValue('--marfim') : raiz.getPropertyValue('--tinta'));
-    cor = String(cor).trim();
-    /* numa página escura, --tinta é o próprio escuro: então o claro vem do marfim */
-    if (!escuro && claridade(cor) > 0.5) cor = '#12100E';
-    if (escuro && claridade(cor) < 0.5) cor = '#EDE7DA';
+    var cor = corQueLe(fundo);
 
     var sec = document.createElement('section');
     sec.className = 'me-secao';
@@ -585,8 +600,47 @@
 
   window.__aplicaConteudo = aplica;
 
-  fetch('./conteudo.json', { cache: 'no-cache' })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(aplica)
+  /* ------------------------------------------------------------------
+     Prévia
+
+     O site publicado é um só, e não há servidor para hospedar um segundo.
+     Então o rascunho mora ao lado, num arquivo próprio, e só é lido por
+     quem chega com ?previa=1. Assim a proprietária vê no telefone o que
+     ainda não está no ar, num endereço que ela pode mandar para alguém —
+     e quem entrar pela porta da frente continua vendo o site de verdade.
+
+     A tarja existe para que ninguém confunda uma coisa com a outra.
+     ------------------------------------------------------------------ */
+  var ehPrevia = /[?&]previa=1/.test(location.search);
+
+  function tarjaDePrevia() {
+    if (document.getElementById('me-tarja')) return;
+    var t = document.createElement('div');
+    t.id = 'me-tarja';
+    t.setAttribute('role', 'status');
+    t.innerHTML = '<strong>Prévia</strong> — esta versão ainda não está publicada. ' +
+      '<a>Ver o site como está no ar</a>';
+    t.querySelector('a').setAttribute('href', location.pathname);
+    t.style.cssText = 'position:fixed;z-index:2147482900;left:0;right:0;top:0;' +
+      'padding:9px 16px;background:#8C3B2E;color:#fff;text-align:center;' +
+      'font:400 12px/1.5 "Jost","Helvetica Neue",Arial,sans-serif;letter-spacing:.04em;';
+    var elo = t.querySelector('a');
+    elo.style.cssText = 'color:#fff;text-decoration:underline;';
+    document.body.appendChild(t);
+    document.body.style.paddingTop = t.offsetHeight + 'px';
+  }
+
+  var arquivo = ehPrevia ? './conteudo-previa.json' : './conteudo.json';
+
+  fetch(arquivo, { cache: 'no-cache' })
+    .then(function (r) {
+      if (r.ok) return r.json();
+      /* rascunho pedido mas inexistente: mostra o que está no ar */
+      return ehPrevia ? fetch('./conteudo.json', { cache: 'no-cache' }).then(function (o) { return o.ok ? o.json() : null; }) : null;
+    })
+    .then(function (dados) {
+      aplica(dados);
+      if (ehPrevia) tarjaDePrevia();
+    })
     .catch(function () { /* sem conteudo.json, a página segue como veio */ });
 })();
