@@ -128,6 +128,98 @@
   }
   window.__paginaAtual = paginaAtual;
 
+  /* ------------------------------------------------------------------
+     Peneira
+
+     Tudo o que chega do conteudo.json é texto que alguém escreveu, e vai
+     parar num innerHTML. Sem peneira, um valor com
+     `<img src=x onerror=...>` roda no navegador de quem visita — e quem
+     tivesse o token poderia, por exemplo, reescrever o código do Pix e
+     desviar um pagamento, ou roubar o token do próximo que editasse.
+
+     O editor grava texto simples com quebras de linha, e a montagem grava
+     a marcação que o desenho já usava. Nada além disto precisa passar:
+     por isso a lista é curta e fechada, e nada de `on*` ou `javascript:`
+     atravessa. A aparência não muda porque o que é legítimo está aqui.
+     ------------------------------------------------------------------ */
+  var TAGS_OK = { BR: 1, STRONG: 1, B: 1, EM: 1, I: 1, SPAN: 1, SMALL: 1,
+                  SUP: 1, SUB: 1, A: 1, U: 1, WBR: 1 };
+  var ATRIBUTOS_OK = { class: 1, href: 1, title: 1, lang: 1, 'aria-hidden': 1, 'data-ed': 1 };
+  /* nestes o miolo também é descartado: é código, não texto que alguém escreveu */
+  var FORA_INTEIRO = { SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1,
+                       TEMPLATE: 1, NOSCRIPT: 1, SVG: 1, MATH: 1, LINK: 1, META: 1, BASE: 1 };
+
+  function urlSegura(v) {
+    var t = String(v || '').trim().toLowerCase().replace(/[\u0000-\u0020]/g, '');
+    return !(/^javascript:/.test(t) || /^data:/.test(t) || /^vbscript:/.test(t));
+  }
+
+  /* A análise tem de acontecer num documento inerte.
+
+     Num <div> comum, `innerHTML` já monta elementos vivos: um
+     `<img src=x onerror=...>` começa a buscar a imagem e dispara o onerror
+     antes de a peneira chegar a remover o atributo. O DOMParser monta um
+     documento que não carrega nada e não executa nada — a limpeza acontece
+     antes de qualquer coisa ganhar vida. O <template> serve de reserva pelo
+     mesmo motivo: o miolo dele também é inerte. */
+  function peneira(html) {
+    var texto = String(html == null ? '' : html);
+    var raiz;
+    if (window.DOMParser) {
+      raiz = new DOMParser().parseFromString('<body>' + texto, 'text/html').body;
+    } else {
+      var molde = document.createElement('template');
+      if ('content' in molde) { molde.innerHTML = texto; raiz = molde.content; }
+      else { raiz = document.createElement('div'); raiz.innerHTML = texto; }
+    }
+    limpaRamo(raiz);
+    if (raiz.innerHTML !== undefined) return raiz.innerHTML;
+    var saida = document.createElement('div');
+    saida.appendChild(raiz.cloneNode(true));
+    return saida.innerHTML;
+  }
+
+  function limpaRamo(no) {
+    var filhos = [].slice.call(no.childNodes);
+    for (var i = 0; i < filhos.length; i++) {
+      var f = filhos[i];
+      if (f.nodeType === 3) continue;                       /* texto: passa */
+      if (f.nodeType !== 1) { no.removeChild(f); continue; } /* comentário e afins: fora */
+      if (FORA_INTEIRO[f.tagName]) {
+        /* aqui o miolo é código, não texto: vai junto com a casca */
+        no.removeChild(f);
+        continue;
+      }
+      if (!TAGS_OK[f.tagName]) {
+        /* A tag some e o texto dela fica — apagar o miolo perderia conteúdo.
+           Mas limpa-se o miolo ANTES de subi-lo: o que é promovido aqui já
+           saiu da lista que estamos percorrendo e nunca mais seria visitado.
+           Era assim que um <input> escapava de dentro de um <form>. */
+        limpaRamo(f);
+        while (f.firstChild) no.insertBefore(f.firstChild, f);
+        no.removeChild(f);
+        continue;
+      }
+      for (var a = f.attributes.length - 1; a >= 0; a--) {
+        var nome = f.attributes[a].name.toLowerCase();
+        var valor = f.attributes[a].value;
+        if (!ATRIBUTOS_OK[nome]) { f.removeAttribute(nome); continue; }
+        if ((nome === 'href') && !urlSegura(valor)) f.removeAttribute(nome);
+      }
+      limpaRamo(f);
+    }
+  }
+
+  /* Um endereço do conteudo.json não pode alcançar o que foi marcado como
+     fora do alcance: o valor do Pix, os contadores que o próprio código
+     escreve, a assinatura no rodapé. O editor já recusa esses pontos — isto
+     aqui recusa também um JSON editado à mão. */
+  window.__peneiraTeste = peneira;
+
+  function podeReceber(el) {
+    return !!el && !(el.closest && el.closest('[data-nao-editar]'));
+  }
+
   /* o painel grava caminho absoluto; o site vive numa subpasta */
   function relativo(v) { return (typeof v === 'string' && v.charAt(0) === '/') ? '.' + v : v; }
 
@@ -149,6 +241,9 @@
   function trocaMidia(el, endereco) {
     endereco = relativo(endereco);
     if (typeof endereco !== 'string' || !endereco) return;
+    /* um src com javascript: ou data: não é uma fotografia */
+    if (!urlSegura(endereco)) return;
+    if (!podeReceber(el)) return;
     if (el.tagName === 'VIDEO') {
       var fonte = el.querySelector('source');
       var antigo = fonte ? fonte.getAttribute('src') : el.getAttribute('src');
@@ -170,7 +265,9 @@
     for (var i = 0; i < textos.length; i++) {
       var el = textos[i];
       var novo = pega(dados.campos, el.getAttribute('data-ed'));
-      if (typeof novo === 'string' && el.innerHTML !== novo) el.innerHTML = novo;
+      if (typeof novo !== 'string' || !podeReceber(el)) continue;
+      var limpo = peneira(novo);
+      if (el.innerHTML !== limpo) el.innerHTML = limpo;
     }
 
     var imagens = document.querySelectorAll('[data-ed-img]');
@@ -214,7 +311,9 @@
           }
           if (valor.src) { trocaMidia(alvo, valor.src); continue; }
         }
-        if (typeof valor === 'string' && alvo.innerHTML !== valor) alvo.innerHTML = valor;
+        if (typeof valor !== 'string' || !podeReceber(alvo)) continue;
+        var seguro = peneira(valor);
+        if (alvo.innerHTML !== seguro) alvo.innerHTML = seguro;
       }
     }
 
@@ -354,8 +453,15 @@
 
     var lombada = novo.querySelector('.rotulo');
     if (lombada) {
-      lombada.innerHTML = 'Menu do chef <span aria-hidden="true">·</span> ' +
-        (m.numeral || String(m.ordem || '').replace(/^Menu do chef\s*/i, '') || '');
+      /* o numeral vem do formulário: entra como texto, nunca como marcação */
+      lombada.textContent = '';
+      lombada.appendChild(document.createTextNode('Menu do chef '));
+      var ponto = document.createElement('span');
+      ponto.setAttribute('aria-hidden', 'true');
+      ponto.textContent = '·';
+      lombada.appendChild(ponto);
+      lombada.appendChild(document.createTextNode(' ' +
+        (m.numeral || String(m.ordem || '').replace(/^Menu do chef\s*/i, '') || '')));
     }
     var titulo = novo.querySelector('h3');
     if (titulo) titulo.textContent = m.titulo || '';

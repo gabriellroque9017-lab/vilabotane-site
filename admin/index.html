@@ -7,6 +7,13 @@
 <title>Modo Edição · Vila Botané</title>
 </head>
 <body>
-<script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+<!-- Versão fixa e conferida por integridade. Sem o número, o endereço resolve
+     para "a mais nova" e muda sozinho — e este script roda na mesma página em
+     que a senha da proprietária fica guardada. Para atualizar: troque a versão
+     e recalcule o hash com
+     curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
+<script src="https://unpkg.com/@sveltia/cms@0.196.0/dist/sveltia-cms.js"
+        integrity="sha384-CAkV2ok/JoSJwP/CCrXGYho2VRacSfJ93JUAftvaq7ACeWeVxXpnFrSGE2hpNeKC"
+        crossorigin="anonymous"></script>
 </body>
 </html>

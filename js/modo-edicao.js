@@ -17,6 +17,11 @@
   'use strict';
 
   var CHAVE_TOKEN = 'modo-edicao:token';
+  var CHAVE_QUANDO = 'modo-edicao:quando';
+  /* A senha fica guardada no navegador para não pedir a cada página. Guardada
+     para sempre, porém, um computador emprestado continua podendo publicar
+     meses depois. Meio dia parado e ela é esquecida. */
+  var VALIDADE_H = 12;
   var LIGADO = 'modo-edicao:ligado';
   var PASTA_ENVIADAS = 'img/enviadas';   /* onde a mídia enviada é guardada */
   var LIMITE_MB = 24;          /* acima disso a API do GitHub fica instável */
@@ -57,6 +62,10 @@
     lerConfiguracao()
       .then(function () {
         var token = localStorage.getItem(CHAVE_TOKEN);
+        if (token && !guardadaAindaVale()) {
+          esqueceGuardada();
+          return pedeToken('Faz um tempo desde o último acesso. Entre outra vez.');
+        }
         if (!token) return pedeToken();
         /* a senha guardada deixou de valer — expirou, ou foi revogada */
         return confere(token).then(function (ok) { return ok ? liga() : pedeToken('Sua sessão expirou. Entre outra vez.'); });
@@ -86,15 +95,36 @@
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28'
     }, opcoes.headers || {});
+    marcaUso();
     return fetch('https://api.github.com' + caminho, opcoes);
   }
 
   function confere(token) {
     localStorage.setItem(CHAVE_TOKEN, token);
+    marcaUso();
     return api('/repos/' + repo)
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) { return !!(d && d.permissions && d.permissions.push); })
       .catch(function () { return false; });
+  }
+
+  function marcaUso() {
+    try { localStorage.setItem(CHAVE_QUANDO, String(Date.now())); } catch (e) {}
+  }
+
+  /* A senha guardada vale enquanto estiver em uso. Parada meio dia, é
+     esquecida — um computador emprestado deixa de poder publicar sozinho. */
+  function guardadaAindaVale() {
+    var quando = parseInt(localStorage.getItem(CHAVE_QUANDO) || '0', 10);
+    if (!quando) return false;
+    return (Date.now() - quando) < VALIDADE_H * 3600 * 1000;
+  }
+
+  function esqueceGuardada() {
+    try {
+      localStorage.removeItem(CHAVE_TOKEN);
+      localStorage.removeItem(CHAVE_QUANDO);
+    } catch (e) {}
   }
 
   /* ==================================================================
@@ -160,7 +190,7 @@
 
     function sai() {
       sessionStorage.removeItem(LIGADO);
-      localStorage.removeItem(CHAVE_TOKEN);
+      esqueceGuardada();
       location.href = location.pathname;
     }
     fundo.querySelector('.me-porta__x').addEventListener('click', sai);
@@ -446,6 +476,7 @@
     campo.addEventListener('change', function () {
       var arq = campo.files && campo.files[0];
       if (!arq) return;
+      if (!arquivoAceito(arq)) { recusaArquivo(arq); return; }
       if (arq.size > LIMITE_MB * 1048576) {
         fala('Esse arquivo tem ' + (arq.size / 1048576).toFixed(1) + ' MB. O limite aqui é ' +
              LIMITE_MB + ' MB — acima disso o envio falha. Comprima antes.', true);
@@ -659,6 +690,7 @@
       var nome = v('nome');
       if (!nome) return;
       var arq = form.querySelector('[name=foto]').files[0] || null;
+      if (arq && !arquivoAceito(arq)) { recusaArquivo(arq); return; }
       if (arq && arq.size > LIMITE_MB * 1048576) {
         fala('A fotografia tem ' + (arq.size / 1048576).toFixed(1) + ' MB. O limite é ' + LIMITE_MB + ' MB.', true);
         return;
@@ -751,6 +783,8 @@
       var numeral = v('numeral') || proximoRomano();
 
       var escolhidas = form.querySelector('[name=fotos]').files || [];
+      var recusadas = [].filter.call(escolhidas, function (f) { return !arquivoAceito(f); });
+      if (recusadas.length) { recusaArquivo(recusadas[0]); return; }
       var pesadas = [].filter.call(escolhidas, function (f) { return f.size > LIMITE_MB * 1048576; });
       if (pesadas.length) {
         fala('Há ' + pesadas.length + (pesadas.length === 1 ? ' fotografia acima' : ' fotografias acima') +
@@ -1009,6 +1043,7 @@
       if (!texto && !titulo) { fala('Escreva ao menos um título ou um texto.', true); return; }
 
       var arq = form.querySelector('[name=imagem]').files[0] || null;
+      if (arq && !arquivoAceito(arq)) { recusaArquivo(arq); return; }
       if (arq && arq.size > LIMITE_MB * 1048576) {
         fala('A imagem tem ' + (arq.size / 1048576).toFixed(1) + ' MB. O limite é ' + LIMITE_MB + ' MB.', true);
         return;
@@ -1229,6 +1264,37 @@
     }
   }
 
+  /* ------------------------------------------------------------------
+     O que pode ser enviado
+
+     O `accept` do seletor de arquivos é sugestão, não tranca: a chamada à
+     API manda o que estiver no objeto. E tudo o que entra no repositório
+     passa a ser servido pelo mesmo endereço do site — um .html ou um .js
+     ali dentro seria código hospedado na origem da casa, com acesso a
+     tudo o que a origem tem. Por isso a lista é fechada, e conferida aqui
+     e não no seletor.
+     ------------------------------------------------------------------ */
+  var EXTENSOES_OK = {
+    '.jpg': 1, '.jpeg': 1, '.png': 1, '.webp': 1, '.gif': 1, '.avif': 1,
+    '.mp4': 1, '.webm': 1, '.mov': 1, '.m4v': 1
+  };
+
+  function arquivoAceito(arq) {
+    if (!arq || !arq.name) return false;
+    var ponto = arq.name.lastIndexOf('.');
+    var ext = ponto === -1 ? '' : arq.name.slice(ponto).toLowerCase();
+    if (!EXTENSOES_OK[ext]) return false;
+    /* o tipo declarado tem de concordar com a extensão */
+    var tipo = String(arq.type || '').toLowerCase();
+    if (tipo && !/^image\/|^video\//.test(tipo)) return false;
+    return true;
+  }
+
+  function recusaArquivo(arq) {
+    fala('“' + (arq && arq.name ? arq.name : 'esse arquivo') + '” não é foto nem vídeo. ' +
+         'Só entram jpg, png, webp, gif, avif, mp4, webm, mov e m4v.', true);
+  }
+
   function nomeLimpo(nome) {
     var ponto = nome.lastIndexOf('.');
     var corpo = (ponto === -1 ? nome : nome.slice(0, ponto));
@@ -1321,6 +1387,7 @@
     barra.querySelector('#me-sai').addEventListener('click', function () {
       if (temMudanca() && !confirm('Você tem mudanças não guardadas. Sair mesmo assim?')) return;
       sessionStorage.removeItem(LIGADO);
+      esqueceGuardada();
       location.href = location.pathname;
     });
     pinta();
