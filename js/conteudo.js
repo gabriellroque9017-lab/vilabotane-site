@@ -219,6 +219,7 @@
     }
 
     cuidaDaCarta(dados);
+    cuidaDasSecoes(dados);
     garanteCredito();
 
     /* quem depende do texto para se desenhar refaz as contas agora */
@@ -427,6 +428,152 @@
     return novo;
   }
   window.__montaCartao = montaCartao;
+
+  /* ==================================================================
+     Subseções: blocos que a casa acrescenta à página.
+
+     Não são um pedaço de HTML solto guardado no JSON — seria um convite a
+     quebrar a página. São um punhado de escolhas (fundo, letra, tamanho,
+     imagem e onde ela fica) que viram sempre a mesma estrutura, desenhada
+     aqui. Assim a subseção nasce parecida com o resto do site, e nada do
+     que a proprietária escreve pode desmontar o layout.
+
+     A cor do texto não é escolhida: ela é deduzida do fundo. Fundo escuro
+     pede letra clara e vice-versa — e é a única forma de garantir que uma
+     escolha de cor não produza um bloco ilegível.
+     ================================================================== */
+  var TAMANHOS = {
+    peq:    'clamp(15px,1.3vw,17px)',
+    normal: 'clamp(17px,1.5vw,19px)',
+    grande: 'clamp(20px,2vw,25px)',
+    enorme: 'clamp(24px,3vw,34px)'
+  };
+  var LARGURAS = { peq: '260px', media: '420px', grande: '620px', cheia: '100%' };
+
+  function claridade(hex) {
+    var m = String(hex || '').replace('#', '').match(/.{1,2}/g);
+    if (!m || m.length < 3) return 1;
+    var c = m.slice(0, 3).map(function (h) {
+      var v = parseInt(h, 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+
+  function estiloDasSecoes() {
+    if (document.getElementById('me-secao-estilo')) return;
+    var e = document.createElement('style');
+    e.id = 'me-secao-estilo';
+    e.textContent = [
+      '.me-secao{ background:var(--me-fundo); color:var(--me-cor); padding:clamp(56px,8vw,120px) var(--margem); }',
+      '.me-secao__miolo{ max-width:1180px; margin-inline:auto; display:grid; gap:clamp(24px,4vw,60px); align-items:center; }',
+      '.me-secao__miolo--esquerda{ grid-template-columns:auto minmax(0,1fr); }',
+      '.me-secao__miolo--direita{ grid-template-columns:minmax(0,1fr) auto; }',
+      '.me-secao__miolo--direita .me-secao__foto{ order:2; }',
+      '.me-secao__foto img{ display:block; width:var(--me-largura); max-width:100%; height:auto; }',
+      '.me-secao__miolo--cheia .me-secao__foto img,',
+      '.me-secao__miolo--acima .me-secao__foto img,',
+      '.me-secao__miolo--abaixo .me-secao__foto img{ width:var(--me-largura); margin-inline:auto; }',
+      '.me-secao__miolo--abaixo .me-secao__foto{ order:2; }',
+      '.me-secao__titulo{ font-family:var(--serifa); font-weight:300; line-height:1.1;',
+      '  font-size:calc(var(--me-tamanho) * 1.9); margin:0 0 .6em; text-wrap:balance; }',
+      '.me-secao__prosa{ font-family:var(--me-fonte); font-size:var(--me-tamanho); line-height:1.8;',
+      '  margin:0; max-width:62ch; text-wrap:pretty; }',
+      '.me-secao__prosa p + p{ margin-top:1.2em; }',
+      '@media (max-width:860px){',
+      '  .me-secao__miolo--esquerda, .me-secao__miolo--direita{ grid-template-columns:1fr; }',
+      '  .me-secao__miolo--direita .me-secao__foto{ order:0; }',
+      '  .me-secao__foto img{ width:100%; }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(e);
+  }
+
+  function montaSecao(reg) {
+    if (!reg || !reg.id) return null;
+    estiloDasSecoes();
+    var raiz = getComputedStyle(document.documentElement);
+    var fundo = reg.fundo || raiz.getPropertyValue('--tinta').trim() || '#F2EDE0';
+    var escuro = claridade(fundo) < 0.35;
+    var cor = (escuro ? raiz.getPropertyValue('--marfim') : raiz.getPropertyValue('--tinta'));
+    cor = String(cor).trim();
+    /* numa página escura, --tinta é o próprio escuro: então o claro vem do marfim */
+    if (!escuro && claridade(cor) > 0.5) cor = '#12100E';
+    if (escuro && claridade(cor) < 0.5) cor = '#EDE7DA';
+
+    var sec = document.createElement('section');
+    sec.className = 'me-secao';
+    sec.setAttribute('data-secao-id', reg.id);
+    /* o miolo daqui se edita pelo formulário da própria subseção, não pelo
+       cursor: dois caminhos para o mesmo texto dariam duas versões dele */
+    sec.setAttribute('data-nao-editar', '');
+    sec.style.setProperty('--me-fundo', fundo);
+    sec.style.setProperty('--me-cor', cor);
+    sec.style.setProperty('--me-fonte', 'var(--' + (reg.fonte === 'grot' ? 'grot' : 'serifa') + ')');
+    sec.style.setProperty('--me-tamanho', TAMANHOS[reg.tamanho] || TAMANHOS.normal);
+    sec.style.setProperty('--me-largura', LARGURAS[reg.imagemLargura] || LARGURAS.media);
+
+    var lugar = reg.imagemLugar || 'esquerda';
+    var miolo = document.createElement('div');
+    miolo.className = 'me-secao__miolo me-secao__miolo--' + lugar;
+
+    if (reg.imagem) {
+      var moldura = document.createElement('div');
+      moldura.className = 'me-secao__foto';
+      var im = document.createElement('img');
+      im.setAttribute('src', relativo(reg.imagem));
+      im.setAttribute('alt', reg.titulo || '');
+      im.setAttribute('loading', 'lazy');
+      im.setAttribute('decoding', 'async');
+      moldura.appendChild(im);
+      miolo.appendChild(moldura);
+    } else {
+      miolo.className += ' me-secao__miolo--so-texto';
+      miolo.style.gridTemplateColumns = '1fr';
+    }
+
+    var texto = document.createElement('div');
+    texto.className = 'me-secao__texto';
+    if (reg.titulo) {
+      var h = document.createElement('h2');
+      h.className = 'me-secao__titulo';
+      h.textContent = reg.titulo;
+      texto.appendChild(h);
+    }
+    var prosa = document.createElement('div');
+    prosa.className = 'me-secao__prosa';
+    String(reg.texto || '').split(/\n{2,}/).forEach(function (bloco) {
+      var t = bloco.trim();
+      if (!t) return;
+      var p = document.createElement('p');
+      t.split(/\n/).forEach(function (linha, i) {
+        if (i) p.appendChild(document.createElement('br'));
+        p.appendChild(document.createTextNode(linha));
+      });
+      prosa.appendChild(p);
+    });
+    texto.appendChild(prosa);
+    miolo.appendChild(texto);
+    sec.appendChild(miolo);
+    return sec;
+  }
+  window.__montaSecao = montaSecao;
+
+  function cuidaDasSecoes(dados) {
+    var lista = (dados.secoes || []).filter(function (r) {
+      return r && r.pagina === paginaAtual();
+    });
+    if (!lista.length) return;
+    for (var i = 0; i < lista.length; i++) {
+      var reg = lista[i];
+      if (document.querySelector('[data-secao-id="' + String(reg.id).replace(/"/g, '') + '"]')) continue;
+      var bloco = montaSecao(reg);
+      if (!bloco) continue;
+      var ancora = reg.depois ? porCaminho(reg.depois) : null;
+      if (ancora && ancora.parentNode) ancora.parentNode.insertBefore(bloco, ancora.nextSibling);
+      else (document.querySelector('main') || document.body).appendChild(bloco);
+    }
+  }
 
   function achaPrato(cartoes, id) {
     for (var i = 0; i < cartoes.length; i++) {

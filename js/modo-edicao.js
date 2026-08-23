@@ -177,9 +177,10 @@
       abreTextos();
       abreMidia();
       abreCarta();
+      abreSecoes();
       montaBarra();
       /* o que chega depois — fichas que abrem, listas que o JS monta */
-      var relogio = setInterval(function () { abreTextos(); abreMidia(); abreCarta(); }, 1200);
+      var relogio = setInterval(function () { abreTextos(); abreMidia(); abreCarta(); abreSecoes(); }, 1200);
       window.addEventListener('beforeunload', function (e) {
         if (!temMudanca()) return;
         e.preventDefault(); e.returnValue = '';
@@ -816,6 +817,273 @@
     cartao.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
+  /* ==================================================================
+     Subseções
+
+     Um bloco novo na página, feito de escolhas e não de HTML solto: fundo,
+     letra, tamanho, imagem e onde ela fica. Quem desenha é o conteudo.js,
+     sempre da mesma forma — assim a subseção nasce parecida com o resto do
+     site e nada do que se escreve aqui pode desmontar o layout.
+
+     As opções de cor e de letra não são inventadas: são lidas da própria
+     página, do :root. Se a paleta da casa mudar, o formulário muda junto.
+     ================================================================== */
+  var secoesNovas = [];        /* criadas nesta sessão */
+  var secoesFora = [];         /* ids retirados */
+
+  var TAMANHOS_NOME = [
+    ['peq', 'Pequeno'], ['normal', 'Normal'], ['grande', 'Grande'], ['enorme', 'Muito grande']
+  ];
+  var LARGURAS_NOME = [
+    ['peq', 'Pequena'], ['media', 'Média'], ['grande', 'Grande'], ['cheia', 'Largura toda']
+  ];
+  var LUGARES_NOME = [
+    ['esquerda', 'À esquerda do texto'], ['direita', 'À direita do texto'],
+    ['acima', 'Acima do texto'], ['abaixo', 'Abaixo do texto']
+  ];
+
+  /* as cores que a página já usa, lidas do :root — nem uma a mais */
+  function coresDaCasa() {
+    var raiz = getComputedStyle(document.documentElement);
+    var achadas = [];
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var regras;
+      try { regras = document.styleSheets[i].cssRules; } catch (e) { continue; }
+      if (!regras) continue;
+      for (var j = 0; j < regras.length; j++) {
+        var r = regras[j];
+        if (!r.style || r.selectorText !== ':root') continue;
+        for (var k = 0; k < r.style.length; k++) {
+          var nome = r.style[k];
+          if (nome.indexOf('--') !== 0) continue;
+          var valor = raiz.getPropertyValue(nome).trim();
+          if (!/^#[0-9a-f]{6}$/i.test(valor)) continue;
+          if (achadas.some(function (c) { return c.valor.toLowerCase() === valor.toLowerCase(); })) continue;
+          achadas.push({ nome: nome.replace(/^--/, '').replace(/-/g, ' '), valor: valor });
+        }
+      }
+    }
+    return achadas;
+  }
+
+  /* onde a subseção pode entrar: depois de qualquer seção da página */
+  function ancoras() {
+    var fora = {};
+    var lista = [];
+    var candidatas = document.querySelectorAll('main > section, body > section, main > div[id]');
+    for (var i = 0; i < candidatas.length; i++) {
+      var s = candidatas[i];
+      if (s.classList.contains('me-secao')) continue;
+      if (s.closest('.me-fora')) continue;
+      var caminho = window.__caminhoDe ? window.__caminhoDe(s) : '';
+      if (!caminho || fora[caminho]) continue;
+      fora[caminho] = 1;
+      var h = s.querySelector('h1, h2, h3');
+      var rotulo = h ? String(h.textContent).replace(/\s+/g, ' ').trim().slice(0, 44) : '';
+      if (!rotulo) rotulo = s.id ? s.id : 'seção sem título';
+      lista.push({ caminho: caminho, rotulo: rotulo });
+    }
+    return lista;
+  }
+
+  function formularioDeSecao(existente) {
+    var cores = coresDaCasa();
+    var alvos = ancoras();
+    var r = existente || {};
+    var fundoEscolhido = r.fundo || (cores[0] && cores[0].valor) || '#F2EDE0';
+
+    var fundo = document.createElement('div');
+    fundo.className = 'me-porta me-fora';
+    fundo.innerHTML =
+      '<form class="me-porta__carta me-porta__carta--larga">' +
+        '<button class="me-porta__x" type="button" aria-label="Fechar">✕</button>' +
+        '<p class="me-porta__olho">Página</p>' +
+        '<h2>' + (existente ? 'Ajustar a subseção' : 'Nova subseção') + '</h2>' +
+
+        '<label class="me-campo"><span>Onde entra</span><select name="depois">' +
+          alvos.map(function (a) {
+            return '<option value="' + a.caminho.replace(/"/g, '&quot;') + '"' +
+              (r.depois === a.caminho ? ' selected' : '') + '>Depois de: ' + a.rotulo + '</option>';
+          }).join('') +
+        '</select></label>' +
+
+        '<div class="me-campo"><span>Cor de fundo</span>' +
+          '<div class="me-cores">' +
+            cores.map(function (c) {
+              return '<button type="button" class="me-cor' +
+                (c.valor.toLowerCase() === String(fundoEscolhido).toLowerCase() ? ' is-posta' : '') +
+                '" data-cor="' + c.valor + '" title="' + c.nome + '" ' +
+                'style="background:' + c.valor + '"><span>' + c.nome + '</span></button>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+
+        '<label class="me-campo"><span>Título <em>opcional</em></span>' +
+          '<input name="titulo" maxlength="90" value="' + escapa(r.titulo) + '"></label>' +
+        '<label class="me-campo"><span>Texto <em>uma linha em branco separa parágrafos</em></span>' +
+          '<textarea name="texto" rows="6" maxlength="2400">' + escapa(r.texto) + '</textarea></label>' +
+
+        '<div class="me-campo me-campo--par">' +
+          '<label><span>Tipo de letra</span><select name="fonte">' +
+            '<option value="serifa"' + (r.fonte !== 'grot' ? ' selected' : '') + '>Cormorant Garamond</option>' +
+            '<option value="grot"' + (r.fonte === 'grot' ? ' selected' : '') + '>Jost</option>' +
+          '</select></label>' +
+          '<label><span>Tamanho da letra</span><select name="tamanho">' +
+            TAMANHOS_NOME.map(function (t) {
+              return '<option value="' + t[0] + '"' + (r.tamanho === t[0] ? ' selected' : '') + '>' + t[1] + '</option>';
+            }).join('') +
+          '</select></label>' +
+        '</div>' +
+
+        '<label class="me-campo"><span>Imagem <em>opcional</em></span>' +
+          '<input name="imagem" type="file" accept="image/*"></label>' +
+        (r.imagem ? '<p class="me-nota">Hoje: ' + r.imagem.split('/').pop() + ' — escolha outra para trocar.</p>' : '') +
+        '<div class="me-campo me-campo--par">' +
+          '<label><span>Tamanho da imagem</span><select name="imagemLargura">' +
+            LARGURAS_NOME.map(function (t) {
+              return '<option value="' + t[0] + '"' + (r.imagemLargura === t[0] ? ' selected' : '') + '>' + t[1] + '</option>';
+            }).join('') +
+          '</select></label>' +
+          '<label><span>Lugar da imagem</span><select name="imagemLugar">' +
+            LUGARES_NOME.map(function (t) {
+              return '<option value="' + t[0] + '"' + (r.imagemLugar === t[0] ? ' selected' : '') + '>' + t[1] + '</option>';
+            }).join('') +
+          '</select></label>' +
+        '</div>' +
+
+        '<div class="me-porta__pe">' +
+          '<button class="me-bt me-bt--forte" type="submit">' + (existente ? 'Guardar' : 'Pôr na página') + '</button>' +
+          '<button class="me-bt me-bt--fino" type="button" data-fecha>Cancelar</button>' +
+        '</div>' +
+      '</form>';
+    document.body.appendChild(fundo);
+
+    var form = fundo.querySelector('form');
+    var escolhida = fundoEscolhido;
+    fundo.querySelectorAll('.me-cor').forEach(function (b) {
+      b.addEventListener('click', function () {
+        escolhida = b.getAttribute('data-cor');
+        fundo.querySelectorAll('.me-cor').forEach(function (o) { o.classList.remove('is-posta'); });
+        b.classList.add('is-posta');
+      });
+    });
+    function fecha() { fundo.remove(); }
+    fundo.querySelector('[data-fecha]').addEventListener('click', fecha);
+    fundo.querySelector('.me-porta__x').addEventListener('click', fecha);
+    fundo.addEventListener('click', function (e) { if (e.target === fundo) fecha(); });
+    form.querySelector('[name=titulo]').focus();
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = function (n) { return (form.querySelector('[name=' + n + ']').value || '').trim(); };
+      var texto = v('texto');
+      var titulo = v('titulo');
+      if (!texto && !titulo) { fala('Escreva ao menos um título ou um texto.', true); return; }
+
+      var arq = form.querySelector('[name=imagem]').files[0] || null;
+      if (arq && arq.size > LIMITE_MB * 1048576) {
+        fala('A imagem tem ' + (arq.size / 1048576).toFixed(1) + ' MB. O limite é ' + LIMITE_MB + ' MB.', true);
+        return;
+      }
+
+      var reg = {
+        id: r.id || ('sec-' + chapa(titulo || texto.slice(0, 24)) + '-' + Date.now().toString(36)),
+        pagina: pagina(),
+        depois: v('depois'),
+        fundo: escolhida,
+        titulo: titulo,
+        texto: texto,
+        fonte: v('fonte'),
+        tamanho: v('tamanho'),
+        imagem: r.imagem || '',
+        imagemLargura: v('imagemLargura'),
+        imagemLugar: v('imagemLugar')
+      };
+      if (arq) {
+        reg.imagem = './' + PASTA_ENVIADAS + '/' + nomeLimpo(arq.name);
+        arquivos = arquivos.filter(function (a) { return a.caminho !== 'secao:' + reg.id; });
+        arquivos.push({ caminho: 'secao:' + reg.id, nome: reg.imagem.split('/').pop(), arquivo: arq, url: URL.createObjectURL(arq) });
+        reg.imagemLocal = arquivos[arquivos.length - 1].url;
+      }
+
+      /* substitui a versão anterior, se estamos ajustando */
+      secoesNovas = secoesNovas.filter(function (x) { return x.id !== reg.id; });
+      secoesNovas.push(reg);
+      if (conteudo.secoes) conteudo.secoes = conteudo.secoes.filter(function (x) { return x.id !== reg.id; });
+
+      desenhaSecao(reg);
+      fecha();
+      pinta();
+      fala(existente ? 'Subseção ajustada. Salve para publicar.' : 'Subseção criada. Salve para publicar.');
+    });
+  }
+
+  function escapa(t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function desenhaSecao(reg) {
+    if (!window.__montaSecao) return;
+    var antiga = document.querySelector('[data-secao-id="' + reg.id + '"]');
+    var previa = {};
+    Object.keys(reg).forEach(function (k) { previa[k] = reg[k]; });
+    if (reg.imagemLocal) previa.imagem = reg.imagemLocal;
+    var bloco = window.__montaSecao(previa);
+    if (!bloco) return;
+    if (antiga) antiga.parentNode.replaceChild(bloco, antiga);
+    else {
+      var ancora = window.__porCaminho ? window.__porCaminho(reg.depois) : null;
+      if (ancora && ancora.parentNode) ancora.parentNode.insertBefore(bloco, ancora.nextSibling);
+      else (document.querySelector('main') || document.body).appendChild(bloco);
+    }
+    poeAlcasDaSecao(bloco);
+    bloco.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  /* as duas alças de uma subseção: ajustar e tirar */
+  function poeAlcasDaSecao(bloco) {
+    if (bloco.querySelector('.me-alcas')) return;
+    var id = bloco.getAttribute('data-secao-id');
+    var caixa = document.createElement('div');
+    caixa.className = 'me-alcas me-fora';
+    caixa.appendChild(botao('Ajustar subseção', function () {
+      var reg = achaSecao(id);
+      if (reg) formularioDeSecao(reg);
+    }));
+    caixa.appendChild(botao('Excluir subseção', function () { tiraSecao(bloco, id); }, true));
+    if (getComputedStyle(bloco).position === 'static') bloco.classList.add('me-relativo');
+    bloco.appendChild(caixa);
+  }
+
+  function achaSecao(id) {
+    var daSessao = secoesNovas.filter(function (x) { return x.id === id; })[0];
+    if (daSessao) return daSessao;
+    return (conteudo.secoes || []).filter(function (x) { return x.id === id; })[0] || null;
+  }
+
+  function tiraSecao(bloco, id) {
+    var reg = achaSecao(id);
+    var nome = (reg && (reg.titulo || String(reg.texto || '').slice(0, 30))) || 'esta subseção';
+    if (!confirm('Tirar “' + nome.trim() + '” da página?\n\nSome do site quando você salvar.')) return;
+    /* Só quem nunca foi salvo some sem deixar recado. Uma subseção que já
+       está no ar precisa que a retirada vire uma mudança por salvar — senão
+       ela desaparece da tela e volta na próxima visita, porque nada foi
+       gravado. Quem apaga de fato é o guardaSecoes(), ao salvar. */
+    var nuncaFoiSalva = secoesNovas.some(function (x) { return x.id === id; });
+    secoesNovas = secoesNovas.filter(function (x) { return x.id !== id; });
+    if (!nuncaFoiSalva && secoesFora.indexOf(id) === -1) secoesFora.push(id);
+    arquivos = arquivos.filter(function (a) { return a.caminho !== 'secao:' + id; });
+    bloco.remove();
+    pinta();
+  }
+
+  /* toda subseção já na página ganha as alças assim que a edição liga */
+  function abreSecoes() {
+    var todas = document.querySelectorAll('.me-secao[data-secao-id]');
+    for (var i = 0; i < todas.length; i++) poeAlcasDaSecao(todas[i]);
+  }
+
   function nomeLimpo(nome) {
     var ponto = nome.lastIndexOf('.');
     var corpo = (ponto === -1 ? nome : nome.slice(0, ponto));
@@ -831,7 +1099,8 @@
   function temMudanca() {
     return Object.keys(mudancas).length > 0 || arquivos.length > 0 ||
            novos.length > 0 || removidos.length > 0 || apagados.length > 0 ||
-           chefNovos.length > 0 || chefFora.length > 0;
+           chefNovos.length > 0 || chefFora.length > 0 ||
+           secoesNovas.length > 0 || secoesFora.length > 0;
   }
 
   /* o que está por salvar, dito em português */
@@ -840,15 +1109,28 @@
     var t = Object.keys(mudancas).length;
     /* a fotografia de um prato novo já é contada no prato */
     var m = arquivos.filter(function (a) {
-      return a.caminho.indexOf('prato:') !== 0 && a.caminho.indexOf('chef:') !== 0;
+      return a.caminho.indexOf('prato:') !== 0 && a.caminho.indexOf('chef:') !== 0 &&
+             a.caminho.indexOf('secao:') !== 0;
     }).length;
     if (t) partes.push(t + (t === 1 ? ' texto' : ' textos'));
-    if (m) partes.push(m + (m === 1 ? ' arquivo' : ' arquivos'));
+    if (m) {
+      /* dizer 'arquivo' quando é um vídeo esconde o que está sendo trocado:
+         quem vai salvar precisa ler a palavra que corresponde ao que fez */
+      var vid = arquivos.filter(function (a) {
+        var el = document.querySelector('[data-me-midia="' + a.caminho.replace(/"/g, '') + '"]');
+        return el && el.tagName === 'VIDEO';
+      }).length;
+      var fot = m - vid;
+      if (vid) partes.push(vid + (vid === 1 ? ' vídeo trocado' : ' vídeos trocados'));
+      if (fot) partes.push(fot + (fot === 1 ? ' arquivo' : ' arquivos'));
+    }
     if (apagados.length) partes.push(apagados.length + (apagados.length === 1 ? ' vídeo excluído' : ' vídeos excluídos'));
     if (novos.length) partes.push(novos.length + (novos.length === 1 ? ' prato novo' : ' pratos novos'));
     if (removidos.length) partes.push(removidos.length + (removidos.length === 1 ? ' prato retirado' : ' pratos retirados'));
     if (chefNovos.length) partes.push(chefNovos.length + (chefNovos.length === 1 ? ' menu do chef novo' : ' menus do chef novos'));
     if (chefFora.length) partes.push(chefFora.length + (chefFora.length === 1 ? ' menu do chef retirado' : ' menus do chef retirados'));
+    if (secoesNovas.length) partes.push(secoesNovas.length + (secoesNovas.length === 1 ? ' subseção' : ' subseções'));
+    if (secoesFora.length) partes.push(secoesFora.length + (secoesFora.length === 1 ? ' subseção retirada' : ' subseções retiradas'));
     return partes;
   }
 
@@ -859,6 +1141,7 @@
       '<span class="me-barra__selo">Modo Edição</span>' +
       '<span class="me-barra__conta" id="me-conta">Clique em qualquer texto para escrever</span>' +
       '<span class="me-barra__acoes">' +
+        '<button class="me-bt" type="button" id="me-nova">+ Subseção</button>' +
         '<button class="me-bt" type="button" id="me-desfaz">Descartar</button>' +
         '<button class="me-bt me-bt--forte" type="button" id="me-salva">Salvar</button>' +
         '<button class="me-bt me-bt--fino" type="button" id="me-sai">Sair</button>' +
@@ -869,6 +1152,7 @@
     document.body.appendChild(aviso);
 
     barra.querySelector('#me-salva').addEventListener('click', salva);
+    barra.querySelector('#me-nova').addEventListener('click', function () { formularioDeSecao(null); });
     barra.querySelector('#me-desfaz').addEventListener('click', function () {
       if (!temMudanca()) return;
       if (!confirm('Descartar tudo o que você mudou nesta página?')) return;
@@ -919,16 +1203,19 @@
         enviados.forEach(function (a) {
           /* a fotografia de um prato novo não é um trecho da página: é um
              campo da receita, e viaja com ela */
-          if (a.caminho.indexOf('prato:') === 0 || a.caminho.indexOf('chef:') === 0) return;
+          if (a.caminho.indexOf('prato:') === 0 || a.caminho.indexOf('chef:') === 0 ||
+              a.caminho.indexOf('secao:') === 0) return;
           conteudo.pagina[chave][a.caminho] = { src: a.destino };
         });
         apagados.forEach(function (c) { conteudo.pagina[chave][c] = { removido: true }; });
         guardaCarta();
+        guardaSecoes();
         return gravaConteudo();
       })
       .then(function () {
         mudancas = {}; arquivos = []; novos = []; removidos = []; apagados = [];
         chefNovos = []; chefFora = [];
+        secoesNovas = []; secoesFora = [];
         document.querySelectorAll('.me-apagada').forEach(function (e) { e.classList.remove('me-apagada'); });
         document.querySelectorAll('.me-trocada').forEach(function (e) { e.classList.remove('me-trocada'); });
         pinta();
@@ -946,6 +1233,24 @@
   function guardaCarta() {
     anota(removidos, novos, 'pratosRemovidos', 'pratosNovos', ['fotoLocal'], 'foto');
     anota(chefFora, chefNovos, 'chefRemovidos', 'chefNovos', ['fotosLocais'], null);
+  }
+
+  /* As subseções ficam numa lista só, sem lápide: quem sai, sai da lista. Elas
+     não existem no HTML — nasceram aqui — e por isso não há um original ao
+     qual voltar, nem recado a deixar. */
+  function guardaSecoes() {
+    if (!secoesNovas.length && !secoesFora.length) return;
+    var lista = (conteudo.secoes || []).slice();
+    if (secoesFora.length) {
+      lista = lista.filter(function (x) { return secoesFora.indexOf(x.id) === -1; });
+    }
+    secoesNovas.forEach(function (reg) {
+      var limpo = {};
+      Object.keys(reg).forEach(function (k) { if (k !== 'imagemLocal') limpo[k] = reg[k]; });
+      lista = lista.filter(function (x) { return x.id !== limpo.id; });
+      lista.push(limpo);
+    });
+    conteudo.secoes = lista;
   }
 
   function anota(saem, entram, chaveFora, chaveDentro, descarta, campoFoto) {
@@ -980,7 +1285,8 @@
     var fila = arquivos.slice(), enviados = [];
     return fila.reduce(function (antes, a, i) {
       return antes.then(function () {
-        fala('Enviando arquivo ' + (i + 1) + ' de ' + fila.length + '…');
+        var eVideo = /.(mp4|webm|mov|m4v)$/i.test(a.nome);
+        fala('Enviando ' + (eVideo ? 'vídeo ' : 'arquivo ') + (i + 1) + ' de ' + fila.length + '…');
         var destino = PASTA_ENVIADAS + '/' + a.nome;
         return base64(a.arquivo).then(function (dados) {
           return api('/repos/' + repo + '/contents/' + destino, {
@@ -1141,6 +1447,23 @@
       '.me-campo--par span{ display:block; margin-bottom:7px; font-size:10px; letter-spacing:.2em;',
       '  text-transform:uppercase; opacity:.72; }',
       '.me-campo--par span em{ font-style:normal; opacity:.6; letter-spacing:.1em; }',
+      '.me-nota{ margin:8px 0 0; font-size:11px; line-height:1.6; opacity:.6; }',
+      /* ---- as cores da casa, como amostras ---- */
+      '.me-cores{ display:flex; flex-wrap:wrap; gap:8px; }',
+      '.me-cor{ position:relative; width:46px; height:46px; border-radius:3px; cursor:pointer;',
+      '  border:1px solid rgba(58,58,40,.22); padding:0; transition:transform .18s, box-shadow .18s; }',
+      '.me-cor:hover{ transform:translateY(-2px); }',
+      '.me-cor.is-posta{ box-shadow:0 0 0 2px #F2EDE0, 0 0 0 4px #3A3A28; }',
+      '.me-cor span{ position:absolute; left:50%; top:calc(100% + 5px); transform:translateX(-50%);',
+      '  font-size:9px; letter-spacing:.06em; color:#3A3A28; opacity:0; white-space:nowrap;',
+      '  pointer-events:none; transition:opacity .2s; }',
+      '.me-cor:hover span, .me-cor.is-posta span{ opacity:.7; }',
+      '.me-cores{ margin-bottom:18px; }',
+      /* ---- as alças de uma subseção ---- */
+      '.me-alcas{ position:absolute; z-index:62; top:14px; right:14px; display:flex; gap:7px;',
+      '  opacity:0; transition:opacity .25s; }',
+      '.me-editando .me-secao:hover > .me-alcas, .me-alcas:focus-within{ opacity:1; }',
+      '.me-editando .me-secao{ outline:1px dashed rgba(92,126,125,.35); outline-offset:-6px; }',
       '@media (max-width:620px){',
       '  .me-barra{ left:12px; right:12px; bottom:12px; transform:none; max-width:none; padding:12px 14px; gap:10px; }',
       '  .me-barra__conta{ order:3; width:100%; text-align:center; font-size:11px; }',
