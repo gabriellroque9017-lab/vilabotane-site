@@ -23,6 +23,10 @@
 
   if (!window.fetch || !window.localStorage) return;
 
+  /* na prévia a barra muda de cara e o rascunho é a fonte da verdade */
+  var naPrevia = /[?&]previa=1/.test(location.search);
+  var ARQUIVO_RASCUNHO = 'conteudo-previa.json';
+
   var querEditar = /[?&]editar=1/.test(location.search) ||
                    sessionStorage.getItem(LIGADO) === '1';
   if (!querEditar) { atalhoDeEntrada(); return; }
@@ -189,8 +193,10 @@
     });
   }
 
+  /* Na prévia, quem manda é o rascunho: continuar editando ali e salvar sobre
+     o conteúdo publicado apagaria tudo o que a prévia já tinha. */
   function baixaConteudo() {
-    return fetch('./conteudo.json', { cache: 'no-cache' })
+    return fetch(naPrevia ? './' + ARQUIVO_RASCUNHO : './conteudo.json', { cache: 'no-cache' })
       .then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (d) { conteudo = d || {}; })
       .catch(function () { conteudo = {}; });
@@ -1223,58 +1229,6 @@
     }
   }
 
-  /* ==================================================================
-     Prévia: ver antes de publicar
-     ================================================================== */
-  function salvaPrevia() {
-    if (!temMudanca()) { fala('Não há nada mudado para pôr na prévia.'); return; }
-    var bt = document.getElementById('me-previa');
-    bt.disabled = true; bt.textContent = 'Preparando…';
-    enviaArquivos()
-      .then(function (enviados) {
-        juntaTudo(enviados);
-        return gravaArquivo('conteudo-previa.json', 'Modo Edição: prévia de ' + resumo());
-      })
-      .then(function () {
-        var elo = location.origin + location.pathname + '?previa=1';
-        mostraElo(elo);
-      })
-      .catch(function (e) { fala('Não deu para preparar a prévia: ' + e.message, true); })
-      .then(function () { bt.disabled = false; bt.textContent = 'Prévia'; });
-  }
-
-  function mostraElo(elo) {
-    var fundo = document.createElement('div');
-    fundo.className = 'me-porta me-fora';
-    fundo.innerHTML =
-      '<div class="me-porta__carta">' +
-        '<button class="me-porta__x" type="button" aria-label="Fechar">✕</button>' +
-        '<p class="me-porta__olho">Prévia</p>' +
-        '<h2>Pronta para olhar</h2>' +
-        '<p class="me-nota">Abra este endereço no celular. Ele mostra as suas mudanças sem ' +
-          'publicá-las — quem entrar pelo endereço normal continua vendo o site como está no ar. ' +
-          'Fica pronto em cerca de um minuto.</p>' +
-        '<input class="me-elo" readonly value="' + escapa(elo) + '">' +
-        '<div class="me-porta__pe">' +
-          '<button class="me-bt me-bt--forte" type="button" data-copia>Copiar o endereço</button>' +
-          '<a class="me-bt me-bt--fino" target="_blank" rel="noopener">Abrir agora</a>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(fundo);
-    fundo.querySelector('.me-bt--fino').setAttribute('href', elo);
-    function fecha() { fundo.remove(); }
-    fundo.querySelector('.me-porta__x').addEventListener('click', fecha);
-    fundo.addEventListener('click', function (e) { if (e.target === fundo) fecha(); });
-    var campo = fundo.querySelector('.me-elo');
-    campo.select();
-    fundo.querySelector('[data-copia]').addEventListener('click', function (e) {
-      campo.select();
-      var ok = false;
-      try { ok = document.execCommand('copy'); } catch (x) {}
-      e.target.textContent = ok ? 'Copiado' : 'Copie do campo acima';
-    });
-  }
-
   function nomeLimpo(nome) {
     var ponto = nome.lastIndexOf('.');
     var corpo = (ponto === -1 ? nome : nome.slice(0, ponto));
@@ -1325,18 +1279,26 @@
     return partes;
   }
 
+  /* Salvar não publica: leva para a prévia, onde se vê o resultado antes de
+     decidir. Publicar é um segundo gesto, deliberado, e mora só ali. Por isso
+     a barra tem duas caras — a de quem está mexendo e a de quem está olhando
+     o que fez. */
   function montaBarra() {
     barra = document.createElement('div');
-    barra.className = 'me-barra me-fora';
+    barra.className = 'me-barra me-fora' + (naPrevia ? ' is-previa' : '');
     barra.innerHTML =
-      '<span class="me-barra__selo">Modo Edição</span>' +
+      '<span class="me-barra__selo">' + (naPrevia ? 'Prévia' : 'Modo Edição') + '</span>' +
       '<span class="me-barra__conta" id="me-conta">Clique em qualquer texto para escrever</span>' +
       '<span class="me-barra__acoes">' +
         '<button class="me-bt" type="button" id="me-nova">+ Subseção</button>' +
-        '<button class="me-bt" type="button" id="me-previa">Prévia</button>' +
         '<button class="me-bt" type="button" id="me-historico">Histórico</button>' +
-        '<button class="me-bt" type="button" id="me-desfaz">Descartar</button>' +
-        '<button class="me-bt me-bt--forte" type="button" id="me-salva">Salvar</button>' +
+        (naPrevia
+          ? '<button class="me-bt" type="button" id="me-copia">Copiar endereço</button>' +
+            '<button class="me-bt" type="button" id="me-desfaz">Descartar</button>' +
+            '<button class="me-bt" type="button" id="me-salva">Guardar mudanças</button>' +
+            '<button class="me-bt me-bt--forte" type="button" id="me-publica">Salvar em definitivo</button>'
+          : '<button class="me-bt" type="button" id="me-desfaz">Descartar</button>' +
+            '<button class="me-bt me-bt--forte" type="button" id="me-salva">Salvar</button>') +
         '<button class="me-bt me-bt--fino" type="button" id="me-sai">Sair</button>' +
       '</span>';
     document.body.appendChild(barra);
@@ -1346,19 +1308,103 @@
 
     barra.querySelector('#me-salva').addEventListener('click', salva);
     barra.querySelector('#me-nova').addEventListener('click', function () { formularioDeSecao(null); });
-    barra.querySelector('#me-previa').addEventListener('click', salvaPrevia);
     barra.querySelector('#me-historico').addEventListener('click', janelaDeHistorico);
-    barra.querySelector('#me-desfaz').addEventListener('click', function () {
-      if (!temMudanca()) return;
-      if (!confirm('Descartar tudo o que você mudou nesta página?')) return;
-      location.reload();
-    });
+    if (naPrevia) {
+      barra.querySelector('#me-publica').addEventListener('click', publicaDefinitivo);
+      barra.querySelector('#me-copia').addEventListener('click', function (e) {
+        copiaTexto(location.href);
+        e.target.textContent = 'Copiado';
+        setTimeout(function () { e.target.textContent = 'Copiar endereço'; }, 2200);
+      });
+    }
+    barra.querySelector('#me-desfaz').addEventListener('click', descarta);
     barra.querySelector('#me-sai').addEventListener('click', function () {
-      if (temMudanca() && !confirm('Você tem mudanças não salvas. Sair mesmo assim?')) return;
+      if (temMudanca() && !confirm('Você tem mudanças não guardadas. Sair mesmo assim?')) return;
       sessionStorage.removeItem(LIGADO);
       location.href = location.pathname;
     });
     pinta();
+  }
+
+  function descarta() {
+    if (naPrevia) {
+      if (!confirm('Descartar tudo o que está nesta prévia?\n\nO site volta a ser exatamente o que está no ar agora.')) return;
+      var bt = document.getElementById('me-desfaz');
+      bt.disabled = true; bt.textContent = 'Descartando…';
+      api('/repos/' + repo + '/contents/conteudo.json?ref=' + ramo)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (publicado) {
+          if (!publicado) throw new Error('não achei o conteúdo publicado');
+          return api('/repos/' + repo + '/contents/conteudo-previa.json?ref=' + ramo)
+            .then(function (r) { return r.ok ? r.json() : {}; })
+            .then(function (rascunho) {
+              return api('/repos/' + repo + '/contents/conteudo-previa.json', {
+                method: 'PUT',
+                body: JSON.stringify({
+                  message: 'Modo Edição: prévia descartada',
+                  content: publicado.content.replace(/\n/g, ''),
+                  sha: rascunho.sha, branch: ramo
+                })
+              });
+            });
+        })
+        .then(function () {
+          fala('Prévia descartada. Voltando ao site como está no ar.');
+          setTimeout(function () { location.href = location.pathname + '?editar=1'; }, 1800);
+        })
+        .catch(function (e) {
+          bt.disabled = false; bt.textContent = 'Descartar';
+          fala('Não deu para descartar: ' + e.message, true);
+        });
+      return;
+    }
+    if (!temMudanca()) return;
+    if (!confirm('Descartar tudo o que você mudou nesta página?')) return;
+    location.reload();
+  }
+
+  function copiaTexto(t) {
+    var campo = document.createElement('textarea');
+    campo.value = t;
+    campo.style.cssText = 'position:fixed;left:-9999px;top:0';
+    document.body.appendChild(campo);
+    campo.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    campo.remove();
+  }
+
+  /* O segundo gesto: o que está na prévia passa a ser o site. Copia arquivo
+     para arquivo, sem recalcular nada — o que ela viu é exatamente o que vai
+     ao ar. */
+  function publicaDefinitivo() {
+    if (!confirm('Publicar esta versão?\n\nO site passa a mostrar o que você está vendo agora, para todo mundo.')) return;
+    var bt = document.getElementById('me-publica');
+    bt.disabled = true; bt.textContent = 'Publicando…';
+    api('/repos/' + repo + '/contents/conteudo-previa.json?ref=' + ramo)
+      .then(function (r) { if (!r.ok) throw new Error('não achei a prévia'); return r.json(); })
+      .then(function (rascunho) {
+        return api('/repos/' + repo + '/contents/conteudo.json?ref=' + ramo)
+          .then(function (r) { return r.ok ? r.json() : {}; })
+          .then(function (atual) {
+            return api('/repos/' + repo + '/contents/conteudo.json', {
+              method: 'PUT',
+              body: JSON.stringify({
+                message: 'Modo Edição: versão publicada',
+                content: rascunho.content.replace(/\n/g, ''),
+                sha: atual.sha, branch: ramo
+              })
+            });
+          });
+      })
+      .then(function (r) {
+        if (!r.ok) return r.json().then(function (j) { throw new Error(j.message || 'erro'); });
+        fala('Publicado. O site mostra a versão nova em cerca de um minuto.');
+        setTimeout(function () { location.href = location.pathname + '?editar=1'; }, 2600);
+      })
+      .catch(function (e) {
+        bt.disabled = false; bt.textContent = 'Salvar em definitivo';
+        fala('Não deu para publicar: ' + e.message, true);
+      });
   }
 
   function pinta() {
@@ -1384,21 +1430,22 @@
   /* ==================================================================
      salvar — os arquivos primeiro, depois o conteudo.json
      ================================================================== */
+  /* Salvar guarda o trabalho e leva para a prévia — não publica. Quem publica
+     é o segundo botão, do outro lado. Assim ninguém troca a foto errada e
+     descobre pelo site no ar. */
   function salva() {
-    if (!temMudanca()) { fala('Não há nada mudado para salvar.'); return; }
+    if (!temMudanca()) {
+      fala(naPrevia ? 'Não há nada novo para guardar.' : 'Não há nada mudado para salvar.');
+      return;
+    }
     var bt = document.getElementById('me-salva');
-    bt.disabled = true; bt.textContent = 'Salvando…';
+    var rotulo = bt.textContent;
+    bt.disabled = true; bt.textContent = 'Guardando…';
 
     enviaArquivos()
       .then(function (enviados) {
         juntaTudo(enviados);
-        return gravaArquivo('conteudo.json', 'Modo Edição: ' + resumo());
-      })
-      .then(function () {
-        /* o rascunho acompanha o publicado: uma prévia mais velha que o site
-           mostraria o passado e faria a pessoa duvidar do que salvou */
-        return gravaArquivo('conteudo-previa.json', 'Modo Edição: prévia acompanha o publicado')
-          .catch(function () { /* a prévia é conveniência: não derruba o salvar */ });
+        return gravaArquivo('conteudo-previa.json', 'Modo Edição: ' + resumo());
       })
       .then(function () {
         mudancas = {}; arquivos = []; novos = []; removidos = []; apagados = [];
@@ -1407,12 +1454,20 @@
         document.querySelectorAll('.me-apagada').forEach(function (e) { e.classList.remove('me-apagada'); });
         document.querySelectorAll('.me-trocada').forEach(function (e) { e.classList.remove('me-trocada'); });
         pinta();
-        fala('Salvo. O site publica a mudança em cerca de um minuto.');
+        if (naPrevia) {
+          fala('Guardado. Recarregando a prévia com a mudança…');
+          setTimeout(function () { location.reload(); }, 1600);
+        } else {
+          fala('Guardado. Levando você para ver como ficou…');
+          setTimeout(function () {
+            location.href = location.pathname + '?editar=1&previa=1';
+          }, 1600);
+        }
       })
       .catch(function (e) {
-        fala('Não deu para salvar: ' + e.message, true);
-      })
-      .then(function () { bt.disabled = false; bt.textContent = 'Salvar'; });
+        fala('Não deu para guardar: ' + e.message, true);
+        bt.disabled = false; bt.textContent = rotulo;
+      });
   }
 
   /* Tudo o que foi mexido nesta sessão entra no objeto do conteúdo. É o mesmo
@@ -1596,6 +1651,10 @@
       '.me-barra__selo{ font-size:10px; letter-spacing:.28em; text-transform:uppercase; opacity:.62; }',
       '.me-barra__conta{ opacity:.9; }',
       '.me-barra.is-suja .me-barra__conta{ color:#C9D18A; }',
+      /* a barra da prévia tem outra cara: é a hora de decidir, não de mexer */
+      '.me-barra.is-previa{ background:rgba(140,59,46,.96); }',
+      '.me-barra.is-previa .me-barra__selo{ opacity:1; color:#F3DDD8; }',
+      '.me-barra.is-previa .me-bt--forte{ background:#EDE7DA; color:#8C3B2E; border-color:#EDE7DA; }',
       '.me-barra__acoes{ display:flex; gap:8px; }',
       '.me-bt{ font:400 11px/1 "Jost","Helvetica Neue",Arial,sans-serif; letter-spacing:.2em; text-transform:uppercase;',
       '  padding:11px 18px; border-radius:2px; border:1px solid rgba(237,231,218,.34); background:none;',
