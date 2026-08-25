@@ -501,7 +501,11 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     top:clamp(84px,12svh,120px); transform:none;
   }
   .scrub__atos .ato{ position:relative; top:auto; transform:none; }
-  .scrub__atos .ato > *{ text-shadow:0 1px 3px rgba(12,10,8,.8), 0 0 18px rgba(12,10,8,.55); }
+  /* O vídeo dos rótulos reais é mais claro que o anterior, e a linha de apoio
+     corre por cima de folhas ao sol. O halo é fundo local do glifo: escurece
+     ao redor da letra, não a fotografia — o quadro segue na cor dele. */
+  .scrub__atos .ato > *{ text-shadow:0 1px 3px rgba(12,10,8,.86), 0 0 22px rgba(12,10,8,.72); }
+  .scrub__atos .ato__apoio{ text-shadow:0 1px 3px rgba(12,10,8,.9), 0 0 16px rgba(12,10,8,.85); }
   .ato h2{ font-size:clamp(26px,7vw,38px); margin-top:12px; }
   .ato__apoio{ margin-top:14px; font-size:15px; max-width:26ch; }
   .scrub__atos--dir{
@@ -1605,8 +1609,8 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       <video class="scrub__fonte" id="scrub-video" muted loop autoplay playsinline preload="none"
              poster="./img/tie-poster.jpg" tabindex="-1" aria-hidden="true"></video>
 
-      <canvas class="scrub__tela" id="scrub-tela" width="1916" height="1080" aria-hidden="true"></canvas>
-      <img class="scrub__poster" src="./img/tie-poster.jpg" alt="Garrafa do Tiê no vinhedo, ao sol da tarde" width="1916" height="1080" decoding="async">
+      <canvas class="scrub__tela" id="scrub-tela" width="1280" height="720" aria-hidden="true"></canvas>
+      <img class="scrub__poster" src="./img/tie-poster.jpg" alt="A garrafa do Tiê, com o rótulo do tiê-sangue, sobre um toco na vinha ao fim da tarde" width="1280" height="720" decoding="async">
 
       <div class="scrub__grao" aria-hidden="true"></div>
       <span class="scrub__fio" aria-hidden="true"></span>
@@ -3088,24 +3092,11 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   gsap.registerPlugin(ScrollTrigger);
   var ctx = tela.getContext('2d', { alpha: false });
 
-  /* a marca d'água do canto inferior direito é apagada quadro a quadro. Ela é
-     larga e baixa ("Happy Horse 1.1"), então o que cobre é um retângulo com as
-     bordas desmanchadas — e não um disco. Sob blend screen, preto some.
-     O retângulo declarado é o que fica OPACO; o desmanche sobra para fora dele,
-     então mexer no feather nunca descobre a marca. */
-  var MARCA = { x0: 0.872, y0: 0.928, x1: 1.004, y1: 0.978 };
+  /* O vídeo dos rótulos reais não traz marca do gerador: o quadro vai inteiro
+     para a tela. A versão anterior apagava um retângulo no canto inferior
+     direito, e mantê-lo aqui seria escurecer imagem legítima. */
   function pinta() {
     ctx.drawImage(video, 0, 0, tela.width, tela.height);
-    var W = tela.width, H = tela.height;
-    var a = MARCA.x0 * W, b = MARCA.y0 * H, c = MARCA.x1 * W, d = MARCA.y1 * H;
-    var f = Math.max(6, W * 0.012);
-    ctx.save();
-    if ('filter' in ctx) ctx.filter = 'blur(' + f + 'px)';
-    ctx.fillStyle = '#000';
-    ctx.fillRect(a - f, b - f, (c - a) + 2 * f, (d - b) + 2 * f);
-    ctx.restore();
-    ctx.fillStyle = '#000';
-    ctx.fillRect(a, b, c - a, d - b);
   }
 
   function medidor(p, texto) {
