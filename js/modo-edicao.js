@@ -96,6 +96,9 @@
       'X-GitHub-Api-Version': '2022-11-28'
     }, opcoes.headers || {});
     marcaUso();
+    /* a API responde de cache e já devolveu versão anterior a uma gravação
+       feita segundos antes: aqui nenhuma leitura pode vir de prateleira */
+    opcoes.cache = 'no-store';
     return fetch('https://api.github.com' + caminho, opcoes);
   }
 
@@ -204,7 +207,14 @@
   /* ==================================================================
      ligar
      ================================================================== */
+  /* Na prévia não se edita: olha-se. A página fica exatamente como ficará no
+     ar — sem contorno tracejado, sem cursor de texto, sem alça de foto — e a
+     única coisa a mais são os dois botões da decisão. Ligar o editor aqui
+     seria mostrar a página vestida de canteiro de obras justamente na hora
+     de julgar como ela ficou. */
   function liga() {
+    if (naPrevia) return baixaConteudo().then(montaBarraDaPrevia);
+
     document.documentElement.classList.add('me-editando');
     try { document.dispatchEvent(new CustomEvent('modo-edicao:ligado')); } catch (e) {}
     return baixaConteudo().then(function () {
@@ -223,9 +233,66 @@
     });
   }
 
-  /* Na prévia, quem manda é o rascunho: continuar editando ali e salvar sobre
-     o conteúdo publicado apagaria tudo o que a prévia já tinha. */
+  /* ==================================================================
+     A prévia: duas escolhas e nada mais
+     ================================================================== */
+  function montaBarraDaPrevia() {
+    barra = document.createElement('div');
+    barra.className = 'me-barra me-barra--decisao me-fora';
+    barra.innerHTML =
+      '<span class="me-barra__conta">É assim que a página vai ficar.</span>' +
+      '<span class="me-barra__acoes">' +
+        '<button class="me-bt me-bt--fino" type="button" id="me-volta">Não gostei, voltar</button>' +
+        '<button class="me-bt me-bt--forte" type="button" id="me-publica">Confirmar e publicar</button>' +
+      '</span>';
+    document.body.appendChild(barra);
+    aviso = document.createElement('div');
+    aviso.className = 'me-fala me-fora';
+    document.body.appendChild(aviso);
+
+    barra.querySelector('#me-publica').addEventListener('click', publicaDefinitivo);
+    barra.querySelector('#me-volta').addEventListener('click', function () {
+      location.href = location.pathname + '?editar=1';
+    });
+  }
+
+  /* ------------------------------------------------------------------
+     O rascunho viaja pela sessão, não pelo site.
+
+     Gravar no repositório não muda o site na mesma hora: o GitHub leva cerca
+     de um minuto para republicar. A prévia, aberta um segundo depois de
+     salvar, buscava o arquivo servido e recebia a versão anterior — mostrava
+     o passado e dizia que era o futuro.
+
+     Por isso o que foi salvo fica também guardado na sessão do navegador e é
+     ele que a prévia usa. Instantâneo e exato. Quem abrir o endereço noutro
+     aparelho não tem essa cópia e lê o arquivo servido — que a essa altura já
+     terá sido republicado.
+     ------------------------------------------------------------------ */
+  var CHAVE_RASCUNHO = 'modo-edicao:rascunho';
+
+  function guardaNaSessao() {
+    try { sessionStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(conteudo)); } catch (e) {}
+  }
+
+  function pegaDaSessao() {
+    try {
+      var t = sessionStorage.getItem(CHAVE_RASCUNHO);
+      return t ? JSON.parse(t) : null;
+    } catch (e) { return null; }
+  }
+
   function baixaConteudo() {
+    if (naPrevia) {
+      var daSessao = pegaDaSessao();
+      if (daSessao) {
+        conteudo = daSessao;
+        /* a página foi desenhada com o arquivo servido, que pode estar velho:
+           reaplica o que acabou de ser salvo, por cima */
+        if (window.__aplicaConteudo) window.__aplicaConteudo(conteudo);
+        return Promise.resolve();
+      }
+    }
     return fetch(naPrevia ? './' + ARQUIVO_RASCUNHO : './conteudo.json', { cache: 'no-cache' })
       .then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (d) { conteudo = d || {}; })
@@ -1416,6 +1483,7 @@
             });
         })
         .then(function () {
+          try { sessionStorage.removeItem(CHAVE_RASCUNHO); } catch (e) {}
           fala('Prévia descartada. Voltando ao site como está no ar.');
           setTimeout(function () { location.href = location.pathname + '?editar=1'; }, 1800);
         })
@@ -1443,33 +1511,29 @@
   /* O segundo gesto: o que está na prévia passa a ser o site. Copia arquivo
      para arquivo, sem recalcular nada — o que ela viu é exatamente o que vai
      ao ar. */
+  /* Publica o que está na tela, e não o que a API disser que está no arquivo.
+
+     Antes isto lia o conteudo-previa.json de volta pela API e copiava. Numa
+     das vezes a leitura veio velha — a API respondeu com a versão anterior à
+     gravação, feita segundos antes — e o commit "versão publicada" saiu com o
+     conteúdo antigo: o site não mudou, embora a prévia mostrasse a mudança.
+
+     O objeto `conteudo` que está aqui na memória é exatamente o que desenhou
+     esta página. Publicar a partir dele fecha a brecha e torna a promessa
+     literal: o que ela viu é o que vai ao ar. */
   function publicaDefinitivo() {
     if (!confirm('Publicar esta versão?\n\nO site passa a mostrar o que você está vendo agora, para todo mundo.')) return;
     var bt = document.getElementById('me-publica');
+    var rotulo = bt.textContent;
     bt.disabled = true; bt.textContent = 'Publicando…';
-    api('/repos/' + repo + '/contents/conteudo-previa.json?ref=' + ramo)
-      .then(function (r) { if (!r.ok) throw new Error('não achei a prévia'); return r.json(); })
-      .then(function (rascunho) {
-        return api('/repos/' + repo + '/contents/conteudo.json?ref=' + ramo)
-          .then(function (r) { return r.ok ? r.json() : {}; })
-          .then(function (atual) {
-            return api('/repos/' + repo + '/contents/conteudo.json', {
-              method: 'PUT',
-              body: JSON.stringify({
-                message: 'Modo Edição: versão publicada',
-                content: rascunho.content.replace(/\n/g, ''),
-                sha: atual.sha, branch: ramo
-              })
-            });
-          });
-      })
-      .then(function (r) {
-        if (!r.ok) return r.json().then(function (j) { throw new Error(j.message || 'erro'); });
+    gravaArquivo('conteudo.json', 'Modo Edição: versão publicada')
+      .then(function () {
+        try { sessionStorage.removeItem(CHAVE_RASCUNHO); } catch (e) {}
         fala('Publicado. O site mostra a versão nova em cerca de um minuto.');
         setTimeout(function () { location.href = location.pathname + '?editar=1'; }, 2600);
       })
       .catch(function (e) {
-        bt.disabled = false; bt.textContent = 'Salvar em definitivo';
+        bt.disabled = false; bt.textContent = rotulo;
         fala('Não deu para publicar: ' + e.message, true);
       });
   }
@@ -1512,6 +1576,7 @@
     enviaArquivos()
       .then(function (enviados) {
         juntaTudo(enviados);
+        guardaNaSessao();
         return gravaArquivo('conteudo-previa.json', 'Modo Edição: ' + resumo());
       })
       .then(function () {
@@ -1722,6 +1787,11 @@
       '.me-barra.is-previa{ background:rgba(140,59,46,.96); }',
       '.me-barra.is-previa .me-barra__selo{ opacity:1; color:#F3DDD8; }',
       '.me-barra.is-previa .me-bt--forte{ background:#EDE7DA; color:#8C3B2E; border-color:#EDE7DA; }',
+      /* a barra da decisão: só a pergunta e as duas respostas */
+      '.me-barra--decisao{ background:rgba(18,16,14,.94); gap:22px; padding:14px 16px 14px 22px; }',
+      '.me-barra--decisao .me-barra__conta{ opacity:.92; }',
+      '.me-barra--decisao .me-bt--forte{ background:#EDE7DA; color:#12100E; border-color:#EDE7DA; }',
+      '.me-barra--decisao .me-bt--fino{ border-color:rgba(237,231,218,.3); opacity:.85; }',
       '.me-barra__acoes{ display:flex; gap:8px; }',
       '.me-bt{ font:400 11px/1 "Jost","Helvetica Neue",Arial,sans-serif; letter-spacing:.2em; text-transform:uppercase;',
       '  padding:11px 18px; border-radius:2px; border:1px solid rgba(237,231,218,.34); background:none;',
