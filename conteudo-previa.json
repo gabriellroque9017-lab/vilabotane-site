@@ -24,5 +24,10 @@
     "tiepreto": {
       "foto": "./img/garrafa-tiepreto.webp"
     }
+  },
+  "pagina": {
+    "index.html": {
+      "#vinhos>div.vinhos__cabeca>div>h2.secao__titulo": "Dois rótulos, uma safra"
+    }
   }
 }
