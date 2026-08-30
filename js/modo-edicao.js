@@ -373,19 +373,65 @@
     var caminho = window.__caminhoDe ? window.__caminhoDe(el) : '';
     if (!enderecavel(el, caminho)) return;
     el.setAttribute('data-me', caminho);
-    el.setAttribute('contenteditable', 'plaintext-only');
-    if (el.contentEditable !== 'plaintext-only') el.setAttribute('contenteditable', 'true');
+
+    /* Aqui vai `true`, e não `plaintext-only`, por uma razão medida.
+
+       O navegador aplica `white-space: pre-wrap` a todo campo de texto
+       simples, para guardar o que a pessoa digitar. O efeito colateral é que
+       a indentação do código-fonte, que o HTML normalmente engole, passa a
+       valer: um parágrafo escrito em cinco linhas no arquivo aparece em cinco
+       linhas na tela. Quem edita via um texto que não é o que o site mostra —
+       o mesmo parágrafo media 103px fora da edição e 171px dentro.
+
+       E não há como desfazer por CSS: a regra vem da folha do próprio
+       navegador, com precedência acima de qualquer estilo nosso, inclusive
+       com !important. Testado.
+
+       Com `true` o texto fica idêntico ao publicado. O que se perde é a
+       recusa automática de colagem formatada — e isso já estava coberto:
+       a colagem é interceptada abaixo e entra como texto puro, o mesmo vale
+       para o arrasto, e a peneira do conteudo.js confere de novo na hora de
+       aplicar. */
+    /* Falta ainda desarmar duas regras que a folha do navegador acrescenta a
+       todo campo editável: `overflow-wrap: break-word`, que parte palavras no
+       meio — o título "Casamentos" virava "Casame / ntos" —, e
+       `-webkit-line-break: after-white-space`. Ao contrário do white-space do
+       plaintext-only, essas duas são declarações comuns, e o estilo do próprio
+       elemento as vence. Guardamos nele o valor que a página já calculava. */
+    var comoQuebra = getComputedStyle(el);
+    el.style.overflowWrap = comoQuebra.overflowWrap || 'normal';
+    el.style.setProperty('-webkit-line-break',
+      comoQuebra.getPropertyValue('-webkit-line-break') || 'auto');
+
+    el.setAttribute('contenteditable', 'true');
     el.setAttribute('spellcheck', 'true');
     var comoEstava = el.innerHTML;
 
+    /* Num campo comum o navegador aceita Ctrl+B, Ctrl+I e Ctrl+U e injeta
+       negrito, itálico ou sublinhado. Aqui isso é acidente, não recurso: o
+       texto do site tem estilo próprio e um Ctrl+B por engano estragaria a
+       página. Os três atalhos ficam sem efeito. */
+    var ATALHOS_DE_ESTILO = { b: 1, i: 1, u: 1 };
     el.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey &&
+          ATALHOS_DE_ESTILO[String(e.key).toLowerCase()]) { e.preventDefault(); return; }
       if (e.key === 'Enter') { e.preventDefault(); document.execCommand('insertLineBreak'); }
       if (e.key === 'Escape') { el.innerHTML = comoEstava; delete mudancas[caminho]; el.blur(); pinta(); }
       e.stopPropagation();                      /* o site tem atalhos de teclado próprios */
     });
+    /* Colar e arrastar são as duas portas por onde marcação formatada entraria.
+       As duas entregam só o texto: o que vier do Word, de outra página ou de
+       um e-mail chega limpo, sem cor, sem fonte e sem tag. */
     el.addEventListener('paste', function (e) {
       e.preventDefault();
-      var t = (e.clipboardData || window.clipboardData).getData('text');
+      var t = (e.clipboardData || window.clipboardData).getData('text/plain') || '';
+      document.execCommand('insertText', false, t);
+    });
+    el.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var dados = e.dataTransfer;
+      var t = dados ? (dados.getData('text/plain') || '') : '';
+      if (!t) return;
       document.execCommand('insertText', false, t);
     });
     el.addEventListener('input', function () {
