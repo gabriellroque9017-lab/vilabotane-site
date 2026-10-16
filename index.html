@@ -1587,6 +1587,16 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
      empurra o vizinho em vez de cobri-lo. */
   .rodape__autor{ display:inline-block; padding-block:14px; }
   .filtros button{ padding-block:11px; }
+
+  /* Botões soltos que paravam a 42px, dois a menos que o mínimo. Não têm
+     vizinho colado, então crescer não atrapalha ninguém.
+
+     Aqui vai min-height e não padding: o .cabeca__hora já tem padding:10px 20px,
+     e escrever padding-block SUBSTITUI esse valor em vez de somar — na primeira
+     tentativa o botão caiu de 42px para 26px. min-height não depende do que
+     já existe. */
+  .cabeca__hora{ min-height:44px; }
+  .rodape__rede .elo{ display:inline-flex; align-items:center; min-height:44px; }
 }
 </style>
 </head>
