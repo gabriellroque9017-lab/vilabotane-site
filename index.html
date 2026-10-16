@@ -1092,7 +1092,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   display:grid; justify-items:center; gap:10px; text-align:center;
 }
 .pix__x{
-  position:absolute; top:10px; right:10px; width:40px; aspect-ratio:1;
+  position:absolute; top:10px; right:10px; width:44px; aspect-ratio:1;
   border:0; background:none; color:rgba(18,16,14,.5); font-size:15px; cursor:pointer;
   transition:color .4s var(--ease), transform .4s var(--ease);
 }
@@ -1121,7 +1121,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .pix__campo input{
   font-family:var(--serifa); font-size:17px; color:var(--tinta);
   background:none; border:0; border-bottom:1px solid rgba(18,16,14,.3);
-  padding:8px 2px; text-align:center; width:100%;
+  /* 13px em cima e embaixo levam a caixa a 44px de altura, o minimo de
+     alvo de toque. Com 8px ficava em 38px. */
+  padding:13px 2px; text-align:center; width:100%;
 }
 .pix__campo input::placeholder{ color:rgba(18,16,14,.35); font-size:15px; }
 .pix__campo input:focus{ outline:none; border-bottom-color:var(--mata); }
@@ -1136,19 +1138,82 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x:focus-visible{
   color:var(--marfim); background:none; transform:rotate(90deg);
 }
+/* A ficha do vinho no celular.
+
+   No computador a ficha é uma arte só: a foto ocupa a chapa inteira e o texto
+   fica posicionado por cima, na faixa clara da direita, dimensionado em `cqw`
+   — proporcional à largura da chapa. Funciona porque lá a chapa tem mais de
+   mil pixels.
+
+   Num telefone em pé a chapa cai para 370px, e `1cqw` vale 3,7px. Medido num
+   iPhone de 390px, antes desta correção:
+
+      título          8,7px
+      parágrafo       4,9px
+      rótulos         3,6px
+      botão Reservar  45x17px
+
+   Esta media query já existia e escrevia os valores certos. Nunca teve
+   efeito: as regras da variante --denso vinham com especificidade (0,3,1)
+   contra (0,2,1) daqui, e venciam em qualquer largura. Prefixar tudo com
+   .ficha-vinho--uva empata a conta, e como este bloco vem depois no arquivo,
+   agora ele vence.
+
+   No celular a arte deixa de ser moldura e vira o topo do cartão; o texto
+   desce para baixo dela, em pixels de verdade. */
 @media (max-width:760px){
-  .ficha-vinho__prosa-uva{ position:static; width:auto; transform:none; padding:22px 18px 26px; gap:14px; }
-  .ficha-vinho--uva .ficha-vinho__chapa{ aspect-ratio:auto; }
-  .ficha-vinho__prosa-uva h3{ font-size:22px; white-space:normal; }
-  .ficha-vinho__prosa-uva p{ font-size:17px; }
-  .ficha-vinho__perfil{ font-size:12px; }
-  .ficha-vinho__nota{ font-size:15px; }
-  .ficha-vinho__botao-uva,
-  .ficha-vinho__compra-uva{ justify-self:center; }
-  .ficha-vinho__prosa-uva .rotulo,
-  .ficha-vinho__botao-uva{ font-size:11px; }
-  .ficha-vinho__compra-uva .preco{ font-size:28px; }
-  .ficha-vinho__botao-uva{ padding:13px 24px; }
+  .ficha-vinho--uva .ficha-vinho__chapa{
+    width:100%; aspect-ratio:auto;
+    max-height:92svh; overflow:auto; background:#efe9db;
+  }
+  .ficha-vinho--uva .ficha-vinho__chapa img{
+    position:static; width:100%; height:auto;
+    /* a arte foi desenhada com a metade direita vazia, para o texto ficar por
+       cima dela no computador. No celular o texto desceu, e essa metade
+       viraria faixa morta: enquadramos a parte de cima da imagem, onde
+       estao a garrafa e os cachos. */
+    aspect-ratio:5/4; object-fit:cover; object-position:left center;
+  }
+  /* a aquarela e a zona que a dispara respondem ao mouse, que o toque não tem */
+  .ficha-vinho--uva .uva-aquarela,
+  .ficha-vinho--uva .uva-zona{ display:none; }
+
+  .ficha-vinho--uva .ficha-vinho__prosa-uva{
+    position:static; inset:auto; width:auto; transform:none;
+    padding:24px 20px 30px; gap:16px; justify-items:start;
+  }
+  .ficha-vinho--uva .ficha-vinho__prosa-uva h3{ font-size:24px; white-space:normal; line-height:1.14; }
+  .ficha-vinho--uva .ficha-vinho__prosa-uva p{ font-size:16px; line-height:1.62; }
+  .ficha-vinho--uva .ficha-vinho__perfil{ font-size:12px; }
+  .ficha-vinho--uva .ficha-vinho__nota{ font-size:15px; line-height:1.6; }
+  .ficha-vinho--uva .ficha-vinho__prosa-uva .rotulo{ font-size:11px; }
+
+  .ficha-vinho--uva .ficha-vinho__tecnica{ grid-template-columns:1fr 1fr; gap:16px 22px; }
+  .ficha-vinho--uva .ficha-vinho__tecnica dt{ font-size:10px; margin-bottom:5px; }
+  .ficha-vinho--uva .ficha-vinho__tecnica dd{ font-size:17px; line-height:1.3; }
+
+  .ficha-vinho--uva .ficha-vinho__compra-uva{ justify-self:center; gap:12px; }
+  .ficha-vinho--uva .ficha-vinho__compra-uva .preco{ font-size:30px; }
+  .ficha-vinho--uva .ficha-vinho__compra-uva .rotulo{ font-size:11px; }
+
+  /* 48px de altura: acima dos 44px que Apple e Google pedem como mínimo
+     para alvo de toque. Antes tinha 17px. */
+  .ficha-vinho--uva .ficha-vinho__botao-uva{
+    justify-self:stretch; width:100%; margin-top:6px;
+    font-size:12px; padding:17px 24px; min-height:48px;
+  }
+
+  /* o ✕ sobre a foto: 44px de alvo e contraste para aparecer sobre a imagem */
+  .ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x{
+    left:auto; right:8px; top:8px; transform:none;
+    width:44px; height:44px; aspect-ratio:1;
+    color:rgba(246,240,224,.95); background:rgba(18,16,14,.45);
+    border-radius:999px;
+  }
+  .ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x:hover,
+  .ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x:focus-visible{
+    color:var(--marfim); background:rgba(18,16,14,.65); transform:none;
+  }
 }
 
 /* o preço é texto sobre a arte, para poder mudar */
