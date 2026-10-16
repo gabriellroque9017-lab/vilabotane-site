@@ -1598,6 +1598,15 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   .cabeca__hora{ min-height:44px; }
   .rodape__rede .elo{ display:inline-flex; align-items:center; min-height:44px; }
 }
+
+/* No celular cada crédito ocupa a linha inteira. Antes a frase quebrava no
+   meio — "Website desenvolvido" numa linha e "por Gabriel Hossana" na
+   seguinte — porque o parágrafo simplesmente transbordava. No computador
+   seguem na mesma linha, separados pelo ponto. */
+@media (max-width:760px){
+  .rodape__parte{ display:block; }
+  .rodape__ponto{ display:none; }
+}
 </style>
 </head>
 
@@ -2251,9 +2260,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     <span class="rotulo">Aprecie com moderação</span>
   </div>
 
-  <p class="rodape__credito" data-nao-editar>Direção artística por <a class="rodape__autor" href="https://www.analuizaval.com.br/" target="_blank" rel="noopener noreferrer">Ana Luiza Val</a>
-    <span aria-hidden="true">·</span>
-    Website desenvolvido por <a class="rodape__autor" href="https://www.linkedin.com/in/gabriel-hossana-lopes-roque-18111b246/" target="_blank" rel="noopener noreferrer">Gabriel Hossana</a></p>
+  <p class="rodape__credito" data-nao-editar><span class="rodape__parte">Direção artística por <a class="rodape__autor" href="https://www.analuizaval.com.br/" target="_blank" rel="noopener noreferrer">Ana Luiza Val</a></span><span class="rodape__ponto" aria-hidden="true"> · </span><span class="rodape__parte">Website desenvolvido por <a class="rodape__autor" href="https://www.linkedin.com/in/gabriel-hossana-lopes-roque-18111b246/" target="_blank" rel="noopener noreferrer">Gabriel Hossana</a></span></p>
   <p class="rodape__direitos" data-nao-editar>© 2026 Microvinícola Vila Botané, Vassouras, Rio de Janeiro. Todos os direitos reservados. Fotografias, ilustrações, identidade visual e código são obra protegida.</p>
   <p class="rodape__entrar"><a href="./admin/" rel="nofollow" title="Modo Edição, para a equipe da casa">Entrar</a></p>
 </footer>

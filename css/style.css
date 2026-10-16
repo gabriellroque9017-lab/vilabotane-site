@@ -400,8 +400,15 @@ body.no-cursor .cursor{ display:none; }
     left:50%; top:clamp(2.2vh,3.4vh,4vh);
     letter-spacing:.42em; text-indent:.42em;
   }
-  .marca{ left:50%; top:66%; width:clamp(61px,18.7vw,102px); }
-  .marca--casa{ top:66%; width:clamp(136px,44.2vw,221px); }
+  /* No telefone os painéis ficam baixos e o desenho encostava no texto.
+     Medido em 360x800 e 390x844: o pássaro invadia 25 a 27px da primeira
+     linha do rótulo, e a casa 30 a 32px — a casa mais porque o desenho dela
+     é maior. O texto começa sempre a cerca de 72% da altura do painel, então
+     subir o centro do desenho para 56% e 54% faz ele terminar acima disso,
+     com folga. No computador nada muda: lá os painéis são altos e largos e
+     os 69% originais continuam valendo. */
+  .marca{ left:50%; top:56%; width:clamp(61px,18.7vw,102px); }
+  .marca--casa{ top:54%; width:clamp(136px,44.2vw,221px); }
   .porta__rotulo{ bottom:clamp(3vh,5vh,6vh); gap:1.1vh; }
   .rotulo{ font-size:clamp(1.1rem,5.2vw,1.9rem); letter-spacing:.22em; text-indent:.22em; }
   /* sem hover: submarca e deixa ficam sempre visíveis */
