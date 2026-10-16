@@ -586,14 +586,17 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .sobre__manifesto{
   margin:0;
   font-size:clamp(18px,1.6vw,21px); line-height:1.78; font-weight:400;
-  text-align:left; hyphens:none;
+  text-align:justify; hyphens:auto;
   text-wrap:pretty;
 }
 /* entrada do bloco: cada linha desliza da esquerda, uma atrás da outra */
 .sobre__linha{ display:block; }
-/* .sobre__linha--justa saiu junto com o justificado: a 337px o texto
-   justificado abria rios de espaço entre as palavras. O script ainda põe a
-   classe em cada linha, mas sem regra ela é inerte. */
+/* O bloco é picado em uma faixa por linha para a animação. Como cada faixa
+   contém uma linha só, ela é sempre a "última" do seu parágrafo — e justify
+   não estica a última linha. Quem fecha a borda direita é `text-align-last`,
+   e o script já marca com --justa toda faixa menos a verdadeira última, que
+   deve mesmo terminar onde o texto acabar. */
+.sobre__linha--justa{ text-align:justify; text-align-last:justify; }
 .js .sobre__slide{
   opacity:0; transform:translate3d(-46px,0,0); will-change:transform,opacity;
   transition:transform .95s cubic-bezier(.22,.61,.36,1), opacity .8s cubic-bezier(.22,.61,.36,1);
@@ -670,6 +673,22 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 @media (max-width:760px){
   .mata__veu{ background:linear-gradient(0deg, rgba(9,17,11,.9) 0%, rgba(9,17,11,.64) 100%); }
   .mata__prosa p{ text-align:left; }
+  /* O "Sobre nós" segue a Mata Atlântica, e pelo mesmo motivo: numa coluna
+     de 290 a 340px o justificado abre buracos no lugar de fechar a margem.
+     Medido o maior vão entre palavras, em múltiplos de um espaço normal:
+
+        1440px   2,1x   aceitável, é o que a dona vê e pediu
+         390px   4,5x
+         360px   8,7x
+         340px   9,5x   um vão de 38px onde o normal é 4px
+
+     Justificar o parágrafo inteiro, sem as faixas, piora: 35x a 340px.
+     A hifenização resolveria em tese, mas não pude comprovar — o Chrome
+     deste ambiente não hifeniza nem em português nem em inglês, por falta
+     dos dicionários. Num aparelho real pode hifenizar; se a dona quiser
+     tentar, é trocar estas duas linhas por justify e olhar no telefone. */
+  .sobre__manifesto{ text-align:left; }
+  .sobre__linha--justa{ text-align:left; text-align-last:left; }
 }
 
 /* ---------- 05 · TERROIR ---------- */
