@@ -1545,6 +1545,49 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   .js .pre__ave{ clip-path:none; }
   .js .hero h1{ letter-spacing:.02em; }
 }
+
+/* ==========================================================================
+   Área de toque mínima, só em tela de dedo.
+
+   Apple e Google pedem 44px como mínimo para alvo de toque. Vários links
+   desta página são texto em caixa alta sem preenchimento, então a caixa
+   clicável é só a altura da linha. Medido num iPhone de 390px:
+
+      Entrar (rodapé)          50x16
+      Ana Luiza Val / Gabriel  86x17
+      Portal / Menu            64x20
+      Ir para o cardápio       165x20
+      ← Casamentos             129x20
+      filtros do cardápio      66x23
+
+   A correção não mexe em nada do que se vê: um retângulo invisível de 44px
+   fica centrado sobre cada link e recebe o toque. O desenho, o espaçamento
+   e o alinhamento continuam idênticos — no computador nada disso existe,
+   porque a regra só vale onde o apontador é grosso (dedo).
+   ========================================================================== */
+@media (pointer:coarse){
+  /* Onde a caixa invisivel resolve sem mexer no desenho: links isolados,
+     sem vizinho perto o bastante para disputar o toque. Medido: 44 e 45px. */
+  .chrome__menu,
+  .chrome__volta,
+  .rodape__entrar a{ position:relative; }
+
+  .chrome__menu::after,
+  .chrome__volta::after,
+  .rodape__entrar a::after{
+    content:''; position:absolute; z-index:1;
+    left:50%; top:50%; translate:-50% -50%;
+    width:max(100%, 44px); height:44px;
+  }
+
+  /* Onde ela nao resolve, porque os vizinhos ficam lado a lado e as caixas
+     invisiveis se atropelam — a de um roubava o toque do outro. Medido: o
+     "Ana Luiza Val" ficava com 1px de area util enquanto o "Gabriel Hossana",
+     que vem depois, levava os 45px. Aqui vai preenchimento de verdade, que
+     empurra o vizinho em vez de cobri-lo. */
+  .rodape__autor{ display:inline-block; padding-block:14px; }
+  .filtros button{ padding-block:11px; }
+}
 </style>
 </head>
 
