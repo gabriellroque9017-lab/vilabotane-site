@@ -3305,6 +3305,8 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     criaTrigger();
     pronto = true;
     video.loop = true;
+    /* PARA MUDAR A VELOCIDADE DO VÍDEO: 1 = normal, 0.8 = 80% */
+    video.defaultPlaybackRate = video.playbackRate = 0.8;
     video.play()['catch'](function () {});
     pinta();
     medidor(0);
