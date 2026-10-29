@@ -1752,7 +1752,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
            ele precisa vir ANTES do desktop para o navegador escolher primeiro. -->
       <!-- sem <source>: quem carrega o arquivo é o fetch lá embaixo, que mostra o
            quanto já veio. Com os dois, o navegador baixava o vídeo duas vezes. -->
-      <video class="scrub__fonte" id="scrub-video" muted loop autoplay playsinline preload="none"
+      <video class="scrub__fonte" id="scrub-video" muted playsinline preload="none"
              poster="./img/tie-poster.jpg" tabindex="-1" aria-hidden="true"></video>
 
       <canvas class="scrub__tela" id="scrub-tela" width="1280" height="720" aria-hidden="true"></canvas>
@@ -3278,19 +3278,50 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     }, { rootMargin: '20% 0px' }).observe(secao);
   } else { visivel = true; acorda(); }
 
-  /* o pino é do CSS (position:sticky). O vídeo toca sozinho, em laço: a rolagem
-     só liga/desliga a pintura e troca os atos do texto. */
+  /* o pino é do CSS (position:sticky). O vídeo toca sozinho, uma vez só:
+     ao entrar na seção ele mostra o Tiê parado por PAUSA_INICIO, toca até o
+     fim e fica parado no Tiê-Preto. Só recomeça depois que a seção sai
+     inteira da tela e volta. */
+  /* PARA MUDAR A VELOCIDADE DO VÍDEO: 1 = normal, 0.5 = metade */
+  var VELOCIDADE = 0.5;
+  var PAUSA_INICIO = 1000;                    /* ms parado no primeiro quadro */
+  var naSecao = false, espera = null;
+
+  function toca() { video.play()['catch'](function () {}); }
+  function entra() {
+    if (naSecao) return;
+    naSecao = true;
+    clearTimeout(espera);
+    video.pause();
+    try { video.currentTime = 0; } catch (e) {}
+    espera = setTimeout(function () { if (naSecao) toca(); }, PAUSA_INICIO);
+    acorda();
+  }
+  function sai() {
+    if (!naSecao) return;
+    naSecao = false;
+    clearTimeout(espera);
+    video.pause();
+  }
+  /* aba escondida pausa o vídeo; ao voltar, retoma se ainda não terminou */
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && naSecao && pronto && video.paused && !video.ended &&
+        video.currentTime > 0) toca();
+  });
+
+  /* começa quando o topo da seção chega a 40% da altura da tela (o quadro já
+     ocupa a maior parte dela, para o Tiê parado ser visto); antes disso fica
+     no primeiro quadro. Só zera quando a seção sai inteira da tela. */
   function criaTrigger() {
+    var comeco = ScrollTrigger.create({
+      trigger: secao, start: 'top 40%', end: 'bottom top',
+      onToggle: function (self) { if (self.isActive) entra(); }
+    });
     ScrollTrigger.create({
       trigger: secao, start: 'top bottom', end: 'bottom top',
-      onUpdate: function (self) {
-        var dentro = self.isActive;
-        if (dentro === visivel) return;
-        visivel = dentro;
-        if (dentro) { video.play()['catch'](function () {}); acorda(); }
-        else video.pause();
-      }
+      onToggle: function (self) { if (!self.isActive) sai(); }
     });
+    if (comeco.isActive) entra();
   }
 
   /* espera obrigatória: sem metadata, video.duration é NaN.
@@ -3302,12 +3333,10 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   function comMetadata() {
     if (!video.duration || isNaN(video.duration)) { estatico(); return; }
     if (!video.seekable.length || video.seekable.end(0) < 1) { estatico(); return; }
-    criaTrigger();
     pronto = true;
-    video.loop = true;
-    /* PARA MUDAR A VELOCIDADE DO VÍDEO: 1 = normal, 0.8 = 80% */
-    video.defaultPlaybackRate = video.playbackRate = 0.8;
-    video.play()['catch'](function () {});
+    video.loop = false;
+    video.defaultPlaybackRate = video.playbackRate = VELOCIDADE;
+    criaTrigger();
     pinta();
     medidor(0);
     ScrollTrigger.refresh();
