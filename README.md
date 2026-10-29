@@ -37,13 +37,22 @@ a Casa do Lago (busque por `github.io` nas páginas).
 - Os tempos do voo do pássaro (duração, espera, curva, escala, balanço) foram
   ajustados quadro a quadro: parecem arbitrários porque são.
 - Sem framework e sem build: GSAP e Splitting entram por CDN.
-- **Pagamento da reserva dos vinhos.** Cada ficha tem "Pagar pelo Pix", que abre
-  um painel com o QR e o código copia-e-cola. O código é um Pix estático do
-  Banco Central, com o valor embutido e a chave da vinícola (o CNPJ), montado
-  por `ferramentas/pix-brcode.mjs` e gravado nos botões e em `img/pix-*.svg`.
-  Nada é processado aqui: o site não fala com banco nenhum. A confirmação é
-  manual, pelo comprovante no WhatsApp. Para mudar o preço, é preciso gerar o
-  código de novo (o valor faz parte dele e do QR).
+- **Pagamento da reserva dos vinhos.** Cada ficha tem "Reservar", que abre um
+  painel com duas saídas: conversar no WhatsApp ou pagar pelo Pix. A pessoa
+  escolhe quantas garrafas (de 1 a 12) e confirma que tem 18 anos ou mais; só
+  então o Pix libera, com o QR e o código copia-e-cola.
+  O código é um Pix estático do Banco Central montado no próprio navegador:
+  a chave da vinícola (o CNPJ, em `data-chave` no painel `#reserva`), o preço
+  que está escrito na ficha vezes a quantidade, e um identificador do vinho
+  (TIE, TIE3, TIEPRETO2...). O QR é desenhado por `js/qr.js` (biblioteca MIT,
+  baixada só quando a reserva abre). Mudou o preço pelo painel ou pelo modo de
+  edição? O Pix acompanha sozinho, sem gerar código à mão.
+  Nada é processado aqui: o site não fala com banco nenhum e não há taxa de
+  intermediário. A confirmação é manual, pelo comprovante no WhatsApp, que já
+  sai com vinho, garrafas, valor e identificador. Os códigos e QRs fixos de uma
+  garrafa (`data-codigo` nos botões e `img/pix-*.svg`, feitos por
+  `ferramentas/pix-brcode.mjs`) ficam como reserva, caso o preço não possa ser
+  lido.
 - Na seção "Na taça", a rolagem leva a janela do topo do vídeo até o pé da
   taça. Os últimos 6% do quadro nunca aparecem: é onde fica a marca d'água do
   gerador do vídeo. Em janela estreita e alta o vídeo cresce para encher o

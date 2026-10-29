@@ -1129,8 +1129,40 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 }
 .pix__campo input::placeholder{ color:rgba(18,16,14,.35); font-size:15px; }
 .pix__campo input:focus{ outline:none; border-bottom-color:var(--mata); }
+.pix__qr[hidden]{ display:none; }
+.pix__detalhe{ font-family:var(--grot); font-size:12px; letter-spacing:.04em; color:rgba(18,16,14,.6); margin:-6px 0 2px; }
+.pix__detalhe[hidden]{ display:none; }
+/* quantas garrafas: dois botões de 44px e o número entre eles */
+.pix__qtd{ display:flex; align-items:center; justify-content:center; gap:6px; margin:2px 0; }
+.pix__qtd[hidden]{ display:none; }
+.pix__qtd .rotulo{ margin-right:10px; }
+.pix__qtd-bt{
+  width:44px; height:44px; border:1px solid rgba(18,16,14,.3); background:none; cursor:pointer;
+  color:var(--tinta); font-family:var(--serifa); font-size:21px; line-height:1;
+  transition:border-color .4s var(--ease), color .4s var(--ease);
+}
+.pix__qtd-bt:hover:not(:disabled), .pix__qtd-bt:focus-visible{ border-color:var(--mata); color:var(--mata); }
+.pix__qtd-bt:disabled{ opacity:.28; cursor:default; }
+.pix__qtd-n{ min-width:2.2ch; font-family:var(--serifa); font-size:24px; line-height:1; text-align:center; }
+/* a maioridade: um quadrado de traço fino, sem arredondar, como o resto */
+.pix__maior{
+  display:flex; align-items:center; gap:12px; min-height:44px; margin-top:4px;
+  font-size:15px; color:rgba(18,16,14,.8); cursor:pointer;
+}
+.pix__maior input{
+  -webkit-appearance:none; appearance:none; flex:none; width:20px; height:20px; margin:0;
+  border:1px solid rgba(18,16,14,.45); border-radius:0; background:none; cursor:pointer;
+  display:grid; place-content:center;
+}
+.pix__maior input::after{ content:''; width:10px; height:10px; background:var(--mata); transform:scale(0); transition:transform .25s var(--ease); }
+.pix__maior input:checked{ border-color:var(--mata); }
+.pix__maior input:checked::after{ transform:scale(1); }
+.pix__maior input:focus-visible{ outline:1px solid var(--mata); outline-offset:3px; }
+.pix__aviso{ font-family:var(--grot); font-size:11px; line-height:1.55; color:rgba(18,16,14,.5); margin:4px 0 0; max-width:34ch; }
+.pix__copia:disabled{ opacity:.32; cursor:not-allowed; }
+.pix__copia:disabled:hover{ background:none; border-color:rgba(18,16,14,.4); color:var(--tinta); }
 
-@media (prefers-reduced-motion:reduce){ .pix__x, .pix__copia{ transition:none; } }
+@media (prefers-reduced-motion:reduce){ .pix__x, .pix__copia, .pix__qtd-bt, .pix__maior input::after{ transition:none; } }
 /* nesta arte o ✕ vive sobre a fotografia, à esquerda */
 .ficha-vinho--uva .ficha-vinho__chapa .ficha-vinho__x{
   left:14px; right:auto; top:14px; transform:none; width:44px; aspect-ratio:1;
@@ -2126,11 +2158,13 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 
     <!-- ==========================================================
          O Pix da reserva: o mesmo painel serve aos dois rótulos,
-         preenchido pelo botão que o abriu. O código já vem com o
-         valor e um identificador do vinho, para o extrato dizer
-         qual garrafa saiu.
+         preenchido pelo botão que o abriu. O código é montado na
+         hora com o preço escrito na ficha, a quantidade e um
+         identificador do vinho, para o extrato dizer o que saiu.
+         A chave é o CNPJ da vinícola (data-chave).
          ========================================================== -->
-    <div class="pix" id="reserva" role="dialog" aria-modal="true" aria-labelledby="pix-titulo" hidden>
+    <div class="pix" id="reserva" role="dialog" aria-modal="true" aria-labelledby="pix-titulo" hidden
+         data-chave="65018031000115" data-nome="VILA BOTANE" data-cidade="VASSOURAS">
       <div class="pix__caixa">
         <button class="pix__x" type="button" id="pix-fecha" aria-label="Fechar">✕</button>
 
@@ -2139,9 +2173,21 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
           <p class="rotulo">Reserva</p>
           <h3 id="pix-titulo" data-nao-editar>Tiê</h3>
           <p class="pix__valor num" id="pix-valor" data-nao-editar>R$ 280</p>
-          <p class="pix__passo">A garrafa fica reservada em seu nome e é retirada aqui na vinícola.</p>
-          <button class="pix__copia" type="button" id="vai-pix">Pagar agora pelo Pix</button>
+          <p class="pix__detalhe num" id="pix-detalhe" data-nao-editar hidden></p>
+          <div class="pix__qtd" role="group" aria-label="Quantidade de garrafas">
+            <span class="rotulo">Garrafas</span>
+            <button class="pix__qtd-bt" type="button" id="pix-menos" aria-label="Uma garrafa a menos" disabled>&minus;</button>
+            <output class="pix__qtd-n num" id="pix-qtd" aria-live="polite" data-nao-editar>1</output>
+            <button class="pix__qtd-bt" type="button" id="pix-mais" aria-label="Uma garrafa a mais">+</button>
+          </div>
+          <p class="pix__passo" id="pix-passo" data-nao-editar>A garrafa fica reservada em seu nome e é retirada aqui na vinícola.</p>
+          <label class="pix__maior">
+            <input type="checkbox" id="pix-maior">
+            <span>Tenho 18 anos ou mais</span>
+          </label>
+          <button class="pix__copia" type="button" id="vai-pix" disabled>Pagar agora pelo Pix</button>
           <a class="pix__copia pix__copia--fino" id="vai-zap" href="#" target="_blank" rel="noopener">Conversar no WhatsApp</a>
+          <p class="pix__aviso">Venda de bebida alcoólica proibida para menores de 18 anos.</p>
         </div>
 
         <!-- passo 2: o Pix -->
@@ -2149,14 +2195,16 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
           <p class="rotulo">Reserva pelo Pix</p>
           <h3 id="pix-vinho" data-nao-editar>Tiê</h3>
           <p class="pix__valor num" id="pix-valor2" data-nao-editar>R$ 280</p>
-          <img class="pix__qr" id="pix-qr" src="" alt="Código QR do Pix para pagar a reserva" width="180" height="180" decoding="async">
+          <p class="pix__detalhe num" id="pix-detalhe2" data-nao-editar hidden></p>
+          <img class="pix__qr" id="pix-qr" alt="" width="180" height="180" decoding="async">
           <button class="pix__copia" type="button" id="pix-copia" data-nao-editar>Copiar o código</button>
           <p class="pix__conta">Vila Botané Hotel Vinícola e Restaurante</p>
           <label class="pix__campo">
             <span class="rotulo">Seu nome</span>
-            <input type="text" id="pix-nome" autocomplete="name" placeholder="para a garrafa ficar em seu nome">
+            <input type="text" id="pix-nome" autocomplete="name" placeholder="para a reserva ficar em seu nome">
           </label>
           <a class="pix__copia" id="pix-feito" href="#" target="_blank" rel="noopener">Paguei, enviar o comprovante</a>
+          <p class="pix__aviso">A vinícola confirma a reserva pelo WhatsApp assim que o Pix cair.</p>
         </div>
 
 
@@ -3643,20 +3691,111 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 });
 
 /* ---------- a reserva dos vinhos: escolha e Pix ----------
-   Dois passos num painel só. Nada sai desta página: o código do Pix já vem
-   pronto no botão que abriu o painel. Quem paga manda o comprovante no
-   WhatsApp, e é a casa que confirma a reserva olhando o extrato. */
+   Dois passos num painel só. Nada sai desta página: o código do Pix é
+   montado aqui mesmo, com a chave da vinícola (data-chave no painel), o
+   preço que está escrito na ficha e a quantidade de garrafas. Se o preço
+   mudar pelo painel ou pelo modo de edição, o Pix muda junto, sem gerar
+   código nenhum à mão. O QR é desenhado por js/qr.js, que só desce quando
+   alguém abre a reserva.
+
+   Quem paga manda o comprovante no WhatsApp, e é a casa que confirma a
+   reserva olhando o extrato. Pix estático, direto na conta da vinícola:
+   sem intermediário, sem taxa, sem servidor. */
 (function () {
   var painel = document.getElementById('reserva');
   if (!painel) return;
   var etapas = {};
   painel.querySelectorAll('[data-passo]').forEach(function (e) { etapas[e.dataset.passo] = e; });
 
-  var fecha = document.getElementById('pix-fecha');
-  var copia = document.getElementById('pix-copia');
-  var nome  = document.getElementById('pix-nome');
+  var pega = function (id) { return document.getElementById(id); };
+  var fecha = pega('pix-fecha'), copia = pega('pix-copia'), nome = pega('pix-nome');
+  var vaiPix = pega('vai-pix'), maior = pega('pix-maior');
+  var menos = pega('pix-menos'), mais = pega('pix-mais'), qtdN = pega('pix-qtd');
+  var qtdGrupo = painel.querySelector('.pix__qtd');
+  var MAX = 12;
+  var CONTA = {
+    chave: painel.dataset.chave || '',
+    nome: painel.dataset.nome || '',
+    cidade: painel.dataset.cidade || '',
+  };
   var atual = {};
   var quemAbriu = null;
+
+  /* ---- o "copia e cola": a mesma conta de ferramentas/pix-brcode.mjs ---- */
+  function campo(id, v) { return id + (v.length < 10 ? '0' : '') + v.length + v; }
+  function crc16(t) {
+    var crc = 0xFFFF;
+    for (var i = 0; i < t.length; i++) {
+      crc ^= t.charCodeAt(i) << 8;
+      for (var b = 0; b < 8; b++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+    }
+    return ('0000' + crc.toString(16).toUpperCase()).slice(-4);
+  }
+  function limpa(t) {
+    return String(t).normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^A-Za-z0-9 .-]/g, '').toUpperCase().trim();
+  }
+  function brcode(valor, txid) {
+    var p = campo('00', '01')
+      + campo('26', campo('00', 'br.gov.bcb.pix') + campo('01', CONTA.chave))
+      + campo('52', '0000') + campo('53', '986')
+      + campo('54', valor.toFixed(2))
+      + campo('58', 'BR')
+      + campo('59', limpa(CONTA.nome).slice(0, 25))
+      + campo('60', limpa(CONTA.cidade).slice(0, 15))
+      + campo('62', campo('05', txid.slice(0, 25)))
+      + '6304';
+    return p + crc16(p);
+  }
+
+  /* ---- o preço como está escrito na ficha: "R$ 280", "R$ 1.280,50" ---- */
+  function lePreco(t) {
+    var s = String(t || '').replace(/[^\d.,]/g, '');
+    if (!s) return 0;
+    if (s.indexOf(',') > -1) s = s.replace(/\./g, '').replace(',', '.');
+    else if (!/\.\d{1,2}$/.test(s)) s = s.replace(/\./g, '');
+    var n = parseFloat(s);
+    return n > 0 ? Math.round(n * 100) / 100 : 0;
+  }
+  function real(n) {
+    var redondo = Math.round(n * 100) % 100 === 0;
+    return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: redondo ? 0 : 2, maximumFractionDigits: 2 });
+  }
+
+  /* ---- o QR: js/qr.js só desce quando a reserva abre ---- */
+  var qrVem = null;
+  function carregaQr() {
+    if (window.qrcode) return Promise.resolve(true);
+    if (!qrVem) {
+      qrVem = new Promise(function (ok) {
+        var s = document.createElement('script');
+        s.src = './js/qr.js';
+        s.onload = function () { ok(!!window.qrcode); };
+        s.onerror = function () { qrVem = null; ok(false); };
+        document.head.appendChild(s);
+      });
+    }
+    return qrVem;
+  }
+  function desenhaQr(texto) {
+    var q = window.qrcode(0, 'M');
+    q.addData(texto);
+    q.make();
+    var n = q.getModuleCount(), d = '';
+    for (var y = 0; y < n; y++) {
+      for (var x = 0; x < n; x++) {
+        if (!q.isDark(y, x)) continue;
+        var ini = x;
+        while (x + 1 < n && q.isDark(y, x + 1)) x++;
+        d += 'M' + (ini + 1) + ' ' + (y + 1) + 'h' + (x - ini + 1) + 'v1h-' + (x - ini + 1) + 'z';
+      }
+    }
+    var lado = n + 2;
+    return 'data:image/svg+xml,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + lado + ' ' + lado + '" shape-rendering="crispEdges">'
+      + '<path fill="#FFFFFF" d="M0 0h' + lado + 'v' + lado + 'H0z"/>'
+      + '<path fill="#12100E" d="' + d + '"/></svg>');
+  }
 
   function passo(qual) {
     Object.keys(etapas).forEach(function (k) { etapas[k].hidden = k !== qual; });
@@ -3669,35 +3808,88 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     else if (quemAbriu) quemAbriu.focus();
   }
 
+  /* tudo o que depende da quantidade, num lugar só */
+  function atualiza() {
+    var q = atual.qtd;
+    if (atual.preco) {
+      atual.total = Math.round(atual.preco * q * 100) / 100;
+      atual.txid = atual.prefixo + (q > 1 ? q : '');
+      atual.codigo = brcode(atual.total, atual.txid);
+      atual.valor = real(atual.total);
+    } else {
+      /* sem preço legível na ficha, vale o código pronto do botão, de uma garrafa */
+      atual.txid = atual.prefixo;
+      atual.codigo = atual.codigoFixo;
+      atual.valor = atual.valorFixo;
+    }
+    var conta = q > 1 ? q + ' garrafas × ' + real(atual.preco) : '';
+    ['pix-valor', 'pix-valor2'].forEach(function (id) { pega(id).textContent = atual.valor; });
+    ['pix-detalhe', 'pix-detalhe2'].forEach(function (id) { pega(id).textContent = conta; pega(id).hidden = !conta; });
+    qtdN.textContent = q;
+    menos.disabled = q <= 1;
+    mais.disabled = q >= MAX;
+    pega('pix-passo').textContent = q > 1
+      ? 'As garrafas ficam reservadas em seu nome e são retiradas aqui na vinícola.'
+      : 'A garrafa fica reservada em seu nome e é retirada aqui na vinícola.';
+    var recado = q > 1 ? 'Olá, gostaria de reservar ' + q + ' garrafas do ' + atual.vinho + '.' : '';
+    pega('vai-zap').href = recado
+      ? atual.zap.replace(/([?&]text=)[^&]*/, '$1' + encodeURIComponent(recado))
+      : atual.zap;
+  }
+
   /* passo 1 */
   document.querySelectorAll('[data-pix]').forEach(function (bt) {
     bt.addEventListener('click', function () {
       quemAbriu = bt;
+      var ficha = bt.closest('.ficha-vinho');
+      var escrito = ficha && ficha.querySelector('.preco');
       atual = {
-        vinho: bt.dataset.vinho || '', valor: bt.dataset.valor || '',
-        qr: bt.dataset.qr || '', codigo: bt.dataset.codigo || '',
-        prefixo: bt.dataset.prefixo || 'VB', zap: bt.dataset.zap || '#',
+        vinho: bt.dataset.vinho || '',
+        prefixo: bt.dataset.prefixo || 'VB',
+        zap: bt.dataset.zap || '#',
+        preco: lePreco(escrito && escrito.textContent) || lePreco(bt.dataset.valor),
+        valorFixo: bt.dataset.valor || '',
+        codigoFixo: bt.dataset.codigo || '',
+        qrFixo: bt.dataset.qr || '',
+        qtd: 1,
       };
-      document.getElementById('pix-titulo').textContent = atual.vinho;
-      document.getElementById('pix-valor').textContent = atual.valor;
-      document.getElementById('vai-zap').href = atual.zap;
+      if (!CONTA.chave) atual.preco = 0;
+      qtdGrupo.hidden = !atual.preco;
+      maior.checked = false;
+      vaiPix.disabled = true;
+      pega('pix-titulo').textContent = atual.vinho;
+      atualiza();
       passo('escolha');
       mostra(true);
+      carregaQr();                      /* adianta o desenho do QR */
     });
   });
+  menos.addEventListener('click', function () { if (atual.qtd > 1) { atual.qtd--; atualiza(); } });
+  mais.addEventListener('click', function () { if (atual.qtd < MAX) { atual.qtd++; atualiza(); } });
+  maior.addEventListener('change', function () { vaiPix.disabled = !maior.checked; });
 
   /* passo 2 */
-  document.getElementById('vai-pix').addEventListener('click', function () {
-    document.getElementById('pix-vinho').textContent = atual.vinho;
-    document.getElementById('pix-valor2').textContent = atual.valor;
-    var qr = document.getElementById('pix-qr');
-    qr.src = atual.qr;
-    qr.alt = 'Código QR do Pix de ' + atual.valor + ' para a Vila Botané';
+  vaiPix.addEventListener('click', function () {
+    if (!maior.checked) return;
+    pega('pix-vinho').textContent = atual.vinho;
     copia.classList.remove('is-feito');
     copia.textContent = 'Copiar o código';
+    var qr = pega('pix-qr'), codigo = atual.codigo;
+    qr.hidden = false;
+    qr.removeAttribute('src');
+    qr.alt = '';
+    carregaQr().then(function (ok) {
+      if (codigo !== atual.codigo) return;
+      var src = '';
+      if (ok) { try { src = desenhaQr(codigo); } catch (e) { src = ''; } }
+      /* sem a biblioteca, o QR pronto do botão ainda serve se o código for o mesmo */
+      if (!src && codigo === atual.codigoFixo) src = atual.qrFixo;
+      if (!src) { qr.hidden = true; return; }
+      qr.src = src;
+      qr.alt = 'Código QR do Pix de ' + atual.valor + ' para a Vila Botané';
+    });
     passo('pix');
   });
-
   copia.addEventListener('click', function () {
     function avisa(ok) {
       copia.textContent = ok ? 'Código copiado' : 'Copie o código abaixo';
@@ -3719,25 +3911,24 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       navigator.clipboard.writeText(atual.codigo).then(function () { avisa(true); }, seleciona);
     } else { seleciona(); }
   });
-
   /* o comprovante segue para o WhatsApp com o que a casa precisa saber */
-  document.getElementById('pix-feito').addEventListener('click', function () {
+  pega('pix-feito').addEventListener('click', function () {
     var quem = (nome.value || '').trim();
     var recado = 'Olá! Acabei de pagar a reserva pelo Pix.'
       + '\nVinho: ' + atual.vinho
+      + '\nGarrafas: ' + atual.qtd
       + '\nValor: ' + atual.valor
+      + '\nIdentificador do Pix: ' + atual.txid
       + (quem ? '\nNome: ' + quem : '');
     this.href = 'https://api.whatsapp.com/send/?phone=5524999936927&text='
       + encodeURIComponent(recado) + '&type=phone_number&app_absent=0';
   });
-
   fecha.addEventListener('click', function () { mostra(false); });
   painel.addEventListener('click', function (e) { if (e.target === painel) mostra(false); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !painel.hidden) mostra(false);
   });
 })();
-
 /* ---------- a serra do rodapé: desenha ao descer, depois vira corda ----------
    Duas fases. Na primeira, a rolagem preenche o traço (stroke-dashoffset).
    Ao completar, os pontos de cada linha ganham física de corda: o cursor bate,
