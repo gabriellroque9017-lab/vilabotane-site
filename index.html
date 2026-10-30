@@ -675,22 +675,20 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 @media (max-width:760px){
   .mata__veu{ background:linear-gradient(0deg, rgba(9,17,11,.9) 0%, rgba(9,17,11,.64) 100%); }
   .mata__prosa p{ text-align:left; }
-  /* O "Sobre nós" segue a Mata Atlântica, e pelo mesmo motivo: numa coluna
-     de 290 a 340px o justificado abre buracos no lugar de fechar a margem.
-     Medido o maior vão entre palavras, em múltiplos de um espaço normal:
+  /* O "Sobre nós" fica justificado também no celular, como no computador.
+     Numa coluna de 290 a 380px o justificado puro abria vãos de até 9 vezes
+     um espaço normal; por isso, no celular, o script do bloco separa as
+     palavras em sílabas e deixa o navegador hifenizar o fim da linha
+     (função silabas, mais abaixo). Medido o maior vão entre palavras:
 
-        1440px   2,1x   aceitável, é o que a dona vê e pediu
-         390px   4,5x
-         360px   8,7x
-         340px   9,5x   um vão de 38px onde o normal é 4px
-
-     Justificar o parágrafo inteiro, sem as faixas, piora: 35x a 340px.
-     A hifenização resolveria em tese, mas não pude comprovar — o Chrome
-     deste ambiente não hifeniza nem em português nem em inglês, por falta
-     dos dicionários. Num aparelho real pode hifenizar; se a dona quiser
-     tentar, é trocar estas duas linhas por justify e olhar no telefone. */
-  .sobre__manifesto{ text-align:left; }
-  .sobre__linha--justa{ text-align:left; text-align-last:left; }
+        largura    só justificado    com as sílabas
+         320px          -              2,8x
+         340px        9,4x             1,8x
+         360px        8,6x             2,4x
+         390px        4,5x             2,4x
+         412px        4,5x             2,5x
+         430px        3,3x             2,3x
+        1440px        2,1x             2,1x   (o computador não muda) */
 }
 
 /* ---------- 05 · TERROIR ---------- */
@@ -3461,20 +3459,81 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   var original = par.innerHTML;
   var jaEntrou = false;
   var editando = false;          /* o Modo Edição desliga a divisão em linhas */
+  /* no celular a coluna é estreita: a palavra pode partir no fim da linha */
+  var estreito = window.matchMedia('(max-width: 760px)');
+
+  /* Separação silábica do português, para hifenizar o fim da linha.
+     A palavra vira uma fila de vogais e consoantes, em que ch, lh, nh e o
+     gu/qu antes de vogal contam como uma consoante só. Entre duas vogais:
+     uma consoante vai com a sílaba seguinte (ca-sa); duas ou mais se
+     separam antes da última (car-ro, nas-cer, ins-tân-cia), ou antes do
+     par que não se separa (pa-dre, mi-cro, at-lân-ti-ca). Duas vogais
+     seguidas nunca são cortadas: um ditongo jamais sai partido. Palavras de
+     até quatro letras não se partem, e o pedaço que desce leva pelo menos
+     três letras (aten-ta, nunca pa-ra). */
+  var SILABA_VOGAL = /[aeiouáàâãéêíóôõúü]/;
+  var SILABA_PAR = { bl: 1, br: 1, cl: 1, cr: 1, dr: 1, fl: 1, fr: 1, gl: 1, gr: 1, pl: 1, pr: 1, tr: 1, vr: 1 };
+  function silabas(palavra) {
+    var m = /^([^A-Za-zÀ-ÿ]*)([A-Za-zÀ-ÿ]+)([^A-Za-zÀ-ÿ]*)$/.exec(palavra);
+    if (!m || m[2].length < 5) return [palavra];
+    var w = m[2], low = w.toLowerCase(), n = low.length, un = [], i = 0;
+    while (i < n) {
+      var c = low.charAt(i), d = low.charAt(i + 1);
+      if ((c === 'g' || c === 'q') && (d === 'u' || d === 'ü') && SILABA_VOGAL.test(low.charAt(i + 2))) {
+        un.push({ v: false, i: i, t: c + d }); i += 2;
+      } else if ((c === 'c' || c === 'l' || c === 'n') && d === 'h') {
+        un.push({ v: false, i: i, t: c + d }); i += 2;
+      } else {
+        un.push({ v: SILABA_VOGAL.test(c), i: i, t: c }); i += 1;
+      }
+    }
+    var cortes = [], j = 0;
+    while (j < un.length && !un[j].v) j++;
+    while (j < un.length) {
+      while (j < un.length && un[j].v) j++;
+      var a = j;
+      while (j < un.length && !un[j].v) j++;
+      if (j >= un.length) break;
+      var k = j - a;
+      if (k === 0) continue;
+      if (k === 1) cortes.push(un[a].i);
+      else {
+        var par = un[j - 2].t + un[j - 1].t;
+        cortes.push(SILABA_PAR[par] ? un[j - 2].i : un[j - 1].i);
+      }
+    }
+    var partes = [], de = 0;
+    cortes.forEach(function (c) {
+      if (c - de >= 2 && n - c >= 3) { partes.push(w.slice(de, c)); de = c; }
+    });
+    partes.push(w.slice(de));
+    partes[0] = m[1] + partes[0];
+    partes[partes.length - 1] += m[3];
+    return partes;
+  }
 
   function divide() {
     par.innerHTML = original;
     par.style.hyphens = 'manual';
     par.style.webkitHyphens = 'manual';
     var unidades = [], frag = document.createDocumentFragment(), espaco = false;
+    var hifeniza = estreito.matches;
     Array.prototype.slice.call(par.childNodes).forEach(function (no) {
       if (no.nodeType === 3) {
         no.textContent.split(/(\s+)/).forEach(function (t) {
           if (!t) return;
           if (/^\s+$/.test(t)) { espaco = true; frag.appendChild(document.createTextNode(' ')); return; }
-          var s = document.createElement('span');
-          s.textContent = t; s.dataset.esp = espaco ? '1' : '0'; espaco = false;
-          frag.appendChild(s); unidades.push(s);
+          /* cada sílaba vira uma peça, com um hífen opcional (&shy;) entre
+             elas: o navegador só parte ali se a palavra não couber */
+          (hifeniza ? silabas(t) : [t]).forEach(function (pedaco, k) {
+            if (k > 0) frag.appendChild(document.createTextNode('\u00AD'));
+            var s = document.createElement('span');
+            s.textContent = pedaco;
+            s.dataset.esp = (k === 0 && espaco) ? '1' : '0';
+            if (k > 0) s.dataset.segue = '1';
+            espaco = false;
+            frag.appendChild(s); unidades.push(s);
+          });
         });
       } else {
         var s = document.createElement('span');
@@ -3503,6 +3562,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       var dentro = linha.map(function (u, j) {
         return (j > 0 && u.dataset.esp === '1' ? ' ' : '') + u.innerHTML;
       }).join('');
+      /* a palavra continua na linha de baixo: esta termina em hífen */
+      var depois = linhas[i + 1] && linhas[i + 1][0];
+      if (depois && depois.dataset.segue === '1') dentro += '<span aria-hidden="true">-</span>';
       var cls = 'sobre__linha sobre__slide' + (i < linhas.length - 1 ? ' sobre__linha--justa' : '');
       return '<span class="' + cls + '">' + dentro + '</span>';
     }).join('');
