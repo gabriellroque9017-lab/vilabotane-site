@@ -540,6 +540,37 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   }
   .scrub__tela,
   .scrub__poster{ filter:contrast(1.06) brightness(1.04); }
+  /* Em pé, cobrir a tela inteira com um vídeo deitado ampliava o quadro umas
+     três vezes, e a imagem amolecia. No celular o vídeo vira uma janela: começa
+     logo abaixo do título (--jan-topo, medido no script), vai até o pé e se
+     dissolve na tinta nas duas pontas. O arquivo do celular é o centro do
+     quadro original, 720x720, sem recompressão de tamanho. */
+  .scrub__tela,
+  .scrub__poster{
+    top:var(--jan-topo, 30svh); bottom:auto;
+    height:calc(100% - var(--jan-topo, 30svh) - var(--jan-pe, 6svh));
+    object-position:50% 60%;
+    -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%);
+            mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%);
+  }
+  /* tablet em pé: a janela fica mais larga que alta e cortaria a garrafa.
+     O quadro quadrado vai inteiro, no centro, esfumado nos quatro lados. */
+  @media (min-width:560px){
+    .scrub__tela,
+    .scrub__poster{
+      width:auto; max-width:100%; left:0; right:0; margin-inline:auto;
+      -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%),
+                         linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+      -webkit-mask-composite:source-in;
+              mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%),
+                         linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+              mask-composite:intersect;
+    }
+  }
+  /* o título agora mora na tinta; o véu fica só no pé, sob o eco */
+  .scrub__veu{
+    background:linear-gradient(180deg, rgba(18,16,14,0) 62%, rgba(18,16,14,.3) 82%, rgba(18,16,14,.6) 100%);
+  }
   .medidor{ left:24px; }
 }
 
@@ -547,7 +578,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .scrub.is-estatico{ height:auto; }
 .scrub.is-estatico .scrub__palco{ position:static; height:auto; padding:var(--secao) 0; }
 .scrub.is-estatico .scrub__tela{ display:none; }
-.scrub.is-estatico .scrub__poster{ opacity:1; position:absolute; }
+.scrub.is-estatico .scrub__poster{ opacity:1; position:absolute; top:0; height:100%; width:100%; margin:0; max-width:none; -webkit-mask-image:none; mask-image:none; }
 .scrub.is-estatico .scrub__atos{
   position:relative; top:auto; transform:none; left:auto;
   margin:0 var(--margem); width:auto; max-width:34ch;
@@ -1794,16 +1825,20 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
         <path d="M116 402 C 108 448, 118 494, 146 524"/>
       </svg>
 
-      <!-- TROCAR AQUI o caminho dos vídeos.
-           Quando houver o encode mobile (854x480), descomente o primeiro <source>:
-           ele precisa vir ANTES do desktop para o navegador escolher primeiro. -->
+      <!-- TROCAR AQUI o caminho dos vídeos: fica na constante FONTE, no script
+           do scrub. São dois arquivos tirados do original do Kling:
+           tie-scrub.mp4 (1280x720, computador) e tie-scrub-celular.mp4
+           (720x720, o centro do quadro, para o celular). -->
       <!-- sem <source>: quem carrega o arquivo é o fetch lá embaixo, que mostra o
            quanto já veio. Com os dois, o navegador baixava o vídeo duas vezes. -->
       <video class="scrub__fonte" id="scrub-video" muted playsinline preload="none"
              poster="./img/tie-poster.jpg" tabindex="-1" aria-hidden="true"></video>
 
       <canvas class="scrub__tela" id="scrub-tela" width="1280" height="720" aria-hidden="true"></canvas>
-      <img class="scrub__poster" src="./img/tie-poster.jpg" alt="A garrafa do Tiê, com o rótulo do tiê-sangue, sobre um toco na vinha ao fim da tarde" width="1280" height="720" decoding="async">
+      <picture>
+        <source media="(max-width: 768px)" srcset="./img/tie-poster-celular.jpg" width="720" height="720">
+        <img class="scrub__poster" src="./img/tie-poster.jpg" alt="A garrafa do Tiê, com o rótulo do tiê-sangue, sobre um toco na vinha ao fim da tarde" width="1280" height="720" decoding="async">
+      </picture>
 
       <div class="scrub__grao" aria-hidden="true"></div>
       <span class="scrub__fio" aria-hidden="true"></span>
@@ -3391,11 +3426,38 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
      O arquivo é baixado como Blob de propósito: o servidor não responde a
      Range requests, e sem Range o <video> reporta seekable vazio e ignora
      currentTime — não haveria scrub nenhum. O filete mostra o download real. */
-  var FONTE = './img/tie-scrub.mp4';
+  /* o celular baixa o centro do quadro (720x720); o computador, o quadro inteiro */
+  var CELULAR = window.matchMedia('(max-width: 768px)');
+  var FONTE = CELULAR.matches ? './img/tie-scrub-celular.mp4' : './img/tie-scrub.mp4';
+
+  /* a janela do vídeo no celular começa logo abaixo do título */
+  var palco = secao.querySelector('.scrub__palco');
+  var titulo = secao.querySelector('.scrub__atos:not(.scrub__atos--dir)');
+  var eco = secao.querySelector('.scrub__atos--dir');
+  /* ...e termina logo abaixo do eco começar: a fala do pé fica na tinta e não
+     cobre o rótulo da garrafa */
+  function janela() {
+    if (!palco) return;
+    if (!CELULAR.matches || !titulo || !eco) {
+      palco.style.removeProperty('--jan-topo'); palco.style.removeProperty('--jan-pe'); return;
+    }
+    var p = palco.getBoundingClientRect();
+    var topo = titulo.getBoundingClientRect().bottom - p.top - 8;
+    var pe = p.bottom - eco.getBoundingClientRect().top - 12;
+    if (topo > 0) palco.style.setProperty('--jan-topo', Math.round(topo) + 'px');
+    if (pe > 0) palco.style.setProperty('--jan-pe', Math.round(pe) + 'px');
+  }
+  janela();
+  window.addEventListener('resize', janela);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(janela);
 
   function comMetadata() {
     if (!video.duration || isNaN(video.duration)) { estatico(); return; }
     if (!video.seekable.length || video.seekable.end(0) < 1) { estatico(); return; }
+    if (video.videoWidth && video.videoHeight &&
+        (tela.width !== video.videoWidth || tela.height !== video.videoHeight)) {
+      tela.width = video.videoWidth; tela.height = video.videoHeight;
+    }
     pronto = true;
     video.loop = false;
     video.defaultPlaybackRate = video.playbackRate = VELOCIDADE;
