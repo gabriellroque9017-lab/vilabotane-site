@@ -462,7 +462,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   clip-path:inset(100% 0 0 0);
   transition:clip-path .6s var(--ease);
 }
-.ato.is-dentro > *{ clip-path:inset(0 0 0 0); }
+/* a entrada folga em volta da letra: com o recorte rente, a sombra do texto
+   virava uma caixa fosca atrás de cada linha */
+.ato.is-dentro > *{ clip-path:inset(-40px -40px -40px -40px); }
 .ato.is-fora > *{ clip-path:inset(0 0 100% 0); }
 .ato > :nth-child(2){ transition-delay:.04s; }   /* stagger de 40ms */
 .ato > :nth-child(3){ transition-delay:.08s; }
@@ -507,9 +509,22 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
      corre por cima de folhas ao sol. O halo é fundo local do glifo: escurece
      ao redor da letra, não a fotografia — o quadro segue na cor dele. */
   .scrub__atos .ato > *{ text-shadow:0 1px 3px rgba(12,10,8,.86), 0 0 22px rgba(12,10,8,.72); }
-  .scrub__atos .ato__apoio{ text-shadow:0 1px 3px rgba(12,10,8,.9), 0 0 16px rgba(12,10,8,.85); }
+  /* A linha de apoio passa por cima do céu claro do fim do vídeo: no cinza de
+     apoio ela sumia. No celular ela vai para o marfim, um pouco maior, com
+     sombra curta; quem dá o fundo é a mancha suave atrás do bloco (abaixo). */
+  .scrub__atos .ato__apoio{
+    color:var(--marfim); font-weight:500;
+    text-shadow:0 1px 2px rgba(12,10,8,.85), 0 0 10px rgba(12,10,8,.5);
+  }
+  .scrub__atos:not(.scrub__atos--dir) .ato::before{
+    content:''; position:absolute; z-index:-1;
+    left:-24px; right:-24px; top:-64px; bottom:-84px;
+    background:radial-gradient(closest-side at 40% 56%, rgba(18,16,14,.5) 0%, rgba(18,16,14,.3) 50%, rgba(18,16,14,0) 100%);
+    opacity:0; transition:opacity .6s var(--ease); pointer-events:none;
+  }
+  .scrub__atos:not(.scrub__atos--dir) .ato.is-dentro::before{ opacity:1; }
   .ato h2{ font-size:clamp(26px,7vw,38px); margin-top:12px; }
-  .ato__apoio{ margin-top:14px; font-size:15px; max-width:26ch; }
+  .ato__apoio{ margin-top:14px; font-size:17px; line-height:1.5; max-width:28ch; }
   .scrub__atos--dir{
     left:auto; right:24px; top:auto; bottom:clamp(76px,11svh,104px);
     width:min(26ch,74vw); text-align:right;
@@ -539,7 +554,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 }
 .scrub.is-estatico .ato{ position:relative; top:auto; transform:none; }
 .scrub.is-estatico .scrub__atos--dir{ right:auto; width:auto; max-width:34ch; text-align:left; }
-.scrub.is-estatico .scrub__atos--dir .ato::before{ display:none; }
+.scrub.is-estatico .ato::before{ display:none; }
 .scrub.is-estatico .ato + .ato{ margin-top:clamp(40px,6vw,72px); }
 .scrub.is-estatico .ato > *{ clip-path:none; }
 .scrub.is-estatico .medidor{ display:none; }
