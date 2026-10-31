@@ -472,7 +472,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   font-weight:300; font-size:clamp(30px,4.4vw,60px); line-height:1.04;
   margin-top:18px;
 }
-.ato__apoio{ margin-top:20px; color:var(--marfim-mudo); max-width:34ch; }
+.ato__apoio{ margin-top:20px; color:var(--marfim); max-width:34ch; }
 .ato__tie{ color:var(--tie); }
 /* a fala do outro lado do quadro: os dois vinhos e a mesma origem.
    Do lado direito o véu da seção já acabou, então a coluna leva o seu próprio. */
@@ -502,7 +502,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
      canto de baixo, à direita. Entre um e outro fica o vídeo, livre. */
   .scrub__atos{
     left:24px; right:24px; width:auto;
-    top:clamp(84px,12svh,120px); transform:none;
+    top:calc(clamp(84px,12svh,120px) + var(--jan-desce, 0px)); transform:none;
   }
   .scrub__atos .ato{ position:relative; top:auto; transform:none; }
   /* O vídeo dos rótulos reais é mais claro que o anterior, e a linha de apoio
@@ -523,14 +523,18 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     opacity:0; transition:opacity .6s var(--ease); pointer-events:none;
   }
   .scrub__atos:not(.scrub__atos--dir) .ato.is-dentro::before{ opacity:1; }
-  .ato h2{ font-size:clamp(26px,7vw,38px); margin-top:12px; }
-  .ato__apoio{ margin-top:14px; font-size:17px; line-height:1.5; max-width:28ch; }
+  /* o rótulo fica na tinta, acima do vídeo; o título já entra no quadro */
+  .ato h2{ font-size:clamp(26px,7vw,38px); margin-top:30px; }
+  /* a coluna de texto fica à esquerda da garrafa, que no celular mora no
+     terço direito do quadro */
+  .ato__apoio{ margin-top:14px; font-size:17px; line-height:1.5; max-width:22ch; }
+  /* o eco desce para o pé do vídeo, à esquerda, do lado oposto à garrafa */
   .scrub__atos--dir{
-    left:auto; right:24px; top:auto; bottom:clamp(76px,11svh,104px);
-    width:min(26ch,74vw); text-align:right;
+    left:24px; right:auto; top:auto; bottom:calc(var(--jan-pe, 64px) + 22px);
+    width:min(24ch,60vw); text-align:left;
   }
-  .ato__eco{ white-space:normal; }
-  .scrub__atos--dir .ato::before{ left:-30%; right:-24px; }
+  .ato__eco{ white-space:normal; line-height:1.8; font-size:15px; }
+  .scrub__atos--dir .ato::before{ left:-24px; right:-30%; }
   /* o quadro fica na cor dele: em vez de escurecer o vídeo inteiro, só as
      duas faixas onde mora texto ganham sombra, e o meio passa limpo */
   .scrub__veu{
@@ -549,9 +553,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   .scrub__poster{
     top:var(--jan-topo, 30svh); bottom:auto;
     height:calc(100% - var(--jan-topo, 30svh) - var(--jan-pe, 6svh));
-    object-position:50% 60%;
-    -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%);
-            mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%);
+    object-position:8% 60%;               /* a garrafa vai para o terço direito */
+    -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 7%, #000 90%, transparent 100%);
+            mask-image:linear-gradient(180deg, transparent 0, #000 7%, #000 90%, transparent 100%);
   }
   /* tablet em pé: a janela fica mais larga que alta e cortaria a garrafa.
      O quadro quadrado vai inteiro, no centro, esfumado nos quatro lados. */
@@ -559,19 +563,25 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     .scrub__tela,
     .scrub__poster{
       width:auto; max-width:100%; left:0; right:0; margin-inline:auto;
-      -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%),
+      -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 7%, #000 90%, transparent 100%),
                          linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
       -webkit-mask-composite:source-in;
-              mask-image:linear-gradient(180deg, transparent 0, #000 13%, #000 84%, transparent 100%),
+              mask-image:linear-gradient(180deg, transparent 0, #000 7%, #000 90%, transparent 100%),
                          linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
               mask-composite:intersect;
     }
   }
-  /* o título agora mora na tinta; o véu fica só no pé, sob o eco */
+  /* o texto mora dentro do vídeo: o véu escurece o alto da janela, onde
+     ficam o título e a linha de apoio, e o pé, onde fica o eco. O meio, com
+     a garrafa, passa limpo. */
   .scrub__veu{
-    background:linear-gradient(180deg, rgba(18,16,14,0) 62%, rgba(18,16,14,.3) 82%, rgba(18,16,14,.6) 100%);
+    background:linear-gradient(180deg,
+      rgba(18,16,14,.55) 0, rgba(18,16,14,.55) var(--jan-topo, 120px),
+      rgba(18,16,14,.32) calc(var(--jan-topo, 120px) + 150px),
+      rgba(18,16,14,0) calc(var(--jan-topo, 120px) + 270px),
+      rgba(18,16,14,0) 60%, rgba(18,16,14,.4) 82%, rgba(18,16,14,.66) 100%);
   }
-  .medidor{ left:24px; }
+  .medidor{ left:24px; bottom:calc(34px + var(--jan-desce, 0px)); }
 }
 
 /* fallback: sem JS, sem GSAP ou reduced-motion — nada preso, texto em fluxo */
@@ -3430,22 +3440,31 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   var CELULAR = window.matchMedia('(max-width: 768px)');
   var FONTE = CELULAR.matches ? './img/tie-scrub-celular.mp4' : './img/tie-scrub.mp4';
 
-  /* a janela do vídeo no celular começa logo abaixo do título */
+  /* a janela do vídeo no celular vai do rótulo "Tiê & Tiê-preto", que fica
+     fora, por cima, até a barra de carregamento, que fica fora, por baixo.
+     O título, a linha de apoio e o eco ficam dentro do vídeo. */
   var palco = secao.querySelector('.scrub__palco');
-  var titulo = secao.querySelector('.scrub__atos:not(.scrub__atos--dir)');
-  var eco = secao.querySelector('.scrub__atos--dir');
-  /* ...e termina logo abaixo do eco começar: a fala do pé fica na tinta e não
-     cobre o rótulo da garrafa */
+  var rotulo = secao.querySelector('.ato__tie');
+  var barraPe = secao.querySelector('.medidor');
+  /* A janela não passa de 1,4 vez a largura: mais alta que isso, o quadro
+     volta a ser ampliado demais. A sobra vira margem igual acima do rótulo e
+     abaixo da barra (--jan-desce), e o conjunto fica no meio da tela. */
+  var JANELA_MAX = 1.4;
   function janela() {
     if (!palco) return;
-    if (!CELULAR.matches || !titulo || !eco) {
+    palco.style.removeProperty('--jan-desce');
+    if (!CELULAR.matches || !rotulo || !barraPe) {
       palco.style.removeProperty('--jan-topo'); palco.style.removeProperty('--jan-pe'); return;
     }
     var p = palco.getBoundingClientRect();
-    var topo = titulo.getBoundingClientRect().bottom - p.top - 8;
-    var pe = p.bottom - eco.getBoundingClientRect().top - 12;
-    if (topo > 0) palco.style.setProperty('--jan-topo', Math.round(topo) + 'px');
-    if (pe > 0) palco.style.setProperty('--jan-pe', Math.round(pe) + 'px');
+    var topo = rotulo.getBoundingClientRect().bottom - p.top + 6;
+    var fim = barraPe.getBoundingClientRect().top - p.top - 14;
+    var livre = fim - topo;
+    if (livre <= 0) return;
+    var desce = Math.max(0, (livre - p.width * JANELA_MAX) / 2);
+    palco.style.setProperty('--jan-desce', Math.round(desce) + 'px');
+    palco.style.setProperty('--jan-topo', Math.round(topo + desce) + 'px');
+    palco.style.setProperty('--jan-pe', Math.round(p.height - fim + desce) + 'px');
   }
   janela();
   window.addEventListener('resize', janela);
