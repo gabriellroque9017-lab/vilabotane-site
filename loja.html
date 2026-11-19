@@ -129,6 +129,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .trocas{ position:relative; z-index:1; max-width:62ch; margin:0 auto; padding:0 var(--margem) 64px; text-align:center; }
 .trocas h2{ font-weight:300; font-size:clamp(26px,2.6vw,32px); margin:14px 0 10px; }
 .trocas p.texto{ font-size:17px; line-height:1.65; color:rgba(18,16,14,.78); margin:0; text-wrap:pretty; }
+.trocas p.texto + p.texto{ margin-top:.9em; }
 .trocas p.texto a{ border-bottom:1px solid rgba(18,16,14,.35); transition:color .3s, border-color .3s; }
 .trocas p.texto a:hover{ color:var(--mata); border-color:var(--mata); }
 
@@ -136,6 +137,11 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .rodape{ margin:0 var(--margem); padding:26px 0 40px; border-top:1px solid var(--fio); display:flex; flex-wrap:wrap; gap:10px 28px; justify-content:space-between;
   font-family:var(--grot); font-size:11px; letter-spacing:.06em; color:var(--mudo); }
 .rodape a{ border-bottom:1px solid rgba(18,16,14,.25); }
+/* a mesma porta discreta da página inicial: o Modo Edição a aponta para ?editar=1 */
+.rodape__entrar{ flex-basis:100%; margin:14px 0 0; text-align:center; font-size:10px; letter-spacing:.24em; text-indent:.24em; text-transform:uppercase; opacity:.5; transition:opacity .4s; }
+.rodape__entrar:hover{ opacity:.9; }
+.rodape .rodape__entrar a{ border-bottom-color:transparent; }
+.rodape .rodape__entrar a:hover{ border-bottom-color:currentColor; }
 
 /* ---------- a sacola ---------- */
 .veu{ position:fixed; inset:0; z-index:40; background:rgba(18,16,14,.42); opacity:0; pointer-events:none; transition:opacity .45s var(--ease); }
@@ -275,12 +281,14 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 <section class="trocas" id="trocas">
   <p class="rotulo">Trocas e devoluções</p>
   <h2>Mudou de ideia?</h2>
-  <p class="texto">Quem compra pelo site tem 7 dias, contados da retirada ou da entrega, para desistir da compra. O vinho só pode ser trocado se a garrafa não tiver sido aberta e o lacre estiver intacto. Fale com nosso <a href="https://api.whatsapp.com/send/?phone=5524999936927&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">WhatsApp</a>.</p>
+  <p class="texto">Quem compra pelo site tem 7 dias, contados da retirada ou da entrega, para desistir da compra. O vinho só pode ser trocado se a garrafa não tiver sido aberta e o lacre estiver intacto.</p>
+  <p class="texto">Fale com nosso <a href="https://api.whatsapp.com/send/?phone=5524999936927&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">WhatsApp</a>.</p>
 </section>
 
 <footer class="rodape">
   <span>Microvinícola Vila Botané · Rua Luiz Francisco de Souza, 555 · Ponte Funda, Vassouras/RJ</span>
   <span><a href="#trocas">Trocas e devoluções</a> &nbsp;·&nbsp; <a href="https://api.whatsapp.com/send/?phone=5524999936927&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">WhatsApp</a></span>
+  <p class="rodape__entrar" data-nao-editar><a href="./admin/" rel="nofollow" title="Modo Edição, para a equipe da casa">Entrar</a></p>
 </footer>
 
 <div class="veu" id="veu" data-nao-editar></div>
