@@ -1,0 +1,26 @@
+{
+  "produtos": [
+    {
+      "id": "tie",
+      "nome": "Tiê",
+      "linha": "Cabernet Franc 2025, ânfora de grès",
+      "preco": "R$ 280",
+      "categoria": "vinhos",
+      "foto": "./img/loja/tie.webp",
+      "selo": "",
+      "esgotado": false,
+      "visivel": true
+    },
+    {
+      "id": "tiepreto",
+      "nome": "Tiê Preto",
+      "linha": "Cabernet Franc 2025, carvalho francês",
+      "preco": "R$ 340",
+      "categoria": "vinhos",
+      "foto": "./img/loja/tiepreto.webp",
+      "selo": "",
+      "esgotado": false,
+      "visivel": true
+    }
+  ]
+}

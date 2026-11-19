@@ -1502,6 +1502,17 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .garrafa__ficha:focus-visible .garrafa__risco{ width:104px; background:var(--areia); }
 @media (max-width:760px){ .trilho{ grid-template-columns:1fr; gap:clamp(26px,6vw,44px); } }
 .trilho__nota{ padding:26px var(--margem) 0; }
+/* a porta da loja, logo abaixo dos dois rótulos: caixa de fio, sem preenchimento */
+.vinhos__loja{ position:relative; z-index:1; margin:clamp(44px,5vw,72px) var(--margem) 0; text-align:center; }
+.vinhos__loja-bt{
+  display:inline-flex; align-items:center; justify-content:center; gap:14px; min-height:48px; padding:0 32px;
+  border:1px solid rgba(18,16,14,.4); color:var(--tinta);
+  font-family:var(--grot); font-size:11px; letter-spacing:.3em; text-indent:.3em; text-transform:uppercase;
+  transition:background .45s var(--ease), border-color .45s var(--ease), color .45s var(--ease);
+}
+.vinhos__loja-bt span{ letter-spacing:0; transition:transform .45s var(--ease); }
+.vinhos__loja-bt:hover, .vinhos__loja-bt:focus-visible{ background:var(--mata); border-color:var(--mata); color:var(--marfim); outline:none; }
+.vinhos__loja-bt:hover span, .vinhos__loja-bt:focus-visible span{ transform:translateX(4px); }
 
 /* ---------- 08 · CONTATO ---------- */
 .contato{ padding:var(--secao) var(--margem); background:var(--tinta-alta); }
@@ -1773,6 +1784,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     <a href="#mata">Mata Atlântica</a>
     <a href="#terroir">O Terroir</a>
     <a href="#vinhos">Nossos vinhos</a>
+    <a href="./loja.html">Nossa loja</a>
   </div>
   <div class="veu__pe">
     <a class="elo mudo" href="https://www.casadolagobistro.com.br/">Bistrô Casa do Lago</a>
@@ -2181,6 +2193,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
         </a>
       </article>
     </div>
+
+    <!-- a loja não é uma seção: é a porta para a página dela -->
+    <p class="vinhos__loja"><a class="vinhos__loja-bt" href="./loja.html">Conheça a nossa loja <span aria-hidden="true">→</span></a></p>
 
     <div class="ficha-vinho ficha-vinho--chapa ficha-vinho--uva ficha-vinho--denso" id="ficha-tie" role="dialog" aria-modal="true" aria-label="Tiê, Cabernet Franc 2025" hidden>
       <div class="ficha-vinho__chapa">

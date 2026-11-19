@@ -7,6 +7,7 @@ e sem back-end: pode ser servido por qualquer servidor de arquivos.
 | --- | --- | --- |
 | Vila Botané | `index.html` | Capa aquarela que seca e vira fotografia, terroir em quatro cenas, vídeo do Tiê, dois vinhos com fichas e a soleira para a casa irmã. |
 | Portal | `portal.html` | Porta de entrada das duas casas irmãs; o clique dispara o voo do pássaro. |
+| Loja | `loja.html` | Vitrine com sacola: Pix e cartão pelo Mercado Pago (retirada) ou pedido pelo WhatsApp (envio). Feita à mão, fora da montagem. |
 
 A casa irmã, Casa do Lago, é um site à parte:
 <https://gabriellroque9017-lab.github.io/casadolago-site/>
@@ -65,6 +66,25 @@ a Casa do Lago (busque por `github.io` nas páginas).
   nome, data, salvar ou imprimir; a chave fica só como referência da venda). Pendente confere sozinho por meio
   minuto; recusado ou sem confirmação fica no aviso com o WhatsApp.
   Com `data-checkout=""` o painel volta ao Pix estático de antes, sem carta.
+- **A loja (`loja.html`).** Chega-se a ela pelo menu ("Nossa loja") e pela
+  caixa "Conheça a nossa loja" logo abaixo dos dois rótulos — não é uma seção
+  da página inicial. Se o `index.html` for montado de novo, esses dois links
+  têm de voltar.
+  A vitrine é uma lista só, em `conteudo.json` → `loja.produtos` (id, nome,
+  linha, preco, categoria vinhos/despensa/objetos, foto, selo, esgotado,
+  visivel). Enquanto ninguém mexer nela pelo Modo Edição, vale o `loja.json`.
+  No Modo Edição (`loja.html?editar=1`) cada cartão abre os campos e ganha
+  ferramentas: trocar foto (reduzida no navegador para 1400 px, em webp, e
+  enviada para `img/enviadas`), categoria, mover, esgotado, esconder e tirar;
+  "+ Novo produto" acrescenta um. Salvar leva à prévia, como no resto do site.
+  A sacola guarda só ids e quantidades no aparelho de quem compra
+  (`localStorage`, chave `vb-sacola`). Pix e cartão vão ao mesmo Worker do
+  Mercado Pago (`?sacola=tie:1,tiepreto:2&meio=pix`), que relê nome e preço no
+  `conteudo.json` publicado — o preço da página não decide a cobrança — e
+  devolve para `loja.html?pagamento=…&ref=LOJA-XXXXX-X`. "Pedido confirmado"
+  só aparece com o aprovado do Mercado Pago (`/confere`). A página pergunta ao
+  Worker se ele já sabe cobrar sacolas (`/loja`); se não souber, a sacola
+  segue só pelo WhatsApp. Envio (frete) é sempre combinado no WhatsApp.
 - Na seção "Na taça", a rolagem leva a janela do topo do vídeo até o pé da
   taça. Os últimos 6% do quadro nunca aparecem: é onde fica a marca d'água do
   gerador do vídeo. Em janela estreita e alta o vídeo cresce para encher o

@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.github.com https://vilabotane-pagamento.gabriellroque9017.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
+<title>Loja · Vila Botané</title>
+<meta name="description" content="A loja da Vila Botané: os vinhos Tiê e Tiê Preto e o que nasce em volta deles, em pequenos lotes, em Vassouras.">
+<link rel="icon" href="./img/passaro-linha.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400&display=swap">
+<style>
+/* ==========================================================
+   Vila Botané · Loja
+   O papel da arte aprovada: creme quente, grão, a ave em traço no topo,
+   o galho com o tiê entrando pelo canto e a encosta em aquarela do outro
+   lado. Cantos retos, fio de 1px, botão sem preenchimento.
+   ========================================================== */
+:root{
+  --tinta:#12100E; --mata:#636B2F; --tie:#C8483C; --casca:#3A322A;
+  --papel:#F7EBD8; --papel-fundo:#EFE1CB; --mudo:rgba(18,16,14,.58); --fio:rgba(18,16,14,.42);
+  --serifa:"Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --grot:"Jost", "Helvetica Neue", Arial, sans-serif;
+  --margem:clamp(22px,6vw,96px);
+  --ease:cubic-bezier(.65,0,.35,1);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+html{ background:var(--papel); -webkit-text-size-adjust:100%; }
+body{ margin:0; color:var(--tinta); font-family:var(--serifa); font-size:18px; -webkit-font-smoothing:antialiased; position:relative; overflow-x:hidden; }
+/* o grão do papel, por cima de tudo e sem pegar clique */
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.09; mix-blend-mode:multiply;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+a{ color:inherit; text-decoration:none; }
+button{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; }
+[hidden]{ display:none !important; }
+.num{ font-feature-settings:"onum" 1; }
+.rotulo{ font-family:var(--grot); font-weight:400; font-size:11px; letter-spacing:.34em; text-indent:.34em; text-transform:uppercase; color:var(--mudo); margin:0; }
+
+/* ---------- a ornamentação ---------- */
+.enfeite{ position:absolute; pointer-events:none; z-index:0; user-select:none; }
+.enfeite--galho{ top:0; left:0; width:clamp(190px,30vw,480px); }
+.enfeite--encosta{ top:62px; right:0; width:clamp(240px,31.6vw,500px); }
+@media (max-width:760px){
+  .enfeite--galho{ width:36vw; top:-4px; left:-3vw; }
+  .enfeite--encosta{ display:none; }
+}
+
+/* ---------- o topo ---------- */
+.topo{
+  position:relative; z-index:2; display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+  margin:0 var(--margem); padding:22px 0 18px; border-bottom:1px solid var(--fio);
+  font-family:var(--grot); font-size:11px; letter-spacing:.32em; text-transform:uppercase;
+}
+.topo__marca img{ display:block; width:40px; height:auto; filter:invert(1); opacity:.82; }
+.topo__dir{ justify-self:end; display:flex; align-items:center; gap:14px; }
+.topo__sacola{ display:flex; align-items:center; gap:8px; min-height:44px; }
+.topo__sacola svg{ width:17px; height:19px; }
+.topo__conta{ font-size:10px; letter-spacing:0; text-indent:0; min-width:19px; height:19px; padding:0 4px;
+  border:1px solid var(--tinta); display:grid; place-items:center; transition:background .3s, color .3s; }
+.topo__conta.is-pulso{ background:var(--mata); border-color:var(--mata); color:var(--papel); }
+.topo__barra{ width:1px; height:12px; background:var(--fio); }
+.topo__menu{ min-height:44px; letter-spacing:.32em; text-transform:uppercase; }
+@media (max-width:760px){
+  .topo{ padding:16px 0 14px; }
+  .topo__portal{ visibility:hidden; }
+  .topo__marca img{ width:34px; }
+}
+
+/* ---------- a cabeça ---------- */
+.cabeca{ position:relative; z-index:1; text-align:center; padding:40px var(--margem) 0; }
+.cabeca h1{ font-weight:300; font-size:clamp(36px,4.4vw,58px); line-height:1.05; margin:16px 0 12px; text-wrap:balance; }
+.cabeca p.sub{ font-style:italic; font-size:clamp(17px,1.45vw,20px); line-height:1.5; margin:0 auto; max-width:92ch; color:rgba(18,16,14,.78); }
+@media (max-width:760px){ .cabeca p.sub{ max-width:34ch; text-wrap:balance; } }
+@media (max-width:760px){ .cabeca{ padding-top:44px; } }
+
+/* ---------- as abas ---------- */
+.filtros{ position:relative; z-index:1; display:flex; justify-content:center; flex-wrap:wrap; gap:6px 30px; margin:30px var(--margem) 30px; }
+.filtros button{
+  font-family:var(--grot); font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--mudo);
+  padding:12px 0 8px; border-bottom:1px solid transparent; transition:color .3s, border-color .3s;
+}
+.filtros button:hover{ color:var(--tinta); }
+.filtros button[aria-pressed="true"]{ color:var(--tinta); border-bottom:1.5px solid var(--mata); }
+.filtros--so{ height:0; margin-bottom:46px; overflow:hidden; }
+@media (max-width:760px){ .filtros{ gap:4px 20px; } .filtros button{ letter-spacing:.24em; } }
+
+/* ---------- a vitrine ---------- */
+.vitrine{
+  position:relative; z-index:1; max-width:1184px; margin:0 auto; padding:0 var(--margem) 90px;
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:34px 46px;
+}
+/* com poucos produtos, a vitrine se fecha no meio em vez de ficar torta para a esquerda */
+.vitrine--pouca{ display:flex; flex-wrap:wrap; justify-content:center; }
+.vitrine--pouca > .produto{ width:calc((min(100vw,1184px) - 2 * var(--margem) - 3 * 46px) / 4); }
+@media (max-width:1080px){
+  .vitrine{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:30px 30px; }
+  .vitrine--pouca > .produto{ width:calc((100vw - 2 * var(--margem) - 2 * 30px) / 3); }
+}
+@media (max-width:760px){
+  .vitrine{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:30px 14px; padding:0 16px 70px; }
+  .vitrine--pouca > .produto{ width:calc((100vw - 32px - 14px) / 2); }
+}
+.produto{ display:flex; flex-direction:column; text-align:center; opacity:0; transform:translateY(14px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
+.produto.is-vis{ opacity:1; transform:none; }
+.produto__foto{ position:relative; aspect-ratio:10/9; overflow:hidden; background:var(--papel-fundo); }
+.produto__foto img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform 1.2s ease-out; }
+.produto:hover .produto__foto img{ transform:scale(1.04); }
+.produto__foto img.ave{ object-fit:contain; width:30%; height:auto; margin:auto; position:absolute; inset:0; filter:invert(1); opacity:.18; transform:none !important; }
+.produto__selo{ font-family:var(--grot); font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--mudo); margin:16px 0 -10px; min-height:11px; }
+.produto__selo--tie{ color:var(--tie); }
+.produto h3{ font-weight:400; font-size:clamp(20px,1.6vw,23px); line-height:1.15; margin:16px 0 3px; }
+.produto__linha{ font-size:14.5px; line-height:1.35; color:var(--mudo); margin:0 0 4px; }
+.produto__preco{ font-size:20px; margin:auto 0 12px; padding-top:2px; }
+.caixa{
+  display:flex; align-items:center; justify-content:center; width:94%; min-height:38px; margin:0 auto; padding:0 10px;
+  font-family:var(--grot); font-size:10px; letter-spacing:.3em; text-indent:.3em; text-transform:uppercase; text-align:center;
+  border:1px solid var(--fio); transition:background .35s var(--ease), border-color .35s var(--ease), color .35s var(--ease), opacity .3s;
+}
+.caixa:hover:not(:disabled):not([aria-disabled="true"]), .caixa:focus-visible{ background:var(--mata); border-color:var(--mata); color:var(--papel); outline:none; }
+.caixa.is-feito{ background:var(--mata); border-color:var(--mata); color:var(--papel); }
+.caixa:disabled, .caixa[aria-disabled="true"]{ opacity:.38; cursor:default; }
+.vitrine__vazia{ grid-column:1/-1; width:100%; text-align:center; padding:30px 0 10px; font-size:21px; font-style:italic; color:rgba(18,16,14,.7); }
+@media (max-width:760px){ .produto__linha{ font-size:13.5px; } .caixa{ width:100%; letter-spacing:.22em; text-indent:.22em; } }
+
+/* ---------- trocas e devoluções ---------- */
+.trocas{ position:relative; z-index:1; max-width:62ch; margin:0 auto; padding:0 var(--margem) 64px; text-align:center; }
+.trocas h2{ font-weight:300; font-size:clamp(26px,2.6vw,32px); margin:14px 0 10px; }
+.trocas p.texto{ font-size:17px; line-height:1.65; color:rgba(18,16,14,.78); margin:0; text-wrap:pretty; }
+
+/* ---------- o rodapé ---------- */
+.rodape{ margin:0 var(--margem); padding:26px 0 40px; border-top:1px solid var(--fio); display:flex; flex-wrap:wrap; gap:10px 28px; justify-content:space-between;
+  font-family:var(--grot); font-size:11px; letter-spacing:.06em; color:var(--mudo); }
+.rodape a{ border-bottom:1px solid rgba(18,16,14,.25); }
+
+/* ---------- a sacola ---------- */
+.veu{ position:fixed; inset:0; z-index:40; background:rgba(18,16,14,.42); opacity:0; pointer-events:none; transition:opacity .45s var(--ease); }
+.veu.is-aberto{ opacity:1; pointer-events:auto; }
+.sacola{
+  position:fixed; z-index:41; top:0; right:0; bottom:0; width:min(430px, calc(100vw - 26px));
+  background:var(--papel); display:flex; flex-direction:column; transform:translateX(102%); transition:transform .55s var(--ease);
+  border-left:1px solid var(--fio);
+}
+.sacola.is-aberta{ transform:none; }
+.sacola__topo{ display:flex; justify-content:space-between; align-items:center; padding:20px 24px 16px; border-bottom:1px solid var(--fio); }
+.sacola__topo h2{ font-weight:300; font-size:32px; margin:0; }
+.sacola__x{ width:44px; height:44px; display:grid; place-items:center; color:var(--mudo); font-size:15px; transition:transform .4s var(--ease), color .3s; }
+.sacola__x:hover{ color:var(--tinta); transform:rotate(90deg); }
+.sacola__corpo{ flex:1; overflow-y:auto; padding:0 24px; }
+.sacola__vazia{ text-align:center; padding:56px 10px; }
+.sacola__vazia img{ width:62px; filter:invert(1); opacity:.6; }
+.sacola__vazia p{ font-size:20px; margin:16px 0 22px; color:rgba(18,16,14,.75); }
+.item{ display:grid; grid-template-columns:72px 1fr; gap:14px; padding:18px 0; border-bottom:1px solid rgba(18,16,14,.16); }
+.item__foto{ position:relative; aspect-ratio:10/11; overflow:hidden; background:var(--papel-fundo); }
+.item__foto img{ width:100%; height:100%; object-fit:cover; display:block; }
+.item__foto img.ave{ object-fit:contain; width:50%; height:auto; position:absolute; inset:0; margin:auto; filter:invert(1); opacity:.2; }
+.item h3{ font-weight:400; font-size:20px; margin:0 0 2px; }
+.item__fora{ font-family:var(--grot); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--tie); margin:4px 0 0; }
+.item__pe{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+.qtd{ display:flex; align-items:center; gap:4px; }
+.qtd button{ width:34px; height:34px; border:1px solid var(--fio); font-size:15px; transition:border-color .3s, color .3s; }
+.qtd button:hover:not(:disabled){ border-color:var(--mata); color:var(--mata); }
+.qtd button:disabled{ opacity:.3; cursor:default; }
+.qtd output{ min-width:2.2ch; text-align:center; font-size:20px; }
+.item__preco{ font-size:20px; margin:0; }
+.item__tirar{ font-family:var(--grot); font-size:9.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--mudo); border-bottom:1px solid rgba(18,16,14,.3); margin-top:10px; display:inline-block; }
+.sacola__pe{ padding:16px 24px 22px; border-top:1px solid var(--fio); display:grid; gap:12px; }
+.entrega{ display:grid; gap:6px; }
+.opcao{ display:flex; gap:12px; align-items:flex-start; font-size:17px; cursor:pointer; }
+.opcao input{ appearance:none; -webkit-appearance:none; flex:none; width:16px; height:16px; margin:5px 0 0; border:1px solid var(--fio); display:grid; place-items:center; }
+.opcao input::after{ content:""; width:8px; height:8px; background:var(--mata); transform:scale(0); transition:transform .25s var(--ease); }
+.opcao input:checked::after{ transform:scale(1); }
+.opcao small{ display:block; font-family:var(--grot); font-size:11px; letter-spacing:.02em; color:var(--mudo); }
+.total{ display:flex; justify-content:space-between; align-items:baseline; font-size:26px; padding-top:10px; border-top:1px solid rgba(18,16,14,.2); }
+.total span:first-child{ font-size:22px; }
+.sacola__aviso{ font-family:var(--grot); font-size:11px; line-height:1.5; color:var(--mudo); margin:0; text-align:center; text-wrap:pretty; }
+.sacola .caixa{ width:100%; min-height:44px; }
+
+/* ---------- a volta do Mercado Pago ---------- */
+.pedido{ position:fixed; inset:0; z-index:45; display:grid; place-items:center; padding:18px; }
+.pedido__caixa{ position:relative; width:min(460px,100%); max-height:calc(100svh - 36px); overflow-y:auto; background:var(--papel); border:1px solid var(--fio);
+  padding:34px clamp(22px,5vw,40px) 28px; text-align:center; display:grid; gap:12px; }
+.pedido__caixa > img{ width:46px; margin:0 auto 2px; filter:invert(1); opacity:.7; }
+.pedido h2{ font-weight:300; font-size:clamp(30px,5vw,38px); line-height:1.1; margin:0; }
+.pedido__texto{ font-size:18px; line-height:1.5; margin:0; color:rgba(18,16,14,.8); text-wrap:pretty; }
+.pedido__lista{ list-style:none; margin:4px 0 0; padding:12px 0 0; border-top:1px solid rgba(18,16,14,.2); display:grid; gap:4px; font-size:17px; }
+.pedido__lista li{ display:flex; justify-content:space-between; gap:12px; text-align:left; }
+.pedido__lista li.is-total{ border-top:1px solid rgba(18,16,14,.2); margin-top:6px; padding-top:8px; font-size:20px; }
+.pedido__num{ font-family:var(--grot); font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:var(--mudo); margin:2px 0 0; }
+.pedido .caixa{ width:100%; min-height:44px; }
+
+/* ---------- o menu ---------- */
+.menu{ position:fixed; inset:0; z-index:50; background:var(--papel); display:grid; place-content:center; text-align:center; gap:18px;
+  opacity:0; pointer-events:none; transition:opacity .45s var(--ease); }
+.menu.is-aberto{ opacity:1; pointer-events:auto; }
+.menu a{ font-size:clamp(28px,4vw,40px); font-weight:300; }
+.menu a[aria-current]{ font-style:italic; color:var(--mata); }
+.menu__x{ position:absolute; top:18px; right:var(--margem); min-height:44px; font-family:var(--grot); font-size:11px; letter-spacing:.32em; text-transform:uppercase; }
+
+/* ---------- o Modo Edição da vitrine ----------
+   Só existe para quem entrou com o token: a loja desenha os cartões com os
+   campos abertos e as ferramentas embaixo, e entrega a lista ao editor. */
+.loja-editando .filtros{ display:none; }
+.loja-editando .vitrine{ padding-top:30px; }
+.ed-dica{ grid-column:1/-1; width:100%; margin:0 0 4px; text-align:center; font-family:var(--grot); font-size:11.5px; line-height:1.6; letter-spacing:.04em; color:#3F5C5B;
+  border:1px dashed rgba(92,126,125,.6); padding:10px 14px; background:rgba(92,126,125,.06); }
+.ed-campo{ display:inline-block; min-width:3ch; outline:1px dashed rgba(92,126,125,.55); outline-offset:3px; cursor:text; }
+.ed-campo:focus{ outline:1px solid #5C7E7D; background:rgba(92,126,125,.09); }
+.ed-campo:empty::before{ content:attr(data-vazio); color:rgba(18,16,14,.34); font-style:italic; }
+.produto.ed .produto__selo{ margin-bottom:-6px; }
+.ed-foto{ position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:2; background:var(--papel); border:1px solid var(--fio);
+  padding:9px 14px; font-family:var(--grot); font-size:10px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
+.ed-foto:hover, .ed-foto:focus-within{ background:var(--mata); border-color:var(--mata); color:var(--papel); }
+.ed-foto input{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.ed-marca{ position:absolute; top:8px; left:8px; z-index:2; background:var(--tinta); color:var(--papel); font-family:var(--grot); font-size:9px; letter-spacing:.2em; text-transform:uppercase; padding:5px 8px; }
+.ed-escondido .produto__foto img{ opacity:.35; }
+.ed-alerta{ font-family:var(--grot); font-size:10.5px; line-height:1.4; color:var(--tie); margin:-8px 0 10px; }
+.ed-ferramentas{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:auto; padding-top:4px; }
+.produto.ed .produto__preco{ margin:0 0 12px; }
+@media (max-width:760px){ .ed-ferramentas button, .ed-ferramentas select{ padding:0 7px; letter-spacing:.1em; } .ed-foto{ padding:8px 10px; letter-spacing:.14em; } }
+.ed-ferramentas button, .ed-ferramentas select{
+  font-family:var(--grot); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--tinta);
+  border:1px solid var(--fio); border-radius:0; padding:0 9px; min-height:34px; background:var(--papel); }
+.ed-ferramentas select{ appearance:none; -webkit-appearance:none; padding-right:22px;
+  background:var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%2312100E'/%3E%3C/svg%3E") no-repeat right 8px center; }
+.ed-ferramentas button:hover:not(:disabled){ border-color:var(--mata); color:var(--mata); }
+.ed-ferramentas button:disabled{ opacity:.3; cursor:default; }
+.ed-ferramentas [aria-pressed="true"]{ background:var(--tinta); color:var(--papel); border-color:var(--tinta); }
+.ed-ferramentas [aria-pressed="true"]:hover{ color:var(--papel) !important; }
+.ed-ferramentas .ed-tirar{ color:var(--tie); border-color:rgba(200,72,60,.55); }
+.ed-novo{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-height:280px; width:100%;
+  border:1px dashed var(--fio); font-family:var(--grot); font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--mudo);
+  transition:border-color .3s, color .3s, background .3s; }
+.ed-novo span{ font-family:var(--serifa); font-size:46px; font-weight:300; letter-spacing:0; line-height:1; }
+.ed-novo:hover, .ed-novo:focus-visible{ border-color:var(--mata); color:var(--mata); background:rgba(99,107,47,.05); outline:none; }
+
+@media (prefers-reduced-motion:reduce){
+  .produto, .sacola, .veu, .menu, .caixa, .produto__foto img{ transition:none; }
+  .produto{ opacity:1; transform:none; }
+}
+</style>
+</head>
+<body>
+
+<img class="enfeite enfeite--galho" src="./img/loja/galho-tie.webp" alt="" aria-hidden="true" decoding="async" data-nao-editar>
+<img class="enfeite enfeite--encosta" src="./img/loja/paisagem-encosta.webp" alt="" aria-hidden="true" decoding="async" data-nao-editar>
+
+<header class="topo" data-nao-editar>
+  <a class="topo__portal" href="./portal.html">Portal</a>
+  <a class="topo__marca" href="./index.html" aria-label="Vila Botané — início"><img src="./img/passaro-linha.png" alt="" width="660" height="939"></a>
+  <span class="topo__dir">
+    <button class="topo__sacola" type="button" id="abre-sacola" aria-label="Abrir a sacola">
+      <svg viewBox="0 0 18 20" aria-hidden="true"><path d="M2.5 6.5h13l-1 12h-11z M6 6.5V5a3 3 0 0 1 6 0v1.5" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      <span class="topo__conta num" id="conta" aria-live="polite">0</span>
+    </button>
+    <span class="topo__barra" aria-hidden="true"></span>
+    <button class="topo__menu" type="button" id="abre-menu">Menu</button>
+  </span>
+</header>
+
+<section class="cabeca">
+  <p class="rotulo">04 <span aria-hidden="true">—</span> Loja</p>
+  <h1 id="loja-titulo">Da encosta para a sua casa</h1>
+  <p class="sub" id="loja-sub">Os vinhos e o que nasce em volta deles, feitos em pequenos lotes em Vassouras.</p>
+</section>
+
+<nav class="filtros" id="filtros" aria-label="Categorias" data-nao-editar></nav>
+
+<main class="vitrine" id="vitrine" aria-live="polite" data-nao-editar></main>
+
+<section class="trocas" id="trocas">
+  <p class="rotulo">Trocas e devoluções</p>
+  <h2>Mudou de ideia?</h2>
+  <p class="texto">Quem compra pelo site tem 7 dias, contados da retirada ou da entrega, para desistir da compra, como manda o Código de Defesa do Consumidor. O produto volta fechado e devolvemos o valor pago. Se algo chegar com defeito, trocamos. É só falar conosco pelo WhatsApp.</p>
+</section>
+
+<footer class="rodape">
+  <span>Microvinícola Vila Botané · Rua Luiz Francisco de Souza, 555 · Ponte Funda, Vassouras/RJ</span>
+  <span><a href="#trocas">Trocas e devoluções</a> &nbsp;·&nbsp; <a href="https://api.whatsapp.com/send/?phone=5524999936927&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">WhatsApp</a></span>
+</footer>
+
+<div class="veu" id="veu" data-nao-editar></div>
+<aside class="sacola" id="sacola" role="dialog" aria-modal="true" aria-labelledby="sacola-titulo" aria-hidden="true" data-nao-editar>
+  <div class="sacola__topo">
+    <h2 id="sacola-titulo">Sacola</h2>
+    <button class="sacola__x" type="button" id="fecha-sacola" aria-label="Fechar a sacola">✕</button>
+  </div>
+  <div class="sacola__corpo" id="sacola-itens"></div>
+  <div class="sacola__pe" id="sacola-pe">
+    <div class="entrega" role="radiogroup" aria-label="Entrega">
+      <p class="rotulo" style="text-indent:0">Entrega</p>
+      <label class="opcao"><input type="radio" name="entrega" value="retirada" checked><span>Retirar na vinícola<small>Vassouras/RJ · sem custo</small></span></label>
+      <label class="opcao"><input type="radio" name="entrega" value="envio"><span>Enviar para o meu endereço<small>o frete é combinado pelo WhatsApp</small></span></label>
+    </div>
+    <label class="opcao" id="sacola-maior" hidden><input type="checkbox" id="maior"><span>Tenho 18 anos ou mais<small>a sacola tem vinho</small></span></label>
+    <div class="total"><span>Total</span><span class="num" id="sacola-total">R$ 0</span></div>
+    <button class="caixa" type="button" id="paga-pix" hidden>Pagar no Pix</button>
+    <button class="caixa" type="button" id="paga-cartao" hidden>Pagar no cartão</button>
+    <a class="caixa" id="paga-zap" href="#" target="_blank" rel="noopener">Pedir pelo WhatsApp</a>
+    <p class="sacola__aviso" id="sacola-aviso"></p>
+  </div>
+</aside>
+
+<div class="pedido" id="pedido" role="dialog" aria-modal="true" aria-labelledby="pedido-titulo" hidden data-nao-editar>
+  <div class="pedido__caixa">
+    <img src="./img/passaro-linha.png" alt="">
+    <h2 id="pedido-titulo">Conferindo o pagamento</h2>
+    <p class="pedido__texto" id="pedido-texto">Um instante: estamos confirmando com o Mercado Pago.</p>
+    <ul class="pedido__lista num" id="pedido-lista" hidden></ul>
+    <p class="pedido__num" id="pedido-num" hidden></p>
+    <button class="caixa" type="button" id="pedido-de-novo" hidden>Conferir de novo</button>
+    <a class="caixa" id="pedido-zap" href="#" target="_blank" rel="noopener" hidden>Falar no WhatsApp</a>
+    <button class="caixa" type="button" id="pedido-fecha">Voltar à loja</button>
+  </div>
+</div>
+
+<nav class="menu" id="menu" aria-hidden="true" data-nao-editar>
+  <button class="menu__x" type="button" id="fecha-menu">Fechar ✕</button>
+  <a href="./index.html#topo">Homepage</a>
+  <a href="./index.html#sobre">Sobre nós</a>
+  <a href="./index.html#mata">Mata Atlântica</a>
+  <a href="./index.html#terroir">O Terroir</a>
+  <a href="./index.html#vinhos">Nossos vinhos</a>
+  <a href="./loja.html" aria-current="page">Nossa loja</a>
+</nav>
+
+<script>
+/* ==========================================================
+   A loja.
+
+   A vitrine é uma lista só: conteudo.json → loja.produtos, que o Modo
+   Edição grava; enquanto ninguém mexeu nela pelo Modo Edição, vale o
+   loja.json de partida. A sacola fica guardada no aparelho de quem compra.
+
+   O preço que vale na cobrança é o que o Worker lê no conteudo.json
+   publicado — o daqui só serve para mostrar. Mexer no navegador não muda
+   o valor cobrado.
+   ========================================================== */
+(function () {
+  var pega = function (id) { return document.getElementById(id); };
+  var CHECKOUT = 'https://vilabotane-pagamento.gabriellroque9017.workers.dev/';
+  var ZAP = '5524999936927';
+  var CATS = [['vinhos', 'Vinhos'], ['despensa', 'Despensa'], ['objetos', 'Objetos']];
+  var MAX = 12;
+  var CHAVE = 'vb-sacola', CHAVE_PEDIDO = 'vb-pedido';
+  var previa = /[?&]previa=1/.test(location.search);
+
+  var vitrine = pega('vitrine'), conta = pega('conta');
+  var TODOS = [];                         /* a lista inteira, com os escondidos */
+  var sacola = {};                        /* id → quantidade */
+  var filtro = '';
+  var carregou = false, editando = false, ponte = null;
+  var mpPronto = false;                   /* o Worker já sabe cobrar uma sacola? */
+
+  /* ---------- miúdos ---------- */
+  function lePreco(t) {
+    var s = String(t || '').replace(/[^\d.,]/g, '');
+    if (!s) return 0;
+    if (s.indexOf(',') > -1) s = s.replace(/\./g, '').replace(',', '.');
+    else if (!/\.\d{1,2}$/.test(s)) s = s.replace(/\./g, '');
+    var n = parseFloat(s);
+    return n > 0 ? Math.round(n * 100) / 100 : 0;
+  }
+  function real(n) {
+    var redondo = Math.round(n * 100) % 100 === 0;
+    return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: redondo ? 0 : 2, maximumFractionDigits: 2 });
+  }
+  function texto(t) { var d = document.createElement('div'); d.textContent = String(t == null ? '' : t); return d.innerHTML.replace(/"/g, '&quot;'); }
+  function fotoDe(p) {
+    var f = p.fotoLocal || p.foto || '';
+    if (/^blob:/.test(f) || /^(\.\/|\/)?img\/[\w\-.\/]+$/.test(f)) return f;
+    return '';
+  }
+  function imgDe(p, lazy) {
+    var f = fotoDe(p);
+    if (!f) return '<img class="ave" src="./img/passaro-linha.png" alt="">';
+    return '<img src="' + texto(f) + '" alt="' + texto(p.nome) + '"' + (lazy ? ' loading="lazy"' : '') + ' decoding="async">';
+  }
+  function nomeCat(c) { for (var i = 0; i < CATS.length; i++) if (CATS[i][0] === c) return CATS[i][1]; return ''; }
+  function guarda() { try { localStorage.setItem(CHAVE, JSON.stringify(sacola)); } catch (e) {} }
+  function recupera() { try { sacola = JSON.parse(localStorage.getItem(CHAVE) || '{}') || {}; } catch (e) { sacola = {}; } }
+  function porId(id) { for (var i = 0; i < TODOS.length; i++) if (TODOS[i].id === id) return TODOS[i]; return null; }
+  function aVenda(p) { return p && p.visivel !== false && !p.esgotado && lePreco(p.preco) > 0; }
+  function zapCom(recado) {
+    return 'https://api.whatsapp.com/send/?phone=' + ZAP + '&text=' + encodeURIComponent(recado) + '&type=phone_number&app_absent=0';
+  }
+  function normaliza(lista) {
+    var vistos = {};
+    return (lista || []).filter(function (p) { return p && typeof p === 'object'; }).map(function (p, i) {
+      var id = String(p.id || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 60) || ('produto-' + i);
+      while (vistos[id]) id += '-b';
+      vistos[id] = 1;
+      return {
+        id: id, nome: String(p.nome || ''), linha: String(p.linha || ''), preco: String(p.preco || ''),
+        categoria: nomeCat(p.categoria) ? p.categoria : 'despensa',
+        foto: String(p.foto || ''), selo: String(p.selo || ''),
+        esgotado: !!p.esgotado, visivel: p.visivel !== false
+      };
+    });
+  }
+
+  /* ---------- a vitrine ---------- */
+  function cartao(p) {
+    var selo = p.esgotado
+      ? '<p class="produto__selo produto__selo--tie">Esgotado</p>'
+      : '<p class="produto__selo">' + (p.selo ? texto(p.selo) : '&nbsp;') + '</p>';
+    var bt = p.esgotado
+      ? '<button class="caixa" type="button" disabled>Esgotado</button>'
+      : '<button class="caixa" type="button" data-poe="' + texto(p.id) + '">Adicionar</button>';
+    return '<article class="produto" data-cat="' + texto(p.categoria) + '">'
+      + '<div class="produto__foto">' + imgDe(p, true) + '</div>'
+      + selo + '<h3>' + texto(p.nome) + '</h3>'
+      + '<p class="produto__linha">' + texto(p.linha) + '</p>'
+      + '<p class="produto__preco num">' + texto(p.preco) + '</p>' + bt + '</article>';
+  }
+
+  function monta() {
+    if (!carregou) return;
+    if (editando) return montaEdicao();
+    var lista = TODOS.filter(function (p) { return p.visivel !== false; });
+    montaFiltros(lista);
+    var mostra = lista.filter(function (p) { return !filtro || p.categoria === filtro; });
+    vitrine.classList.toggle('vitrine--pouca', mostra.length > 0 && mostra.length < 4);
+    vitrine.innerHTML = mostra.length
+      ? mostra.map(cartao).join('')
+      : '<p class="vitrine__vazia">' + (lista.length ? 'Nada nesta categoria por enquanto.' : 'A loja está sendo arrumada. Volte em breve.') + '</p>';
+    var cards = vitrine.querySelectorAll('.produto');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e, i) {
+          if (!e.isIntersecting) return;
+          setTimeout(function () { e.target.classList.add('is-vis'); }, (i % 4) * 90);
+          io.unobserve(e.target);
+        });
+      }, { rootMargin: '0px 0px -6% 0px' });
+      cards.forEach(function (c) { io.observe(c); });
+    } else cards.forEach(function (c) { c.classList.add('is-vis'); });
+  }
+
+  /* as abas só aparecem quando há mais de uma categoria para escolher */
+  function montaFiltros(lista) {
+    var nav = pega('filtros');
+    var tem = CATS.filter(function (c) { return lista.some(function (p) { return p.categoria === c[0]; }); });
+    if (tem.length < 2) { filtro = ''; nav.innerHTML = ''; nav.classList.add('filtros--so'); return; }
+    if (filtro && !tem.some(function (c) { return c[0] === filtro; })) filtro = '';
+    nav.classList.remove('filtros--so');
+    nav.innerHTML = [['', 'Tudo']].concat(tem).map(function (c) {
+      return '<button type="button" data-cat="' + c[0] + '" aria-pressed="' + (filtro === c[0]) + '">' + c[1] + '</button>';
+    }).join('');
+  }
+  pega('filtros').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-cat]');
+    if (!b) return;
+    filtro = b.getAttribute('data-cat');
+    monta();
+    vitrine.querySelectorAll('.produto').forEach(function (c) { c.classList.add('is-vis'); });
+  });
+
+  /* adicionar: a caixa vira "Na sacola" por um instante, e o número do topo pulsa */
+  vitrine.addEventListener('click', function (e) {
+    var bt = e.target.closest('[data-poe]');
+    if (!bt || editando) return;
+    var id = bt.getAttribute('data-poe');
+    sacola[id] = Math.min(MAX, (sacola[id] || 0) + 1);
+    guarda(); atualiza();
+    bt.classList.add('is-feito'); bt.textContent = 'Na sacola ✓';
+    setTimeout(function () { bt.classList.remove('is-feito'); bt.textContent = 'Adicionar'; }, 1500);
+    conta.classList.add('is-pulso');
+    setTimeout(function () { conta.classList.remove('is-pulso'); }, 600);
+  });
+
+  /* ---------- a sacola ---------- */
+  var gaveta = pega('sacola'), veu = pega('veu'), itens = pega('sacola-itens');
+  function abreSacola(sim) {
+    gaveta.classList.toggle('is-aberta', sim); veu.classList.toggle('is-aberto', sim);
+    gaveta.setAttribute('aria-hidden', sim ? 'false' : 'true');
+    document.body.style.overflow = sim ? 'hidden' : '';
+    if (sim) pega('fecha-sacola').focus();
+  }
+  function entrega() { var r = document.querySelector('input[name="entrega"]:checked'); return r ? r.value : 'retirada'; }
+
+  /* o que está na sacola, já com os preços e o que não pode mais ser vendido */
+  function conteudoDaSacola() {
+    var r = { linhas: [], total: 0, pecas: 0, vinho: false, fora: false };
+    Object.keys(sacola).forEach(function (id) {
+      var p = porId(id), q = sacola[id];
+      if (!p || p.visivel === false || !(q > 0)) { delete sacola[id]; return; }
+      var ok = aVenda(p), v = ok ? lePreco(p.preco) * q : 0;
+      r.linhas.push({ p: p, q: q, v: v, ok: ok });
+      if (ok) { r.total += v; r.pecas += q; } else r.fora = true;
+      if (p.categoria === 'vinhos') r.vinho = true;
+    });
+    return r;
+  }
+
+  function atualiza() {
+    var s = conteudoDaSacola();
+    if (!s.linhas.length) {
+      itens.innerHTML = '<div class="sacola__vazia"><img src="./img/passaro-linha.png" alt=""><p>A sacola está vazia.</p>'
+        + '<button class="caixa" type="button" id="volta-vitrine" style="width:auto;padding:0 26px">Ver a loja</button></div>';
+      pega('volta-vitrine').addEventListener('click', function () { abreSacola(false); });
+    } else {
+      itens.innerHTML = s.linhas.map(function (l) {
+        var p = l.p, q = l.q;
+        return '<div class="item" data-id="' + texto(p.id) + '">'
+          + '<div class="item__foto">' + imgDe(p, false).replace(/ alt="[^"]*"/, ' alt=""') + '</div><div>'
+          + '<h3>' + texto(p.nome) + '</h3><p class="rotulo" style="text-indent:0;letter-spacing:.22em">' + texto(nomeCat(p.categoria)) + '</p>'
+          + (l.ok ? '' : '<p class="item__fora">' + (p.esgotado ? 'Esgotado' : 'Indisponível') + ' · tire da sacola</p>')
+          + '<div class="item__pe"><span class="qtd"><button type="button" data-q="-1" aria-label="Uma a menos"' + (q <= 1 || !l.ok ? ' disabled' : '') + '>−</button>'
+          + '<output class="num">' + q + '</output><button type="button" data-q="1" aria-label="Uma a mais"' + (q >= MAX || !l.ok ? ' disabled' : '') + '>+</button></span>'
+          + '<p class="item__preco num">' + (l.ok ? real(l.v) : '—') + '</p></div>'
+          + '<button class="item__tirar" type="button" data-tira>Tirar</button></div></div>';
+      }).join('');
+    }
+    guarda();
+    conta.textContent = s.pecas;
+    pega('sacola-pe').hidden = !s.linhas.length;
+    pega('sacola-total').textContent = real(s.total);
+    pega('sacola-maior').hidden = !s.vinho;
+    botoes(s);
+  }
+
+  /* Pix e cartão pelo Mercado Pago quando é retirada e o Worker já sabe
+     cobrar a sacola; o WhatsApp vale sempre (e é o caminho do envio, que
+     tem frete a combinar). */
+  function botoes(s) {
+    s = s || conteudoDaSacola();
+    var envio = entrega() === 'envio';
+    var pode = s.pecas > 0 && !s.fora && (!s.vinho || pega('maior').checked);
+    var mp = mpPronto && !envio;
+    ['paga-pix', 'paga-cartao'].forEach(function (id) { pega(id).hidden = !mp; pega(id).disabled = !pode; });
+    var zap = pega('paga-zap');
+    zap.textContent = envio ? 'Combinar o envio no WhatsApp' : (mp ? 'Pedir pelo WhatsApp' : 'Fazer o pedido no WhatsApp');
+    zap.setAttribute('aria-disabled', pode ? 'false' : 'true');
+    zap.href = pode ? zapCom(recadoDoPedido(s, envio)) : '#';
+    var aviso = s.fora ? 'Tire da sacola o que acabou para seguir.'
+      : envio ? 'O frete é calculado pelo CEP e combinado no WhatsApp, junto com o pagamento.'
+      : mp ? 'Pix ou cartão pelo Mercado Pago, com retirada na vinícola.'
+      : 'Mande o pedido pelo WhatsApp e combinamos o pagamento e a retirada.';
+    if (s.vinho) aviso += ' Venda de bebida alcoólica proibida para menores de 18 anos.';
+    pega('sacola-aviso').textContent = aviso;
+  }
+
+  function recadoDoPedido(s, envio) {
+    var linhas = s.linhas.filter(function (l) { return l.ok; }).map(function (l) {
+      return '• ' + l.q + '× ' + l.p.nome + ' — ' + real(l.v);
+    });
+    return 'Olá! Gostaria de fazer este pedido na loja da Vila Botané:\n' + linhas.join('\n')
+      + '\nTotal: ' + real(s.total)
+      + (envio ? '\nEntrega: enviar para o meu endereço (CEP: )' : '\nEntrega: retirar na vinícola');
+  }
+
+  itens.addEventListener('click', function (e) {
+    var linha = e.target.closest('.item'); if (!linha) return;
+    var id = linha.getAttribute('data-id');
+    var q = e.target.closest('[data-q]');
+    if (q) sacola[id] = Math.max(1, Math.min(MAX, (sacola[id] || 0) + Number(q.getAttribute('data-q'))));
+    if (e.target.closest('[data-tira]')) delete sacola[id];
+    atualiza();
+  });
+  pega('maior').addEventListener('change', function () { botoes(); });
+  document.querySelectorAll('input[name="entrega"]').forEach(function (r) { r.addEventListener('change', function () { botoes(); }); });
+  pega('paga-zap').addEventListener('click', function (e) {
+    if (this.getAttribute('aria-disabled') === 'true') e.preventDefault();
+  });
+
+  /* para o Mercado Pago vão só os ids e as quantidades: o Worker busca
+     nome e preço no site publicado e devolve com o número do pedido */
+  function vaiMP(meio, bt) {
+    var s = conteudoDaSacola();
+    if (!mpPronto || !s.pecas || s.fora || (s.vinho && !pega('maior').checked) || entrega() !== 'retirada') return;
+    var lista = s.linhas.map(function (l) { return l.p.id + ':' + l.q; }).join(',');
+    try {
+      localStorage.setItem(CHAVE_PEDIDO, JSON.stringify({
+        itens: s.linhas.map(function (l) { return { nome: l.p.nome, q: l.q, v: l.v }; }),
+        total: s.total, quando: Date.now()
+      }));
+    } catch (e) {}
+    ['paga-pix', 'paga-cartao'].forEach(function (id) { pega(id).disabled = true; });
+    bt.textContent = 'Abrindo o Mercado Pago…';
+    location.assign(CHECKOUT + '?sacola=' + encodeURIComponent(lista) + '&meio=' + meio);
+  }
+  pega('paga-pix').addEventListener('click', function () { vaiMP('pix', this); });
+  pega('paga-cartao').addEventListener('click', function () { vaiMP('cartao', this); });
+  /* quem volta do Mercado Pago pelo botão do navegador encontra os botões de pé */
+  window.addEventListener('pageshow', function () {
+    pega('paga-pix').textContent = 'Pagar no Pix'; pega('paga-cartao').textContent = 'Pagar no cartão';
+    if (carregou) botoes();
+  });
+
+  pega('abre-sacola').addEventListener('click', function () { abreSacola(true); });
+  pega('fecha-sacola').addEventListener('click', function () { abreSacola(false); });
+  veu.addEventListener('click', function () { if (pega('pedido').hidden) abreSacola(false); });
+
+  /* ---------- a volta do Mercado Pago ----------
+     O endereço de volta não prova nada: qualquer um poderia digitá-lo. Por
+     isso "Pedido confirmado" só aparece depois que o Worker pergunta ao
+     próprio Mercado Pago se a venda com esse número foi paga. */
+  var volta = { ref: '', order: '', estado: '', tentativas: 0 };
+  function pedidoGuardado() { try { return JSON.parse(localStorage.getItem(CHAVE_PEDIDO) || 'null'); } catch (e) { return null; } }
+  function mostraPedido(titulo, txt, deNovo, recado, comLista) {
+    pega('pedido-titulo').textContent = titulo;
+    pega('pedido-texto').textContent = txt;
+    var bt = pega('pedido-de-novo'); bt.hidden = !deNovo; bt.disabled = false;
+    var zap = pega('pedido-zap'); zap.hidden = !recado;
+    if (recado) { zap.href = zapCom(recado); zap.textContent = comLista ? 'Combinar a retirada no WhatsApp' : 'Falar no WhatsApp'; }
+    var g = pedidoGuardado(), ul = pega('pedido-lista');
+    if (comLista && g && g.itens && g.itens.length) {
+      ul.innerHTML = g.itens.map(function (i) {
+        return '<li><span>' + texto(i.q + '× ' + i.nome) + '</span><span>' + texto(real(i.v)) + '</span></li>';
+      }).join('') + '<li class="is-total"><span>Total</span><span>' + texto(real(g.total)) + '</span></li>';
+      ul.hidden = false;
+    } else ul.hidden = true;
+    pega('pedido-num').textContent = 'Pedido ' + volta.ref;
+    pega('pedido-num').hidden = !comLista;
+    pega('pedido').hidden = false; veu.classList.add('is-aberto');
+  }
+  function sobreOPedido() {
+    var g = pedidoGuardado(), r = '\nPedido: ' + volta.ref;
+    if (g && g.itens) r += '\n' + g.itens.map(function (i) { return '• ' + i.q + '× ' + i.nome; }).join('\n') + '\nTotal: ' + real(g.total);
+    return r;
+  }
+  function confere(quieto) {
+    if (!quieto) mostraPedido('Conferindo o pagamento', 'Um instante: estamos confirmando com o Mercado Pago.', false, '', false);
+    var url = new URL('confere', CHECKOUT);
+    url.searchParams.set('ref', volta.ref);
+    if (volta.order) url.searchParams.set('order_id', volta.order);
+    fetch(url.toString(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.estado === 'aprovado' && d.ref === volta.ref) {
+          var recado = 'Olá! Paguei um pedido na loja do site e quero combinar a retirada.' + sobreOPedido();
+          mostraPedido('Pedido confirmado', 'Recebemos o pagamento. Agora é só combinar o dia da retirada na vinícola: a mensagem para o WhatsApp já vai pronta.', false, recado, true);
+          sacola = {}; atualiza();
+          try { localStorage.removeItem(CHAVE_PEDIDO); } catch (e) {}
+          return;
+        }
+        if (d.estado === 'pendente' || (d.estado !== 'recusado' && volta.estado === 'pendente')) {
+          mostraPedido('Pagamento em análise',
+            'O Mercado Pago ainda não confirmou o pagamento. No Pix, isso leva alguns segundos depois de pagar. A confirmação aparece aqui assim que ele responder.',
+            true, 'Olá! Fiz um pedido na loja pelo Mercado Pago e ainda não apareceu a confirmação.' + sobreOPedido(), false);
+          if (volta.tentativas++ < 6) setTimeout(function () { confere(true); }, 5000);
+          return;
+        }
+        if (d.estado === 'recusado' || volta.estado === 'recusado') {
+          return mostraPedido('Pagamento não concluído',
+            'Nada foi cobrado. A sacola continua guardada: você pode tentar de novo, pelo Pix ou com outro cartão.',
+            false, 'Olá! Tentei pagar um pedido na loja pelo Mercado Pago e o pagamento não passou.', false);
+        }
+        mostraPedido('Ainda sem confirmação',
+          'Não encontramos o pagamento deste pedido. Se você já pagou, confira de novo em instantes ou fale conosco.',
+          true, 'Olá! Fiz um pedido na loja pelo Mercado Pago e não recebi a confirmação.' + sobreOPedido(), false);
+      })
+      .catch(function () {
+        mostraPedido('Não deu para conferir agora',
+          'A conexão falhou ao falar com o Mercado Pago. Tente de novo em instantes.',
+          true, 'Olá! Fiz um pedido na loja pelo Mercado Pago.' + sobreOPedido(), false);
+      });
+  }
+  pega('pedido-de-novo').addEventListener('click', function () { this.disabled = true; volta.tentativas = 6; confere(); });
+  pega('pedido-fecha').addEventListener('click', function () { pega('pedido').hidden = true; veu.classList.remove('is-aberto'); });
+
+  function leVolta() {
+    var p = new URLSearchParams(location.search);
+    var nosso = p.get('pagamento');
+    if (!nosso) return;
+    history.replaceState(null, '', location.pathname);
+    volta.estado = nosso;
+    volta.ref = String(p.get('ref') || p.get('external_reference') || '').toUpperCase();
+    volta.order = p.get('order_id') || '';
+    if (!/^LOJA-[A-Z0-9]{5}-[A-Z0-9]$/.test(volta.ref)) return;
+    confere();
+  }
+
+  /* ---------- o menu ---------- */
+  var menu = pega('menu');
+  function abreMenu(sim) { menu.classList.toggle('is-aberto', sim); menu.setAttribute('aria-hidden', sim ? 'false' : 'true'); }
+  pega('abre-menu').addEventListener('click', function () { abreMenu(true); });
+  pega('fecha-menu').addEventListener('click', function () { abreMenu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    abreSacola(false); abreMenu(false);
+  });
+
+  /* ==========================================================
+     O Modo Edição da vitrine.
+
+     O modo-edicao.js chama window.__loja.ligaEdicao(ponte) depois de
+     entrar. Daí em diante os cartões vêm com os campos abertos e as
+     ferramentas embaixo; cada mudança devolve a lista inteira para o
+     editor (ponte.mudou), e a foto escolhida segue com ele (ponte.foto),
+     que a envia para img/enviadas quando ela clicar em Salvar.
+     ========================================================== */
+  function campo(p, nome, vazio) {
+    return '<span class="ed-campo" contenteditable="true" spellcheck="true" data-campo="' + nome + '" data-vazio="' + texto(vazio) + '">' + texto(p[nome]) + '</span>';
+  }
+  function cartaoEdicao(p, i) {
+    var cats = CATS.map(function (c) {
+      return '<option value="' + c[0] + '"' + (p.categoria === c[0] ? ' selected' : '') + '>' + c[1] + '</option>';
+    }).join('');
+    var semPreco = !(lePreco(p.preco) > 0);
+    return '<article class="produto ed is-vis' + (p.visivel === false ? ' ed-escondido' : '') + '" data-id="' + texto(p.id) + '">'
+      + '<div class="produto__foto">' + imgDe(p, false)
+      + (p.visivel === false ? '<span class="ed-marca">Escondido da loja</span>' : '')
+      + '<label class="ed-foto">' + (fotoDe(p) ? 'Trocar foto' : 'Escolher foto') + '<input type="file" accept="image/*" data-acao="foto"></label></div>'
+      + '<p class="produto__selo' + (p.esgotado ? ' produto__selo--tie' : '') + '">' + campo(p, 'selo', p.esgotado ? 'esgotado' : 'selo (opcional)') + '</p>'
+      + '<h3>' + campo(p, 'nome', 'nome do produto') + '</h3>'
+      + '<p class="produto__linha">' + campo(p, 'linha', 'uma linha sobre ele') + '</p>'
+      + '<p class="produto__preco num">' + campo(p, 'preco', 'R$ 0') + '</p>'
+      + '<p class="ed-alerta"' + (semPreco ? '' : ' hidden') + '>Sem preço, ninguém consegue comprar. Escreva assim: R$ 45</p>'
+      + '<div class="ed-ferramentas">'
+      +   '<select data-acao="categoria" aria-label="Categoria">' + cats + '</select>'
+      +   '<button type="button" data-acao="antes" aria-label="Mover para antes"' + (i === 0 ? ' disabled' : '') + '>←</button>'
+      +   '<button type="button" data-acao="depois" aria-label="Mover para depois"' + (i === TODOS.length - 1 ? ' disabled' : '') + '>→</button>'
+      +   '<button type="button" data-acao="esgotado" aria-pressed="' + !!p.esgotado + '">Esgotado</button>'
+      +   '<button type="button" data-acao="visivel">' + (p.visivel === false ? 'Mostrar' : 'Esconder') + '</button>'
+      +   '<button type="button" data-acao="tirar" class="ed-tirar">Tirar</button>'
+      + '</div></article>';
+  }
+  function montaEdicao() {
+    pega('filtros').innerHTML = '';
+    vitrine.classList.remove('vitrine--pouca');
+    vitrine.innerHTML = '<p class="ed-dica">Loja em edição. Toque no nome, na linha ou no preço para escrever. '
+      + '“Esconder” tira da vitrine sem apagar; “Tirar” apaga o produto. Depois, Salvar na barra de baixo.</p>'
+      + TODOS.map(cartaoEdicao).join('')
+      + '<button type="button" class="ed-novo" data-acao="novo"><span>+</span>Novo produto</button>';
+  }
+  function avisaEditor() {
+    if (ponte && ponte.mudou) ponte.mudou(JSON.parse(JSON.stringify(TODOS)));
+  }
+  function produtoDoCartao(el) {
+    var c = el.closest('.produto.ed');
+    return c ? porId(c.getAttribute('data-id')) : null;
+  }
+
+  /* a foto chega do celular com 4000 px e 6 MB: sai daqui com no máximo
+     1400 px de lado, em webp, que é o que a vitrine precisa */
+  function reduz(arq, id) {
+    return new Promise(function (ok) {
+      if (!/^image\/(jpeg|png|webp|avif)$/i.test(arq.type || '')) return ok(arq);
+      var url = URL.createObjectURL(arq), im = new Image();
+      im.onload = function () {
+        var w = im.naturalWidth, h = im.naturalHeight, f = Math.min(1, 1400 / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(w * f)); c.height = Math.max(1, Math.round(h * f));
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        var sai = function (b) {
+          if (!b) return ok(arq);
+          var ext = /webp/.test(b.type) ? '.webp' : '.jpg';
+          try { ok(new File([b], 'loja-' + id + ext, { type: b.type })); } catch (e) { ok(arq); }
+        };
+        c.toBlob(function (b) {
+          if (b && /webp/.test(b.type)) return sai(b);
+          c.toBlob(sai, 'image/jpeg', 0.86);          /* Safari antigo não faz webp */
+        }, 'image/webp', 0.86);
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); ok(arq); };
+      im.src = url;
+    });
+  }
+
+  function ligaEdicao(p) {
+    if (editando) return;
+    ponte = p || {};
+    editando = true;
+    document.documentElement.classList.add('loja-editando');
+    monta();
+
+    vitrine.addEventListener('input', function (e) {
+      var c = e.target.closest('.ed-campo'); if (!c) return;
+      var prod = produtoDoCartao(c); if (!prod) return;
+      prod[c.getAttribute('data-campo')] = c.textContent.replace(/\s+/g, ' ').trim();
+      if (c.getAttribute('data-campo') === 'preco') {
+        c.closest('.produto').querySelector('.ed-alerta').hidden = lePreco(prod.preco) > 0;
+      }
+      avisaEditor();
+    });
+    /* uma linha só: Enter fecha o campo; colar entra como texto simples */
+    vitrine.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target.closest('.ed-campo')) { e.preventDefault(); e.target.blur(); }
+    });
+    vitrine.addEventListener('paste', function (e) {
+      if (!e.target.closest('.ed-campo')) return;
+      e.preventDefault();
+      var t = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\s+/g, ' ');
+      document.execCommand('insertText', false, t);
+    });
+    /* "45" vira "R$ 45" ao sair do campo */
+    vitrine.addEventListener('focusout', function (e) {
+      var c = e.target.closest && e.target.closest('.ed-campo[data-campo="preco"]'); if (!c) return;
+      var prod = produtoDoCartao(c), n = lePreco(c.textContent);
+      if (!prod || !n) return;
+      var bonito = real(n);
+      if (bonito !== prod.preco) { prod.preco = bonito; c.textContent = bonito; avisaEditor(); }
+    });
+
+    vitrine.addEventListener('change', function (e) {
+      var alvo = e.target, prod = produtoDoCartao(alvo); if (!prod) return;
+      var acao = alvo.getAttribute('data-acao');
+      if (acao === 'categoria') { prod.categoria = alvo.value; avisaEditor(); return; }
+      if (acao === 'foto' && alvo.files && alvo.files[0]) {
+        var rotulo = alvo.parentNode;
+        rotulo.firstChild.nodeValue = 'Preparando…';
+        reduz(alvo.files[0], prod.id).then(function (arq) {
+          var aceita = ponte.foto ? ponte.foto(prod.id, arq) : false;
+          if (aceita) { prod.fotoLocal = URL.createObjectURL(arq); avisaEditor(); }
+          monta();
+        });
+      }
+    });
+
+    vitrine.addEventListener('click', function (e) {
+      var bt = e.target.closest('button[data-acao]'); if (!bt) return;
+      var acao = bt.getAttribute('data-acao');
+      if (acao === 'novo') {
+        var id = 'produto-' + Date.now().toString(36);
+        TODOS.push({ id: id, nome: 'Novo produto', linha: '', preco: '', categoria: 'despensa', foto: '', selo: '', esgotado: false, visivel: true });
+        avisaEditor(); monta();
+        var novo = vitrine.querySelector('.produto.ed[data-id="' + id + '"]');
+        if (novo) { novo.scrollIntoView({ block: 'center', behavior: 'smooth' }); var n = novo.querySelector('[data-campo="nome"]'); if (n) { n.focus(); try { var r = document.createRange(); r.selectNodeContents(n); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch (er) {} } }
+        return;
+      }
+      var prod = produtoDoCartao(bt); if (!prod) return;
+      var i = TODOS.indexOf(prod);
+      if (acao === 'antes' && i > 0) { TODOS.splice(i, 1); TODOS.splice(i - 1, 0, prod); }
+      else if (acao === 'depois' && i < TODOS.length - 1) { TODOS.splice(i, 1); TODOS.splice(i + 1, 0, prod); }
+      else if (acao === 'esgotado') prod.esgotado = !prod.esgotado;
+      else if (acao === 'visivel') prod.visivel = prod.visivel === false;
+      else if (acao === 'tirar') {
+        if (!confirm('Tirar “' + (prod.nome || 'este produto') + '” da loja?\n\nSe for só por um tempo, use “Esconder”: ele sai da vitrine e volta quando você quiser.')) return;
+        TODOS.splice(i, 1);
+      } else return;
+      avisaEditor(); monta();
+    });
+  }
+  window.__loja = { ligaEdicao: ligaEdicao };
+
+  /* ---------- de onde vem a vitrine ----------
+     Na prévia do Modo Edição, o rascunho que acabou de ser salvo (guardado
+     na sessão, porque o GitHub leva um minuto para republicar); fora dela,
+     o conteudo.json publicado. Se nenhum dos dois fala da loja, o loja.json. */
+  function carrega() {
+    var rascunho = null;
+    if (previa) { try { rascunho = JSON.parse(sessionStorage.getItem('modo-edicao:rascunho') || 'null'); } catch (e) {} }
+    if (rascunho && rascunho.loja && Array.isArray(rascunho.loja.produtos)) return Promise.resolve(rascunho.loja.produtos);
+    var lerJson = function (arq) {
+      return fetch(arq, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    };
+    return lerJson(previa ? './conteudo-previa.json' : './conteudo.json')
+      .then(function (d) { return d || (previa ? lerJson('./conteudo.json') : null); })
+      .then(function (d) {
+        if (d && d.loja && Array.isArray(d.loja.produtos)) return d.loja.produtos;
+        return lerJson('./loja.json').then(function (j) {
+          if (!j || !Array.isArray(j.produtos)) throw new Error('sem loja');
+          return j.produtos;
+        });
+      });
+  }
+
+  /* a prévia do editor reaplica o rascunho por aqui; a vitrine vai junto */
+  document.addEventListener('DOMContentLoaded', function () {
+    var aplica = window.__aplicaConteudo;
+    if (typeof aplica !== 'function') return;
+    window.__aplicaConteudo = function (d) {
+      var r = aplica.apply(this, arguments);
+      if (!editando && d && d.loja && Array.isArray(d.loja.produtos)) { TODOS = normaliza(d.loja.produtos); monta(); atualiza(); }
+      return r;
+    };
+  });
+
+  /* Foto que ainda não chegou ao site (a recém-enviada pelo Modo Edição leva
+     um minuto para o GitHub publicar): fica o pássaro no lugar, e a página
+     tenta de novo algumas vezes até ela aparecer. */
+  document.addEventListener('error', function (e) {
+    var im = e.target;
+    if (!im || im.tagName !== 'IMG' || !im.closest('.produto__foto, .item__foto')) return;
+    var era = im.getAttribute('data-era') || im.getAttribute('src');
+    var vez = Number(im.getAttribute('data-vez') || 0);
+    if (/passaro-linha\.png$/.test(era) || /^blob:/.test(era)) return;
+    im.setAttribute('data-era', era); im.setAttribute('data-vez', vez + 1);
+    im.className = 'ave'; im.src = './img/passaro-linha.png';
+    if (vez < 6) setTimeout(function () {
+      var nova = new Image();
+      nova.onload = function () { if (im.isConnected) { im.className = ''; im.src = nova.src; } };
+      nova.onerror = function () { im.dispatchEvent(new Event('error')); };
+      nova.src = era + (era.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now();
+    }, 15000);
+  }, true);
+
+  /* ---------- começa ---------- */
+  recupera();
+  carrega()
+    .then(function (lista) { TODOS = normaliza(lista); carregou = true; monta(); atualiza(); leVolta(); })
+    .catch(function () {
+      vitrine.innerHTML = '<p class="vitrine__vazia">A loja não carregou. Tente de novo em instantes.</p>';
+    });
+  /* o Worker antigo não conhece /loja: até ele ser atualizado, a sacola
+     segue só pelo WhatsApp, sem botão que leve a uma página de erro */
+  fetch(new URL('loja', CHECKOUT).toString(), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { mpPronto = !!(d && d.loja === true); if (carregou) botoes(); })
+    .catch(function () {});
+})();
+</script>
+<script src="./js/conteudo.js" defer></script>
+<script src="./js/modo-edicao.js" defer></script>
+</body>
+</html>
