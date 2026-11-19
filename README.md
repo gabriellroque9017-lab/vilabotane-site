@@ -68,10 +68,7 @@ a Casa do Lago (busque por `github.io` nas páginas).
   Com `data-checkout=""` o painel volta ao Pix estático de antes, sem carta.
 - **A loja (`loja.html`).** Chega-se a ela pelo menu ("Loja") e pela
   caixa "Loja" logo abaixo dos dois rótulos — não é uma seção da página
-  inicial. O clique na caixa a deixa mais verde, faz vinhas com folhas de
-  videira brotarem das bordas dela (SVG desenhado na hora) e cobre a tela com
-  o creme da loja antes de trocar de página; nova aba, Modo Edição e
-  "reduzir movimento" vão direto. Se o `index.html` for montado de novo, esses dois links
+  inicial. No clique, a caixa fica mais verde. Se o `index.html` for montado de novo, esses dois links
   têm de voltar.
   A vitrine é uma lista só, em `conteudo.json` → `loja.produtos` (id, nome,
   linha, preco, categoria vinhos/despensa/objetos, foto, selo, esgotado,
