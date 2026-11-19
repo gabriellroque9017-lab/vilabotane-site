@@ -55,13 +55,13 @@ a Casa do Lago (busque por `github.io` nas páginas).
   lido.
 - **Pix e cartão pelo Mercado Pago, e a carta de reserva.** Com
   `data-checkout` (no painel `#reserva`) apontando para a função em
-  `../pagamento-cartao/` (Cloudflare Workers), o painel pede o nome e os botões
-  "Pagar no Pix" e "Pagar no cartão" levam ao Mercado Pago, cada um só com o
-  seu meio. A função lê o preço do `conteudo.json`, sorteia a chave da carta
+  `../pagamento-cartao/` (Cloudflare Workers), os botões "Pagar no Pix" e
+  "Pagar no cartão" levam ao Mercado Pago, cada um só com o seu meio. A função lê o preço do `conteudo.json`, sorteia a chave da carta
   (TIE-7KQ2M-X, TIEPRETO2-…) e a usa como referência da venda; a chave do
   Mercado Pago fica como segredo do Worker, nunca aqui. Na volta
   (`?pagamento=…&ref=…&nome=…`) o site pergunta à função (`/confere`) se a venda
-  foi paga: só com "aprovado" do Mercado Pago aparece a carta (ave, vinho,
+  foi paga: só com "aprovado" do Mercado Pago o painel pede o nome e mostra
+  a carta (ave, vinho,
   nome, data, salvar ou imprimir; a chave fica só como referência da venda). Pendente confere sozinho por meio
   minuto; recusado ou sem confirmação fica no aviso com o WhatsApp.
   Com `data-checkout=""` o painel volta ao Pix estático de antes, sem carta.

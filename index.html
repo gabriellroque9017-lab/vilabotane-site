@@ -1218,7 +1218,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .pix__copia[hidden]{ display:none; }
 /* na escolha, Pix, cartão e WhatsApp: três caixas da mesma largura */
 #vai-pix, #vai-cartao, #vai-zap,
-#volta-de-novo, #volta-zap, #carta-zap, #carta-imprime{ width:100%; max-width:300px; padding-left:14px; padding-right:14px; }
+#volta-de-novo, #volta-zap, #ver-carta, #carta-zap, #carta-imprime{ width:100%; max-width:300px; padding-left:14px; padding-right:14px; }
 .pix__campo[hidden]{ display:none; }
 .pix__campo--escolha{ max-width:300px; margin:2px 0 4px; }
 
@@ -2278,10 +2278,6 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
             <button class="pix__qtd-bt" type="button" id="pix-mais" aria-label="Uma garrafa a mais">+</button>
           </div>
           <p class="pix__passo" id="pix-passo" data-nao-editar>A garrafa fica reservada em seu nome e é retirada aqui na vinícola.</p>
-          <label class="pix__campo pix__campo--escolha" id="escolha-nome-campo" hidden>
-            <span class="rotulo">Seu nome</span>
-            <input type="text" id="escolha-nome" autocomplete="name" maxlength="60" placeholder="para a reserva ficar em seu nome">
-          </label>
           <label class="pix__maior">
             <input type="checkbox" id="pix-maior">
             <span>Tenho 18 anos ou mais</span>
@@ -2318,7 +2314,19 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
           <a class="pix__copia" id="volta-zap" data-nao-editar href="#" target="_blank" rel="noopener" hidden>Conversar no WhatsApp</a>
         </div>
 
-        <!-- passo 4: a carta da reserva, só com o pagamento confirmado -->
+        <!-- passo 4: pagamento confirmado, o nome para a carta -->
+        <div class="pix__etapa" data-passo="nome" hidden>
+          <p class="rotulo">Pagamento confirmado</p>
+          <h3 id="nome-vinho" data-nao-editar>Tiê, Cabernet Franc 2025</h3>
+          <p class="pix__passo" id="nome-passo" data-nao-editar>A garrafa é sua. Como escrevemos o seu nome na carta de reserva?</p>
+          <label class="pix__campo pix__campo--escolha">
+            <span class="rotulo">Seu nome</span>
+            <input type="text" id="carta-nome-campo" autocomplete="name" maxlength="60" placeholder="como deve aparecer na carta">
+          </label>
+          <button class="pix__copia" type="button" id="ver-carta" disabled>Ver minha carta</button>
+        </div>
+
+        <!-- passo 5: a carta da reserva, só com o pagamento confirmado -->
         <div class="pix__etapa carta" data-passo="carta" hidden>
           <div class="carta__folha" id="carta">
             <img class="carta__ave" src="./img/passaro-linha.png" alt="" aria-hidden="true" decoding="async">
@@ -3941,7 +3949,6 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   var menos = pega('pix-menos'), mais = pega('pix-mais'), qtdN = pega('pix-qtd');
   var qtdGrupo = painel.querySelector('.pix__qtd');
   var vaiCartao = pega('vai-cartao');
-  var escolhaNome = pega('escolha-nome'), escolhaCampo = pega('escolha-nome-campo');
   var CHECKOUT = (painel.dataset.checkout || '').trim();
   var MAX = 12;
   var CONTA = {
@@ -4098,7 +4105,6 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   menos.addEventListener('click', function () { if (atual.qtd > 1) { atual.qtd--; atualiza(); } });
   mais.addEventListener('click', function () { if (atual.qtd < MAX) { atual.qtd++; atualiza(); } });
   maior.addEventListener('change', liberaBotoes);
-  escolhaNome.addEventListener('input', liberaBotoes);
 
   /* passo 2 */
   vaiPix.addEventListener('click', function () {
@@ -4174,7 +4180,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     return String(t || '').replace(/[\u0000-\u001F\u007F<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 60);
   }
   function podePagar() {
-    return maior.checked && (!CHECKOUT || limpaNome(escolhaNome.value).length >= 2);
+    return maior.checked;
   }
   function liberaBotoes() {
     vaiPix.disabled = !podePagar();
@@ -4192,10 +4198,8 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     location.assign(CHECKOUT + (CHECKOUT.indexOf('?') > -1 ? '&' : '?')
       + 'vinho=' + encodeURIComponent(String(atual.prefixo || '').toLowerCase())
       + '&qtd=' + atual.qtd
-      + '&meio=' + meio
-      + '&nome=' + encodeURIComponent(limpaNome(escolhaNome.value)));
+      + '&meio=' + meio);
   }
-  escolhaCampo.hidden = !CHECKOUT;
   if (vaiCartao) {
     vaiCartao.hidden = !CHECKOUT;
     vaiCartao.addEventListener('click', function () { vaiMP('cartao', vaiCartao); });
@@ -4225,8 +4229,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     passo('volta');
   }
   function mostraCarta(d) {
-    var bt = document.querySelector('[data-pix][data-prefixo="' + (d.vinho === 'tiepreto' ? 'TIEPRETO' : 'TIE') + '"]');
-    var vinho = (bt && bt.dataset.vinho) || d.titulo || '';
+    var vinho = nomeDoVinho(d);
     var q = d.qtd || 1;
     var quando = d.data ? new Date(d.data) : new Date();
     if (isNaN(quando.getTime())) quando = new Date();
@@ -4244,6 +4247,37 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       + '\nReferência no Mercado Pago: ' + d.ref);
     passo('carta');
   }
+  /* o nome só é pedido depois que o pagamento foi confirmado */
+  var confirmado = null;
+  var campoNome = pega('carta-nome-campo'), verCarta = pega('ver-carta');
+  function nomeDoVinho(d) {
+    var bt = document.querySelector('[data-pix][data-prefixo="' + (d.vinho === 'tiepreto' ? 'TIEPRETO' : 'TIE') + '"]');
+    return (bt && bt.dataset.vinho) || d.titulo || '';
+  }
+  function pedeNome(d) {
+    confirmado = d;
+    if (volta.nome) return mostraCarta(d);   /* o nome já veio na volta */
+    var q = d.qtd || 1;
+    pega('nome-vinho').textContent = nomeDoVinho(d);
+    pega('nome-passo').textContent = q > 1
+      ? 'As ' + q + ' garrafas são suas. Como escrevemos o seu nome na carta de reserva?'
+      : 'A garrafa é sua. Como escrevemos o seu nome na carta de reserva?';
+    verCarta.disabled = limpaNome(campoNome.value).length < 2;
+    passo('nome');
+    campoNome.focus();
+  }
+  campoNome.addEventListener('input', function () {
+    verCarta.disabled = limpaNome(campoNome.value).length < 2;
+  });
+  function entregaCarta() {
+    var quem = limpaNome(campoNome.value);
+    if (!confirmado || quem.length < 2) return;
+    volta.nome = quem;
+    mostraCarta(confirmado);
+  }
+  verCarta.addEventListener('click', entregaCarta);
+  campoNome.addEventListener('keydown', function (e) { if (e.key === 'Enter') entregaCarta(); });
+
   function confere(quieto) {
     if (!quieto) mostraVolta('Conferindo o pagamento', 'Um instante: estamos confirmando com o Mercado Pago.', false, '');
     var url = new URL('confere', CHECKOUT);
@@ -4253,7 +4287,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     fetch(url.toString(), { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d.estado === 'aprovado' && d.ref === volta.ref) return mostraCarta(d);
+        if (d.estado === 'aprovado' && d.ref === volta.ref) return pedeNome(d);
         if (d.estado === 'pendente' || (d.estado !== 'recusado' && volta.estado === 'pendente')) {
           mostraVolta('Pagamento em análise',
             'O Mercado Pago ainda não confirmou o pagamento. No Pix, isso leva alguns segundos depois de pagar. A carta aparece aqui assim que ele confirmar.',
