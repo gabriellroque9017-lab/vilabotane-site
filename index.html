@@ -1505,14 +1505,17 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 /* a porta da loja, logo abaixo dos dois rótulos: caixa de fio, sem preenchimento */
 .vinhos__loja{ position:relative; z-index:1; margin:clamp(44px,5vw,72px) var(--margem) 0; text-align:center; }
 .vinhos__loja-bt{
-  display:inline-flex; align-items:center; justify-content:center; gap:14px; min-height:48px; padding:0 32px;
+  display:inline-flex; align-items:center; justify-content:center; min-width:190px; min-height:52px; padding:0 40px;
   border:1px solid rgba(18,16,14,.4); color:var(--tinta);
-  font-family:var(--grot); font-size:11px; letter-spacing:.3em; text-indent:.3em; text-transform:uppercase;
-  transition:background .45s var(--ease), border-color .45s var(--ease), color .45s var(--ease);
+  font-family:var(--grot); font-size:11px; letter-spacing:.36em; text-indent:.36em; text-transform:uppercase;
+  transition:background .45s var(--ease), border-color .45s var(--ease), color .45s var(--ease), transform .45s var(--ease);
 }
-.vinhos__loja-bt span{ letter-spacing:0; transition:transform .45s var(--ease); }
 .vinhos__loja-bt:hover, .vinhos__loja-bt:focus-visible{ background:var(--mata); border-color:var(--mata); color:var(--marfim); outline:none; }
-.vinhos__loja-bt:hover span, .vinhos__loja-bt:focus-visible span{ transform:translateX(4px); }
+/* no clique o verde fica mais verde, e é dali que as vinhas nascem */
+.vinhos__loja-bt.is-brotando{ background:#4E7A2A; border-color:#4E7A2A; color:#F3F6E6; transform:scale(1.04); transition-duration:.28s; }
+.vinhas{ position:fixed; left:0; top:0; z-index:2147483000; pointer-events:none; overflow:visible; }
+.vinhas__papel{ position:fixed; inset:0; z-index:2147483001; background:#F7EBD8; opacity:0; pointer-events:none; transition:opacity .42s ease; }
+.vinhas__papel.is-cobre{ opacity:1; }
 
 /* ---------- 08 · CONTATO ---------- */
 .contato{ padding:var(--secao) var(--margem); background:var(--tinta-alta); }
@@ -1784,7 +1787,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     <a href="#mata">Mata Atlântica</a>
     <a href="#terroir">O Terroir</a>
     <a href="#vinhos">Nossos vinhos</a>
-    <a href="./loja.html">Nossa loja</a>
+    <a href="./loja.html">Loja</a>
   </div>
   <div class="veu__pe">
     <a class="elo mudo" href="https://www.casadolagobistro.com.br/">Bistrô Casa do Lago</a>
@@ -2195,7 +2198,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     </div>
 
     <!-- a loja não é uma seção: é a porta para a página dela -->
-    <p class="vinhos__loja"><a class="vinhos__loja-bt" href="./loja.html">Conheça a nossa loja <span aria-hidden="true">→</span></a></p>
+    <p class="vinhos__loja"><a class="vinhos__loja-bt" href="./loja.html">Loja</a></p>
 
     <div class="ficha-vinho ficha-vinho--chapa ficha-vinho--uva ficha-vinho--denso" id="ficha-tie" role="dialog" aria-modal="true" aria-label="Tiê, Cabernet Franc 2025" hidden>
       <div class="ficha-vinho__chapa">
@@ -4497,6 +4500,208 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
     }
     function liga() { if (!raf) raf = requestAnimationFrame(passo); }
   }
+})();
+</script>
+<script>
+/* ---------- a porta da loja ----------
+   Um clique na caixa: ela fica mais verde, vinhas brotam das bordas dela e
+   se espalham pela tela, com folhas de videira abrindo pelo caminho e uma
+   gavinha enrolada na ponta. Depois o papel creme da loja cobre tudo e a
+   página troca — a loja abre no mesmo creme, sem salto.
+   Tudo é desenhado na hora, num laço só de requestAnimationFrame. */
+(function () {
+  var bt = document.querySelector('.vinhos__loja-bt');
+  if (!bt) return;
+  var NS = 'http://www.w3.org/2000/svg';
+  var reduz = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* a folha de videira: cinco lobos, base em coração presa no cabinho, ponta em y = -1;
+     o cabinho sai de y = .32, que é o ponto que encosta no caule */
+  var FOLHA = 'M0-.08Q-.06 .05-.2 .04Q-.36 .03-.44-.1Q-.4-.2-.34-.26Q-.5-.28-.6-.42Q-.5-.5-.32-.52Q-.42-.66-.38-.82Q-.24-.78-.15-.7Q-.1-.88 0-1Q.1-.88.15-.7Q.24-.78.38-.82Q.42-.66.32-.52Q.5-.5.6-.42Q.5-.28.34-.26Q.4-.2.44-.1Q.36 .03.2 .04Q.06 .05 0-.08Z';
+  var NERVURAS = 'M0-.08L0-.9M0-.1L-.5-.4M0-.1L.5-.4M0-.12L-.3-.74M0-.12L.3-.74';
+  var CABINHO = 'M0 .32L0-.06';
+  var CAULES = ['#4F5A22', '#5B6528', '#636B2F', '#56642A'];
+  var VERDES = ['#636B2F', '#76863A', '#4E7A2A', '#8A9478', '#5E7230', '#6E8A35'];
+  var indo = false, tela = null, papel = null, raf = 0;
+
+  function sorte(a, b) { return a + Math.random() * (b - a); }
+  function escolhe(l) { return l[Math.floor(Math.random() * l.length)]; }
+  function n(v) { return v.toFixed(1); }
+
+  /* a loja já vem baixando enquanto a mão chega na caixa */
+  function adianta() {
+    if (adianta.feito) return;
+    adianta.feito = true;
+    var l = document.createElement('link');
+    l.rel = 'prefetch'; l.href = bt.href;
+    document.head.appendChild(l);
+  }
+  bt.addEventListener('pointerenter', adianta);
+  bt.addEventListener('focus', adianta);
+  bt.addEventListener('touchstart', adianta, { passive: true });
+
+  /* o traçado de uma vinha: passos curvos para fora e uma espiral no fim */
+  function tracado(x, y, ang, comp) {
+    var pts = [{ x: x, y: y, a: ang, L: 0 }], cur = ang, px = x, py = y;
+    var deriva = sorte(-0.2, 0.2), passos = Math.max(3, Math.round(comp / 46));
+    for (var i = 0; i < passos; i++) {
+      cur += deriva + sorte(-0.3, 0.3);
+      cur = Math.max(ang - 1.4, Math.min(ang + 1.4, cur));      /* cresce para fora, não volta para a caixa */
+      var L = sorte(34, 58);
+      px += Math.cos(cur) * L; py += Math.sin(cur) * L;
+      pts.push({ x: px, y: py, a: cur, L: L });
+    }
+    var giro = Math.random() < 0.5 ? 1 : -1, r = sorte(11, 16), fimDoCaule = pts.length;
+    for (var k = 0; k < 8; k++) {
+      cur += giro * 0.95; r *= 0.8;
+      px += Math.cos(cur) * r; py += Math.sin(cur) * r;
+      pts.push({ x: px, y: py, a: cur, L: r });
+    }
+    var d = 'M' + n(pts[0].x) + ' ' + n(pts[0].y);
+    for (var j = 1; j < pts.length; j++) {
+      var a = pts[j - 1], b = pts[j], t = b.L / 3;
+      d += 'C' + n(a.x + Math.cos(a.a) * t) + ' ' + n(a.y + Math.sin(a.a) * t) + ' '
+               + n(b.x - Math.cos(b.a) * t) + ' ' + n(b.y - Math.sin(b.a) * t) + ' ' + n(b.x) + ' ' + n(b.y);
+    }
+    return { d: d, gavinha: pts.length - fimDoCaule };
+  }
+
+  /* pontos de partida espalhados pelo contorno da caixa, cada um apontando para fora */
+  function bordas(c, quantas) {
+    var P = 2 * (c.width + c.height), saida = [];
+    for (var i = 0; i < quantas; i++) {
+      var u = ((i + sorte(0.15, 0.85)) / quantas) * P, x, y, ang;
+      if (u < c.width) { x = c.left + u; y = c.top; ang = -Math.PI / 2; }
+      else if ((u -= c.width) < c.height) { x = c.right; y = c.top + u; ang = 0; }
+      else if ((u -= c.height) < c.width) { x = c.right - u; y = c.bottom; ang = Math.PI / 2; }
+      else { u -= c.width; x = c.left; y = c.bottom - u; ang = Math.PI; }
+      saida.push({ x: x, y: y, ang: ang + sorte(-0.75, 0.75) });
+    }
+    return saida;
+  }
+
+  function brota() {
+    var vw = window.innerWidth, vh = window.innerHeight, c = bt.getBoundingClientRect();
+    tela = document.createElementNS(NS, 'svg');
+    tela.setAttribute('class', 'vinhas');
+    tela.setAttribute('width', vw); tela.setAttribute('height', vh);
+    tela.setAttribute('viewBox', '0 0 ' + vw + ' ' + vh);
+    tela.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(tela);
+
+    var maior = Math.max(vw, vh), vinhas = [], folhas = [], gavinhas = [];
+    bordas(c, vw < 700 ? 11 : 15).forEach(function (o, i) {
+      var t = tracado(o.x, o.y, o.ang, sorte(0.22, 0.5) * maior);
+      var p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', t.d);
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', escolhe(CAULES));
+      p.setAttribute('stroke-width', n(sorte(1.4, 2.4)));
+      p.setAttribute('stroke-linecap', 'round');
+      tela.appendChild(p);
+      var tam = p.getTotalLength();
+      p.style.strokeDasharray = tam + ' ' + tam;
+      p.style.strokeDashoffset = tam;
+      var v = { el: p, tam: tam, ini: 60 + i * sorte(10, 22), dur: sorte(1000, 1300) };
+      vinhas.push(v);
+      /* folhas ao longo do caule, alternando os lados, e de vez em quando uma
+         gavinha fina do lado oposto; a espiral da ponta fica nua */
+      var lado = Math.random() < 0.5 ? 1 : -1, pos = sorte(30, 52), ate = tam - 50;
+      var tamanho = vw < 700 ? [15, 24] : [19, 31];
+      while (pos < ate) {
+        var q = p.getPointAtLength(pos), q2 = p.getPointAtLength(Math.min(tam, pos + 1));
+        var rumo = Math.atan2(q2.y - q.y, q2.x - q.x) * 180 / Math.PI;
+        var g = document.createElementNS(NS, 'g');
+        [[CABINHO, 'none', escolhe(CAULES), 1.2], [FOLHA, escolhe(VERDES), 'none', 0], [NERVURAS, 'none', '#F2EDE0', 0.7]].forEach(function (c) {
+          var e = document.createElementNS(NS, 'path');
+          e.setAttribute('d', c[0]); e.setAttribute('fill', c[1]);
+          if (c[2] !== 'none') {
+            e.setAttribute('stroke', c[2]); e.setAttribute('stroke-width', c[3]);
+            e.setAttribute('vector-effect', 'non-scaling-stroke'); e.setAttribute('stroke-linecap', 'round');
+            if (c[2] === '#F2EDE0') e.setAttribute('stroke-opacity', '0.4');
+          } else e.setAttribute('fill-opacity', n(sorte(0.82, 0.96)));
+          g.appendChild(e);
+        });
+        g.setAttribute('transform', 'translate(' + n(q.x) + ' ' + n(q.y) + ') scale(0.001)');
+        tela.appendChild(g);
+        folhas.push({ el: g, v: v, x: q.x, y: q.y, ang: rumo + lado * sorte(35, 62) + 90,
+                      tam: sorte(tamanho[0], tamanho[1]), frac: pos / tam, abre: -1 });
+        if (Math.random() < 0.3) {
+          /* gavinha: um fio que enrola, do outro lado do caule */
+          var dir = (rumo - lado * sorte(40, 70)) * Math.PI / 180, gx = q.x, gy = q.y, raio = sorte(7, 10);
+          var gd = 'M' + n(gx) + ' ' + n(gy), volta = -lado;
+          for (var w = 0; w < 9; w++) {
+            dir += volta * (w < 2 ? 0.25 : 0.9); raio *= w < 2 ? 1 : 0.82;
+            var nx = gx + Math.cos(dir) * raio, ny = gy + Math.sin(dir) * raio;
+            gd += 'Q' + n(gx + Math.cos(dir - volta * 0.4) * raio * 0.6) + ' ' + n(gy + Math.sin(dir - volta * 0.4) * raio * 0.6) + ' ' + n(nx) + ' ' + n(ny);
+            gx = nx; gy = ny;
+          }
+          var gv = document.createElementNS(NS, 'path');
+          gv.setAttribute('d', gd); gv.setAttribute('fill', 'none');
+          gv.setAttribute('stroke', escolhe(CAULES)); gv.setAttribute('stroke-width', '0.9'); gv.setAttribute('stroke-linecap', 'round');
+          tela.appendChild(gv);
+          var gt = gv.getTotalLength();
+          gv.style.strokeDasharray = gt + ' ' + gt; gv.style.strokeDashoffset = gt;
+          gavinhas.push({ el: gv, v: v, tam: gt, frac: pos / tam, abre: -1 });
+        }
+        lado = -lado;
+        pos += sorte(58, 98);
+      }
+    });
+
+    var t0 = performance.now();
+    function quadro(agora) {
+      var t = agora - t0;
+      vinhas.forEach(function (v) {
+        var k = Math.min(1, Math.max(0, (t - v.ini) / v.dur));
+        v.prog = 1 - Math.pow(1 - k, 2.2);
+        v.el.style.strokeDashoffset = v.tam * (1 - v.prog);
+      });
+      folhas.forEach(function (f) {
+        if (f.abre < 0 && f.v.prog >= f.frac) f.abre = t;
+        if (f.abre < 0) return;
+        var k = Math.min(1, (t - f.abre) / 300);
+        var e = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2);   /* abre e passa um tiquinho */
+        f.el.setAttribute('transform', 'translate(' + n(f.x) + ' ' + n(f.y) + ') rotate(' + n(f.ang) + ') scale(' + Math.max(0.001, f.tam * e).toFixed(2) + ') translate(0 -.32)');
+      });
+      gavinhas.forEach(function (g) {
+        if (g.abre < 0 && g.v.prog >= g.frac) g.abre = t;
+        if (g.abre < 0) return;
+        var k = Math.min(1, (t - g.abre) / 420);
+        g.el.style.strokeDashoffset = g.tam * Math.pow(1 - k, 2);
+      });
+      if (t < 1900) raf = requestAnimationFrame(quadro);
+    }
+    raf = requestAnimationFrame(quadro);
+  }
+
+  function limpa() {
+    indo = false;
+    cancelAnimationFrame(raf);
+    if (tela && tela.parentNode) tela.parentNode.removeChild(tela);
+    if (papel && papel.parentNode) papel.parentNode.removeChild(papel);
+    tela = papel = null;
+    bt.classList.remove('is-brotando');
+  }
+
+  bt.addEventListener('click', function (e) {
+    /* nova aba, Modo Edição e quem pediu menos movimento seguem direto */
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (reduz || document.documentElement.classList.contains('me-editando')) return;
+    e.preventDefault();
+    if (indo) return;
+    indo = true;
+    adianta();
+    var destino = bt.href;
+    bt.classList.add('is-brotando');
+    try { brota(); } catch (erro) { location.href = destino; return; }
+    papel = document.createElement('div');
+    papel.className = 'vinhas__papel';
+    document.body.appendChild(papel);
+    setTimeout(function () { if (papel) papel.classList.add('is-cobre'); }, 1380);
+    setTimeout(function () { if (indo) location.href = destino; }, 1820);
+  });
+  /* quem volta pelo botão do navegador encontra a caixa como estava */
+  window.addEventListener('pageshow', function (e) { if (e.persisted) limpa(); });
 })();
 </script>
 <script src="./js/conteudo.js" defer></script>

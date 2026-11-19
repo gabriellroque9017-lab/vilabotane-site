@@ -129,6 +129,8 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 .trocas{ position:relative; z-index:1; max-width:62ch; margin:0 auto; padding:0 var(--margem) 64px; text-align:center; }
 .trocas h2{ font-weight:300; font-size:clamp(26px,2.6vw,32px); margin:14px 0 10px; }
 .trocas p.texto{ font-size:17px; line-height:1.65; color:rgba(18,16,14,.78); margin:0; text-wrap:pretty; }
+.trocas p.texto a{ border-bottom:1px solid rgba(18,16,14,.35); transition:color .3s, border-color .3s; }
+.trocas p.texto a:hover{ color:var(--mata); border-color:var(--mata); }
 
 /* ---------- o rodapé ---------- */
 .rodape{ margin:0 var(--margem); padding:26px 0 40px; border-top:1px solid var(--fio); display:flex; flex-wrap:wrap; gap:10px 28px; justify-content:space-between;
@@ -273,7 +275,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
 <section class="trocas" id="trocas">
   <p class="rotulo">Trocas e devoluções</p>
   <h2>Mudou de ideia?</h2>
-  <p class="texto">Quem compra pelo site tem 7 dias, contados da retirada ou da entrega, para desistir da compra, como manda o Código de Defesa do Consumidor. O produto volta fechado e devolvemos o valor pago. Se algo chegar com defeito, trocamos. É só falar conosco pelo WhatsApp.</p>
+  <p class="texto">Quem compra pelo site tem 7 dias, contados da retirada ou da entrega, para desistir da compra. Fale com nosso <a href="https://api.whatsapp.com/send/?phone=5524999936927&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener">WhatsApp</a>.</p>
 </section>
 
 <footer class="rodape">
@@ -323,7 +325,7 @@ button{ font:inherit; color:inherit; background:none; border:0; padding:0; curso
   <a href="./index.html#mata">Mata Atlântica</a>
   <a href="./index.html#terroir">O Terroir</a>
   <a href="./index.html#vinhos">Nossos vinhos</a>
-  <a href="./loja.html" aria-current="page">Nossa loja</a>
+  <a href="./loja.html" aria-current="page">Loja</a>
 </nav>
 
 <script>
