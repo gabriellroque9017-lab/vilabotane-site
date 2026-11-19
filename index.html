@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://api.github.com https://vilabotane-pagamento.gabriellroque9017.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
 <title>Vila Botané — Microvinícola · Vassouras, Rio de Janeiro</title>
 <meta name="description" content="Vila Botané, microvinícola em Vassouras, Rio de Janeiro. Vinhos de produção pequena, terroir de serra, visitas com agendamento.">
 
@@ -1215,6 +1215,42 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .pix__aviso{ font-family:var(--grot); font-size:11px; line-height:1.55; color:rgba(18,16,14,.5); margin:4px 0 0; max-width:34ch; }
 .pix__copia:disabled{ opacity:.32; cursor:not-allowed; }
 .pix__copia:disabled:hover{ background:none; border-color:rgba(18,16,14,.4); color:var(--tinta); }
+.pix__copia[hidden]{ display:none; }
+/* na escolha, Pix, cartão e WhatsApp: três caixas da mesma largura */
+#vai-pix, #vai-cartao, #vai-zap,
+#volta-de-novo, #volta-zap, #carta-zap, #carta-imprime{ width:100%; max-width:300px; padding-left:14px; padding-right:14px; }
+.pix__campo[hidden]{ display:none; }
+.pix__campo--escolha{ max-width:300px; margin:2px 0 4px; }
+
+/* ---------- a carta da reserva ----------
+   Um papel dentro do painel: a ave em traço, o vinho, o nome de quem
+   reservou e a data. Feita para ser guardada, impressa ou fotografada.
+   Só aparece depois que o Mercado Pago confirma o pagamento. */
+.carta__folha{
+  position:relative; width:100%; display:grid; justify-items:center; gap:7px;
+  padding:30px 22px 26px; background:#F6F2E7;
+  border:1px solid rgba(18,16,14,.18); outline:1px solid rgba(18,16,14,.10); outline-offset:5px;
+  margin-bottom:6px;
+}
+/* a folha desce um pouco para o ✕ do painel ficar à vista, acima dela */
+.pix__etapa.carta{ padding-top:30px; }
+.pix__x{ z-index:2; }
+.carta__ave{ width:96px; height:auto; margin-bottom:4px; filter:invert(1); opacity:.62; }
+.carta__abre{ font-family:var(--serifa); font-style:italic; font-size:19px; color:rgba(18,16,14,.68); margin:0; }
+.carta__vinho{ font-family:var(--serifa); font-size:26px; line-height:1.2; margin:0; color:var(--tinta); text-wrap:balance; text-align:center; }
+.carta__nome{ font-family:var(--serifa); font-style:italic; font-size:18px; margin:0; color:var(--mata); min-height:1px; text-align:center; }
+.carta__fio{ display:block; width:52px; height:1px; background:rgba(18,16,14,.25); margin:10px 0 4px; }
+.carta__data{ font-family:var(--grot); font-size:11px; letter-spacing:.2em; text-indent:.2em; text-transform:uppercase; color:rgba(18,16,14,.5); margin:2px 0 0; }
+.carta__pe{ font-size:14px; line-height:1.55; color:rgba(18,16,14,.6); margin:10px 0 0; max-width:30ch; text-align:center; }
+
+/* impressão: a carta é clonada para fora do painel, como filha do body, e
+   só ela vai ao papel. Assim não sobra página em branco do resto da página. */
+.carta-impressa{ display:none; }
+@media print{
+  body{ background:#FFF; }
+  body > *:not(.carta-impressa){ display:none !important; }
+  .carta-impressa{ display:grid !important; width:min(340px,100%); margin:24px auto; }
+}
 
 @media (prefers-reduced-motion:reduce){ .pix__x, .pix__copia, .pix__qtd-bt, .pix__maior input::after{ transition:none; } }
 /* nesta arte o ✕ vive sobre a fotografia, à esquerda */
@@ -2220,9 +2256,12 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
          hora com o preço escrito na ficha, a quantidade e um
          identificador do vinho, para o extrato dizer o que saiu.
          A chave é o CNPJ da vinícola (data-chave).
+         data-checkout: endereço da função do cartão (Mercado Pago).
+         Vazio, o botão do cartão não aparece.
          ========================================================== -->
     <div class="pix" id="reserva" role="dialog" aria-modal="true" aria-labelledby="pix-titulo" hidden
-         data-chave="65018031000115" data-nome="VILA BOTANE" data-cidade="VASSOURAS">
+         data-chave="65018031000115" data-nome="VILA BOTANE" data-cidade="VASSOURAS"
+         data-checkout="https://vilabotane-pagamento.gabriellroque9017.workers.dev/">
       <div class="pix__caixa">
         <button class="pix__x" type="button" id="pix-fecha" aria-label="Fechar">✕</button>
 
@@ -2239,12 +2278,17 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
             <button class="pix__qtd-bt" type="button" id="pix-mais" aria-label="Uma garrafa a mais">+</button>
           </div>
           <p class="pix__passo" id="pix-passo" data-nao-editar>A garrafa fica reservada em seu nome e é retirada aqui na vinícola.</p>
+          <label class="pix__campo pix__campo--escolha" id="escolha-nome-campo" hidden>
+            <span class="rotulo">Seu nome</span>
+            <input type="text" id="escolha-nome" autocomplete="name" maxlength="60" placeholder="para a reserva ficar em seu nome">
+          </label>
           <label class="pix__maior">
             <input type="checkbox" id="pix-maior">
             <span>Tenho 18 anos ou mais</span>
           </label>
-          <button class="pix__copia" type="button" id="vai-pix" disabled>Pagar agora pelo Pix</button>
-          <a class="pix__copia pix__copia--fino" id="vai-zap" href="#" target="_blank" rel="noopener">Conversar no WhatsApp</a>
+          <button class="pix__copia" type="button" id="vai-pix" disabled>Pagar no Pix</button>
+          <button class="pix__copia" type="button" id="vai-cartao" data-nao-editar disabled hidden>Pagar no cartão</button>
+          <a class="pix__copia" id="vai-zap" href="#" target="_blank" rel="noopener">Conversar no WhatsApp</a>
           <p class="pix__aviso">Venda de bebida alcoólica proibida para menores de 18 anos.</p>
         </div>
 
@@ -2263,6 +2307,32 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
           </label>
           <a class="pix__copia" id="pix-feito" href="#" target="_blank" rel="noopener">Paguei, enviar o comprovante</a>
           <p class="pix__aviso">A vinícola confirma a reserva pelo WhatsApp assim que o Pix cair.</p>
+        </div>
+
+        <!-- passo 3: a volta do Mercado Pago, enquanto confere ou sem confirmação -->
+        <div class="pix__etapa" data-passo="volta" hidden>
+          <p class="rotulo">Reserva</p>
+          <h3 id="volta-titulo" data-nao-editar>Conferindo o pagamento</h3>
+          <p class="pix__passo" id="volta-passo" data-nao-editar>Um instante: estamos confirmando com o Mercado Pago.</p>
+          <button class="pix__copia" type="button" id="volta-de-novo" data-nao-editar hidden>Conferir de novo</button>
+          <a class="pix__copia" id="volta-zap" data-nao-editar href="#" target="_blank" rel="noopener" hidden>Conversar no WhatsApp</a>
+        </div>
+
+        <!-- passo 4: a carta da reserva, só com o pagamento confirmado -->
+        <div class="pix__etapa carta" data-passo="carta" hidden>
+          <div class="carta__folha" id="carta">
+            <img class="carta__ave" src="./img/passaro-linha.png" alt="" aria-hidden="true" decoding="async">
+            <p class="rotulo">Carta de reserva</p>
+            <p class="carta__abre" id="carta-abre" data-nao-editar>Guardamos uma garrafa</p>
+            <p class="carta__vinho" id="carta-vinho" data-nao-editar>Tiê, Cabernet Franc 2025</p>
+            <p class="carta__nome" id="carta-nome" data-nao-editar></p>
+            <span class="carta__fio" aria-hidden="true"></span>
+            <p class="carta__data" id="carta-data" data-nao-editar></p>
+            <p class="carta__pe" id="carta-pe" data-nao-editar>Mostre esta carta ao chegar. A garrafa espera por você na encosta, em Vassouras.</p>
+          </div>
+          <p class="pix__passo">Pagamento confirmado pelo Mercado Pago. Avise no WhatsApp para combinarmos a retirada.</p>
+          <a class="pix__copia" id="carta-zap" data-nao-editar href="#" target="_blank" rel="noopener">Avisar no WhatsApp</a>
+          <button class="pix__copia" type="button" id="carta-imprime">Salvar ou imprimir</button>
         </div>
 
 
@@ -3870,6 +3940,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   var vaiPix = pega('vai-pix'), maior = pega('pix-maior');
   var menos = pega('pix-menos'), mais = pega('pix-mais'), qtdN = pega('pix-qtd');
   var qtdGrupo = painel.querySelector('.pix__qtd');
+  var vaiCartao = pega('vai-cartao');
+  var escolhaNome = pega('escolha-nome'), escolhaCampo = pega('escolha-nome-campo');
+  var CHECKOUT = (painel.dataset.checkout || '').trim();
   var MAX = 12;
   var CONTA = {
     chave: painel.dataset.chave || '',
@@ -4014,7 +4087,7 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
       if (!CONTA.chave) atual.preco = 0;
       qtdGrupo.hidden = !atual.preco;
       maior.checked = false;
-      vaiPix.disabled = true;
+      reiniciaBotoes();
       pega('pix-titulo').textContent = atual.vinho;
       atualiza();
       passo('escolha');
@@ -4024,11 +4097,13 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   });
   menos.addEventListener('click', function () { if (atual.qtd > 1) { atual.qtd--; atualiza(); } });
   mais.addEventListener('click', function () { if (atual.qtd < MAX) { atual.qtd++; atualiza(); } });
-  maior.addEventListener('change', function () { vaiPix.disabled = !maior.checked; });
+  maior.addEventListener('change', liberaBotoes);
+  escolhaNome.addEventListener('input', liberaBotoes);
 
   /* passo 2 */
   vaiPix.addEventListener('click', function () {
     if (!maior.checked) return;
+    if (CHECKOUT) { vaiMP('pix', vaiPix); return; }
     pega('pix-vinho').textContent = atual.vinho;
     copia.classList.remove('is-feito');
     copia.textContent = 'Copiar o código';
@@ -4086,6 +4161,155 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !painel.hidden) mostra(false);
   });
+
+  /* ---- Pix e cartão pelo Mercado Pago, por uma função à parte ----
+     O site não guarda a chave do Mercado Pago. Quem cria a cobrança é a
+     função em pagamento-cartao/ (Cloudflare Workers): ela lê o preço do
+     conteudo.json publicado, sorteia a referência da venda e devolve o navegador
+     já na página de pagamento, só com Pix ou só com cartão.
+     Tudo isso só vale quando data-checkout, no painel, tem o endereço da
+     função. Vazio, o painel volta a ser o de antes: Pix estático e WhatsApp. */
+  var ROTULOS = { pix: 'Pagar no Pix', cartao: 'Pagar no cartão' };
+  function limpaNome(t) {
+    return String(t || '').replace(/[\u0000-\u001F\u007F<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 60);
+  }
+  function podePagar() {
+    return maior.checked && (!CHECKOUT || limpaNome(escolhaNome.value).length >= 2);
+  }
+  function liberaBotoes() {
+    vaiPix.disabled = !podePagar();
+    if (vaiCartao) vaiCartao.disabled = !podePagar();
+  }
+  function reiniciaBotoes() {
+    vaiPix.textContent = ROTULOS.pix;
+    if (vaiCartao) vaiCartao.textContent = ROTULOS.cartao;
+    liberaBotoes();
+  }
+  function vaiMP(meio, bt) {
+    if (!podePagar() || !CHECKOUT) return;
+    bt.disabled = true;
+    bt.textContent = 'Abrindo o pagamento…';
+    location.assign(CHECKOUT + (CHECKOUT.indexOf('?') > -1 ? '&' : '?')
+      + 'vinho=' + encodeURIComponent(String(atual.prefixo || '').toLowerCase())
+      + '&qtd=' + atual.qtd
+      + '&meio=' + meio
+      + '&nome=' + encodeURIComponent(limpaNome(escolhaNome.value)));
+  }
+  escolhaCampo.hidden = !CHECKOUT;
+  if (vaiCartao) {
+    vaiCartao.hidden = !CHECKOUT;
+    vaiCartao.addEventListener('click', function () { vaiMP('cartao', vaiCartao); });
+  }
+  /* quem volta pelo "voltar" do navegador encontra os botões prontos de novo */
+  window.addEventListener('pageshow', reiniciaBotoes);
+
+  /* ---- a volta do Mercado Pago: ?pagamento=...&ref=CHAVE&nome=... ----
+     O endereço de volta não prova nada: qualquer um poderia digitá-lo. Por
+     isso a carta só aparece depois que a função pergunta ao próprio Mercado
+     Pago se a venda com essa chave foi paga (rota /confere). Sem essa
+     resposta, nada de carta: fica o aviso e o WhatsApp. */
+  var volta = { ref: '', nome: '', order: '', estado: '', tentativas: 0 };
+  function zapCom(recado) {
+    return 'https://api.whatsapp.com/send/?phone=5524999936927&text='
+      + encodeURIComponent(recado) + '&type=phone_number&app_absent=0';
+  }
+  function mostraVolta(titulo, texto, deNovo, recado) {
+    pega('volta-titulo').textContent = titulo;
+    pega('volta-passo').textContent = texto;
+    var bt = pega('volta-de-novo');
+    bt.hidden = !deNovo;
+    bt.disabled = false;
+    var zap = pega('volta-zap');
+    zap.hidden = !recado;
+    if (recado) zap.href = zapCom(recado);
+    passo('volta');
+  }
+  function mostraCarta(d) {
+    var bt = document.querySelector('[data-pix][data-prefixo="' + (d.vinho === 'tiepreto' ? 'TIEPRETO' : 'TIE') + '"]');
+    var vinho = (bt && bt.dataset.vinho) || d.titulo || '';
+    var q = d.qtd || 1;
+    var quando = d.data ? new Date(d.data) : new Date();
+    if (isNaN(quando.getTime())) quando = new Date();
+    pega('carta-abre').textContent = q > 1 ? 'Guardamos ' + q + ' garrafas' : 'Guardamos uma garrafa';
+    pega('carta-vinho').textContent = vinho;
+    pega('carta-nome').textContent = volta.nome ? 'para ' + volta.nome : '';
+    pega('carta-data').textContent = quando.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    pega('carta-pe').textContent = q > 1
+      ? 'Mostre esta carta ao chegar. As garrafas esperam por você na encosta, em Vassouras.'
+      : 'Mostre esta carta ao chegar. A garrafa espera por você na encosta, em Vassouras.';
+    pega('carta-zap').href = zapCom('Olá! Paguei a reserva pelo Mercado Pago.'
+      + '\nVinho: ' + vinho
+      + '\nGarrafas: ' + q
+      + (volta.nome ? '\nNome: ' + volta.nome : '')
+      + '\nReferência no Mercado Pago: ' + d.ref);
+    passo('carta');
+  }
+  function confere(quieto) {
+    if (!quieto) mostraVolta('Conferindo o pagamento', 'Um instante: estamos confirmando com o Mercado Pago.', false, '');
+    var url = new URL('confere', CHECKOUT);
+    url.searchParams.set('ref', volta.ref);
+    if (volta.order) url.searchParams.set('order_id', volta.order);
+    var sobre = '\nChave: ' + volta.ref + (volta.nome ? '\nNome: ' + volta.nome : '');
+    fetch(url.toString(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.estado === 'aprovado' && d.ref === volta.ref) return mostraCarta(d);
+        if (d.estado === 'pendente' || (d.estado !== 'recusado' && volta.estado === 'pendente')) {
+          mostraVolta('Pagamento em análise',
+            'O Mercado Pago ainda não confirmou o pagamento. No Pix, isso leva alguns segundos depois de pagar. A carta aparece aqui assim que ele confirmar.',
+            true, 'Olá! Fiz uma reserva pelo Mercado Pago e ainda não apareceu a confirmação.' + sobre);
+          /* no Pix a confirmação costuma chegar logo: confere sozinho mais algumas vezes */
+          if (volta.tentativas++ < 6) setTimeout(function () { confere(true); }, 5000);
+          return;
+        }
+        if (d.estado === 'recusado' || volta.estado === 'recusado') {
+          return mostraVolta('Pagamento não concluído',
+            'Nada foi cobrado. Você pode tentar de novo, pelo Pix ou com outro cartão.',
+            false, 'Olá! Tentei reservar um vinho pelo Mercado Pago e o pagamento não passou.');
+        }
+        mostraVolta('Ainda sem confirmação',
+          'Não encontramos o pagamento desta reserva. Se você já pagou, confira de novo em instantes ou fale conosco.',
+          true, 'Olá! Fiz uma reserva pelo Mercado Pago e não recebi a carta.' + sobre);
+      })
+      .catch(function () {
+        mostraVolta('Não deu para conferir agora',
+          'A conexão falhou ao falar com o Mercado Pago. Tente de novo em instantes.',
+          true, 'Olá! Fiz uma reserva pelo Mercado Pago.' + sobre);
+      });
+  }
+  pega('volta-de-novo').addEventListener('click', function () {
+    this.disabled = true;
+    volta.tentativas = 6;               /* quem pede de novo assume o controle */
+    confere();
+  });
+
+  /* salvar ou imprimir: a carta vai sozinha para o papel */
+  pega('carta-imprime').addEventListener('click', function () {
+    var copia = pega('carta').cloneNode(true);
+    copia.removeAttribute('id');
+    copia.classList.add('carta-impressa');
+    document.body.appendChild(copia);
+    var limpou = false;
+    function limpa() { if (limpou) return; limpou = true; copia.remove(); window.removeEventListener('afterprint', limpa); }
+    window.addEventListener('afterprint', limpa);
+    window.print();
+    setTimeout(limpa, 3000);            /* rede de segurança onde afterprint não vem */
+  });
+
+  (function () {
+    var p = new URLSearchParams(location.search);
+    var nosso = p.get('pagamento');
+    if (!nosso) return;
+    history.replaceState(null, '', location.pathname + '#vinhos');
+    volta.estado = nosso;
+    volta.ref = String(p.get('ref') || p.get('external_reference') || '').toUpperCase();
+    volta.nome = limpaNome(p.get('nome'));
+    volta.order = p.get('order_id') || '';
+    if (!CHECKOUT || !/^[A-Z0-9]{3,12}-[A-Z0-9]{5}-[A-Z0-9]$/.test(volta.ref)) return;
+    quemAbriu = null;
+    mostra(true);
+    confere();
+  })();
 })();
 /* ---------- a serra do rodapé: desenha ao descer, depois vira corda ----------
    Duas fases. Na primeira, a rolagem preenche o traço (stroke-dashoffset).
