@@ -267,7 +267,9 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .veu__lista{ display:flex; flex-direction:column; gap:clamp(4px,1.2vh,14px); text-align:center; }
 .veu__lista a{
   font-family:var(--serifa); font-weight:300;
-  font-size:clamp(2.6rem,7.6vw,5.4rem); line-height:1.16; letter-spacing:.01em;
+  /* a altura da tela também manda: em janela baixa as letras diminuem e a
+     lista não encosta no "Bistrô Casa do Lago · Instagram" de baixo */
+  font-size:clamp(2rem,min(8.4vw,7.4vh),4.8rem); line-height:1.16; letter-spacing:.01em;
 }
 .veu__pe .elo{
   font-family:var(--grot); font-size:12px; font-weight:400;
@@ -281,6 +283,11 @@ a:hover .grao > img, .grao--vivo:hover > img{ transform:scale(1.04); }
 .veu__pe{
   position:absolute; left:var(--margem); right:var(--margem); bottom:30px;
   display:flex; gap:28px; flex-wrap:wrap; justify-content:center;
+}
+/* celular deitado: tela baixa, letras menores e o rodapé do menu mais embaixo */
+@media (max-height:500px){
+  .veu__lista a{ font-size:max(22px,6.6vh); }
+  .veu__pe{ bottom:14px; }
 }
 
 .cursor{
